@@ -35,6 +35,7 @@ yarn-error.log*
 .cursor/debug/
 .cursor/**/*.log
 .cursor/debug-*.log
+.cursor/settings.json
 
 # env files (can opt-in for committing if needed)
 .env*
