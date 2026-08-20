@@ -23,7 +23,7 @@ Real `if`/`else` on parcel facts. Never canned status on mock data.
 
 ## Page Wiring
 
-`page.tsx` must import `AddressSearch`, `ValueProps`, `AnalysisInterstitial`, `ResultsCard`, `LeadFallbackForm`, `PartnerOffers`, `GetQuotesModal`. State: geocodeResult, report, isZoningLoading, error, searchId. Show interstitial while geocode is resolved and zoning is loading. No `evaluateEligibility` on client.
+`page.tsx` must import `AddressSearch`, `ValueProps`, `LandingHeroMedia`, `AnalysisInterstitial`, `ResultsCard`, `LeadFallbackForm`, `PartnerOffers`, `GetQuotesModal`. State: geocodeResult, report, isZoningLoading, error, searchId. Landing: two-column hero (`AddressSearch` + `ValueProps` children, `LandingHeroMedia`). Show interstitial while geocode is resolved and zoning is loading. No `evaluateEligibility` on client.
 
 ## Forbidden
 

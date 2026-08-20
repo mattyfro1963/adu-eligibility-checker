@@ -10,7 +10,7 @@ Next.js framework contract only — network, caching, SSR. Not a place for statu
 
 - `route.ts` stays thin (traffic cop): validate → adapter/rules → JSON, plus `setTimeout` for `loading.tsx` / `Spinner`.
 - `error.tsx` is `"use client"`.
-- `page.tsx` is the **client composition root** (`"use client"` required for `useState`). It must **import** `AddressSearch`, `ValueProps`, `AnalysisInterstitial`, `ResultsCard`, `LeadFallbackForm`, `PartnerOffers`, and `GetQuotesModal` — never paste those components' markup or fetch logic into the page. It owns only cross-component state and the zoning fetch that glues them together. No statute `if`/`else` in the page (that lives in `src/lib/rules`).
+- `page.tsx` is the **client composition root** (`"use client"` required for `useState`). It must **import** `AddressSearch`, `ValueProps`, `LandingHeroMedia`, `AnalysisInterstitial`, `ResultsCard`, `LeadFallbackForm`, `PartnerOffers`, and `GetQuotesModal` — never paste those components' markup or fetch logic into the page. It owns only cross-component state and the zoning fetch that glues them together. No statute `if`/`else` in the page (that lives in `src/lib/rules`).
 
 ### 2. Component-intensive (`src/components/`)
 
@@ -67,7 +67,7 @@ Monitor `src/lib/rules/*.ts`. The engine must contain **actual branching**, not 
 
 Import features explicitly (no barrels). State: `geocodeResult`, `report`, `isZoningLoading`, `error`, `searchId`.
 
-Flow: `AddressSearch` (**Evaluate Lot**) → `onResolved` → page fetches `/api/zoning?lat=&lng=` → `AnalysisInterstitial` while `geocodeResult && isZoningLoading` → on success mint `searchId` (`crypto.randomUUID()`) → `ResultsCard` 60/40 dashboard (static Mapbox preview + scrollable panel, ADU/SB 9 segmented detail, Connect CTA + **Get Quotes** modal) → **bifurcated CTAs by `overall`**:
+Flow: Landing two-column hero (`AddressSearch` with `ValueProps` children + `LandingHeroMedia` tiny-home visual) → **Evaluate Lot** → `onResolved` → page fetches `/api/zoning?lat=&lng=` → compact search + `AnalysisInterstitial` while `geocodeResult && isZoningLoading` → on success mint `searchId` (`crypto.randomUUID()`) → `ResultsCard` 60/40 dashboard (static Mapbox preview + scrollable panel, ADU/SB 9 segmented detail, Connect CTA + **Get Quotes** modal) → **bifurcated CTAs by `overall`**:
 
 | `overall` | After ResultsCard |
 |-----------|-------------------|

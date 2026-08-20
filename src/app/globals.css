@@ -99,3 +99,56 @@
     @apply font-sans;
   }
 }
+
+/* Landing hero presence — gentle entrance + lot pulse */
+@keyframes landing-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes landing-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes landing-lot-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(125, 211, 252, 0.35),
+      0 0 20px rgba(56, 189, 248, 0.35);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(125, 211, 252, 0.55),
+      0 0 32px rgba(56, 189, 248, 0.55);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .landing-hero-copy {
+    animation: landing-fade-up 0.55s ease-out both;
+  }
+
+  .landing-hero-media {
+    animation: landing-fade-in 0.7s ease-out 0.12s both;
+  }
+
+  .landing-hero-callout {
+    animation: landing-fade-up 0.5s ease-out 0.45s both;
+  }
+
+  .landing-hero-lot {
+    animation: landing-lot-pulse 3.2s ease-in-out infinite;
+  }
+}

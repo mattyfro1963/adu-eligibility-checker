@@ -4,6 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import { AddressSearch } from "@/components/features/AddressSearch/AddressSearch";
 import { AnalysisInterstitial } from "@/components/features/AnalysisInterstitial/AnalysisInterstitial";
 import { GetQuotesModal } from "@/components/features/GetQuotesModal/GetQuotesModal";
+import { LandingHeroMedia } from "@/components/features/LandingHeroMedia/LandingHeroMedia";
 import { LeadFallbackForm } from "@/components/features/LeadFallbackForm/LeadFallbackForm";
 import { PartnerOffers } from "@/components/features/PartnerOffers/PartnerOffers";
 import { ResultsCard } from "@/components/features/ResultsCard/ResultsCard";
@@ -97,15 +98,33 @@ export default function HomePage() {
       ? buildConnectHref(geocodeResult, report?.overall ?? null)
       : "/connect";
 
+  const showLandingHero = !geocodeResult;
+
   return (
     <main className="mx-auto w-full max-w-6xl flex-1 space-y-8 px-4 py-8 sm:space-y-10 sm:px-6 sm:py-12 md:py-16">
-      <AddressSearch
-        onResolved={handleResolved}
-        onError={handleSearchError}
-        error={error}
-      />
-
-      {!geocodeResult ? <ValueProps /> : null}
+      {showLandingHero ? (
+        <div className="grid items-stretch gap-8 lg:grid-cols-2 lg:gap-10 xl:gap-12">
+          <div className="flex flex-col justify-center">
+            <AddressSearch
+              onResolved={handleResolved}
+              onError={handleSearchError}
+              error={error}
+            >
+              <ValueProps />
+            </AddressSearch>
+          </div>
+          <div className="lg:min-h-[560px]">
+            <LandingHeroMedia />
+          </div>
+        </div>
+      ) : (
+        <AddressSearch
+          onResolved={handleResolved}
+          onError={handleSearchError}
+          error={error}
+          compact
+        />
+      )}
 
       {showInterstitial && geocodeResult ? (
         <AnalysisInterstitial

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useSyncExternalStore } from "react";
-import { MapPin, Search } from "lucide-react";
+import { useEffect, useRef, useSyncExternalStore, type ReactNode } from "react";
+import { Check, MapPin, Search } from "lucide-react";
 import { useAddressSearch } from "@/components/features/AddressSearch/useAddressSearch";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -14,6 +14,10 @@ interface AddressSearchProps {
   error?: string | null;
   /** When false (Mapbox live), omit mock demo chips. */
   showDemoScenarios?: boolean;
+  /** Compact bar after a lot is resolved (hides landing headline chrome). */
+  compact?: boolean;
+  /** Feature row rendered inside the search card (landing layout). */
+  children?: ReactNode;
 }
 
 const DEMO_SCENARIOS = [
@@ -48,6 +52,8 @@ export function AddressSearch({
   onError,
   error = null,
   showDemoScenarios,
+  compact = false,
+  children,
 }: AddressSearchProps) {
   const {
     query,
@@ -92,22 +98,31 @@ export function AddressSearch({
   const hasError = Boolean(error);
 
   return (
-    <section className="relative overflow-hidden rounded-2xl border border-border bg-white shadow-registry">
-      <div className="relative z-10 flex flex-col items-center space-y-8 px-4 py-12 text-center sm:space-y-10 sm:px-6 sm:py-16 md:py-20">
-        <div className="max-w-3xl space-y-3 sm:space-y-4">
-          <h2 className="text-3xl leading-[1.15] font-medium tracking-tight text-foreground sm:text-4xl md:text-5xl">
-            Discover your property&apos;s true potential.
-          </h2>
-          <p className="mt-3 text-base font-light tracking-wide text-muted-foreground sm:mt-4 sm:text-lg">
-            California ADU and SB 9 checks from parcel facts — SF zoning is a
-            DataSF-backed pilot, not a statewide permit engine.
+    <section
+      className={cn(
+        "landing-hero-copy flex flex-col",
+        compact ? "space-y-4" : "space-y-6 sm:space-y-8",
+      )}
+    >
+      {!compact ? (
+        <div className="space-y-3 sm:space-y-4">
+          <h1 className="max-w-xl text-3xl leading-[1.15] font-semibold tracking-tight text-slate-900 sm:text-4xl md:text-[2.75rem] md:leading-[1.12]">
+            Instantly evaluate California properties for ADU and SB 9 potential.
+          </h1>
+          <p className="max-w-lg text-base font-light tracking-wide text-muted-foreground sm:text-lg">
+            Parcel-fact checks for ADU and SB 9 — SF zoning is a DataSF-backed
+            pilot, not a statewide permit engine.
           </p>
         </div>
+      ) : null}
 
-        <div
-          ref={containerRef}
-          className="relative mt-4 w-full max-w-2xl sm:mt-6"
-        >
+      <div
+        className={cn(
+          "rounded-2xl border border-border bg-white shadow-registry",
+          compact ? "p-4 sm:p-5" : "p-5 sm:p-6",
+        )}
+      >
+        <div ref={containerRef} className="relative w-full">
           <label htmlFor="address-search" className="sr-only">
             Search property address
           </label>
@@ -121,7 +136,7 @@ export function AddressSearch({
           >
             <div
               className={cn(
-                "relative flex h-16 items-center rounded-[24px] border bg-white p-1.5 shadow-registry transition-all duration-200",
+                "relative flex h-16 items-center rounded-xl border bg-white p-1.5 transition-all duration-200",
                 hasError
                   ? "border-rose-600"
                   : "border-border focus-within:border-primary focus-within:shadow-[0_0_0_4px_rgba(0,102,204,0.15)]",
@@ -145,7 +160,7 @@ export function AddressSearch({
                   }
                 }}
                 placeholder="Enter a California address..."
-                className="h-full w-full bg-transparent pr-32 pl-12 text-base font-light text-foreground placeholder:text-muted-foreground focus:outline-none sm:pr-44 sm:pl-14 sm:text-lg"
+                className="h-full w-full bg-transparent pr-28 pl-12 text-base font-light text-foreground placeholder:text-muted-foreground focus:outline-none sm:pr-40 sm:pl-14 sm:text-lg"
                 aria-label="Property address search"
                 aria-autocomplete="list"
                 aria-expanded={showList}
@@ -158,7 +173,7 @@ export function AddressSearch({
               <Button
                 type="submit"
                 disabled={isResolving || !query.trim()}
-                className="absolute top-1/2 right-1.5 h-11 -translate-y-1/2 gap-2 rounded-xl px-4 text-xs font-medium tracking-wide shadow-sm sm:right-2 sm:px-5 sm:text-sm"
+                className="absolute top-1/2 right-1.5 h-11 -translate-y-1/2 gap-2 rounded-lg px-3 text-xs font-medium tracking-wide shadow-sm sm:right-2 sm:px-4 sm:text-sm"
                 aria-label="Evaluate lot"
               >
                 {isResolving ? (
@@ -171,8 +186,8 @@ export function AddressSearch({
                   </>
                 ) : (
                   <>
-                    Evaluate Lot
                     <Search size={14} aria-hidden="true" />
+                    <span className="hidden sm:inline">Evaluate</span>
                   </>
                 )}
               </Button>
@@ -227,15 +242,39 @@ export function AddressSearch({
               })}
             </ul>
           ) : null}
+        </div>
 
-          <p className="mt-3 text-center text-[11px] tracking-wide text-slate-400">
+        {!compact ? (
+          <div className="mt-5 flex justify-center">
+            <span
+              className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-1.5 text-sm font-medium text-white shadow-sm"
+              aria-hidden="true"
+            >
+              <span className="flex size-5 items-center justify-center rounded-full bg-white/20">
+                <Check size={12} strokeWidth={3} aria-hidden="true" />
+              </span>
+              Compliant
+            </span>
+            <span className="sr-only">
+              Example status badge — real eligibility appears after you evaluate
+              a lot.
+            </span>
+          </div>
+        ) : null}
+
+        {!compact && children ? (
+          <div className="mt-5 border-t border-border pt-5">{children}</div>
+        ) : null}
+
+        {!compact ? (
+          <p className="mt-4 text-center text-[11px] tracking-wide text-slate-400">
             California statewide analysis — parcel-level zoning is currently in
             pilot coverage (DataSF-backed for San Francisco lots).
           </p>
-        </div>
+        ) : null}
 
-        {demosEnabled ? (
-          <div className="flex w-full max-w-2xl flex-col items-center gap-3 pt-2">
+        {demosEnabled && !compact ? (
+          <div className="mt-4 flex w-full flex-col items-center gap-3">
             <span className="text-[10px] font-semibold tracking-widest text-slate-400 uppercase">
               Simulate Scenarios
             </span>
@@ -247,7 +286,7 @@ export function AddressSearch({
                   onClick={() => {
                     void resolveQuery(demo.query);
                   }}
-                  className="min-h-[44px] rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-medium text-slate-600 shadow-sm transition-all hover:bg-[#F5F5F7] hover:text-slate-900 sm:px-4 sm:py-2"
+                  className="min-h-[44px] rounded-lg border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-medium text-slate-600 shadow-sm transition-all hover:bg-[#F5F5F7] hover:text-slate-900 sm:px-4 sm:py-2"
                 >
                   {demo.label}
                 </button>
