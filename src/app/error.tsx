@@ -19,14 +19,14 @@ export default function Error({
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-4 px-4 py-16">
       <AlertTriangle className="h-8 w-8 text-rose-600" aria-hidden="true" />
-      <h2 className="text-lg font-semibold text-slate-800">
+      <h2 className="text-lg font-normal text-foreground">
         Something went wrong
       </h2>
-      <p className="text-sm text-slate-600">{error.message}</p>
+      <p className="text-sm text-muted-foreground">{error.message}</p>
       <button
         type="button"
         onClick={reset}
-        className="rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+        className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90"
       >
         Try again
       </button>

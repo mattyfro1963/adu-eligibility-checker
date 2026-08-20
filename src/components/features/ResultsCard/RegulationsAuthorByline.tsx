@@ -6,7 +6,7 @@ import {
 /** Shared byline for law/regulation sections authored by the briefing agent. */
 export function RegulationsAuthorByline({
   lastReviewed,
-  className = "text-xs text-slate-400",
+  className = "text-xs text-muted-foreground",
 }: {
   lastReviewed?: string;
   className?: string;

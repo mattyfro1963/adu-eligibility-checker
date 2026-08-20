@@ -8,9 +8,9 @@ export function Spinner({ label = "Loading…" }: { label?: string }) {
       aria-label={label}
     >
       <div className="animate-spin">
-        <Loader2 className="h-8 w-8 text-slate-600" aria-hidden="true" />
+        <Loader2 className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
       </div>
-      <span className="text-sm text-slate-600">{label}</span>
+      <span className="text-sm text-muted-foreground">{label}</span>
     </div>
   );
 }

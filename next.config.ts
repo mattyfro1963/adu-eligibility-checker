@@ -3,7 +3,6 @@ import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  serverExternalPackages: ["@mapbox/mapbox-sdk"],
 };
 
 export default withSentryConfig(nextConfig, {

@@ -1,0 +1,3 @@
+# Keep directory for progressive open-data jurisdiction GeoJSON packs.
+# Add `{jurisdiction}.geojson` snapshots here (PDDL / open licenses only).
+# Do not commit multi-hundred-MB files without LFS or external blob storage.

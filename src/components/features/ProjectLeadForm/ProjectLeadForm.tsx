@@ -48,7 +48,7 @@ const BUDGET_OPTIONS: { value: ProjectBudget; label: string }[] = [
 ];
 
 function selectClassName() {
-  return "h-11 w-full rounded-xl border border-slate-200 bg-[#FBFBFD] px-3 text-sm text-slate-900 outline-none focus-visible:ring-2 focus-visible:ring-slate-400";
+  return "h-11 w-full rounded-[10px] border border-border bg-card px-3 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring";
 }
 
 export function ProjectLeadForm({
@@ -86,9 +86,7 @@ export function ProjectLeadForm({
   return (
     <section
       className={
-        isPlain
-          ? "space-y-5"
-          : "rounded-2xl border border-border bg-white p-6 shadow-registry sm:p-8"
+        isPlain ? "space-y-5" : "border border-border bg-card p-6 sm:p-8"
       }
     >
       {isPlain ? null : (
@@ -96,22 +94,22 @@ export function ProjectLeadForm({
           <div
             className={`rounded-lg border p-2 ${
               isComplex
-                ? "border-amber-100 bg-amber-50"
-                : "border-slate-100 bg-slate-50"
+                ? "border-amber-500/30 bg-amber-500/15"
+                : "border-border bg-muted"
             }`}
           >
             <Hammer
-              className={`h-5 w-5 ${isComplex ? "text-amber-600" : "text-slate-700"}`}
+              className={`h-5 w-5 ${isComplex ? "text-amber-600" : "text-foreground"}`}
               aria-hidden="true"
             />
           </div>
           <div className="min-w-0">
-            <h2 className="text-lg font-semibold tracking-tight text-slate-900">
+            <h2 className="text-lg font-normal tracking-tight text-foreground">
               {isComplex
                 ? "Complex site — match with builders"
                 : "Project details for builder match"}
             </h2>
-            <p className="mt-1 text-sm font-light break-words text-slate-600">
+            <p className="mt-1 text-sm font-light break-words text-muted-foreground">
               {isComplex ? (
                 <>
                   {address} needs careful permitting. Share project parameters
@@ -121,8 +119,8 @@ export function ProjectLeadForm({
               ) : (
                 <>
                   Tell us about the project at{" "}
-                  <span className="font-medium text-slate-800">{address}</span>.
-                  We&apos;ll compile nearby contractors for quotes — not a
+                  <span className="font-medium text-foreground">{address}</span>
+                  . We&apos;ll compile nearby contractors for quotes — not a
                   permit or legal determination.
                 </>
               )}
@@ -142,7 +140,7 @@ export function ProjectLeadForm({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Your name"
-              className="h-11 rounded-xl border-slate-200 bg-[#FBFBFD]"
+              className="h-11 rounded-[10px] border-border bg-card"
               aria-label="Full name for builder match"
               disabled={isSubmitting}
             />
@@ -156,7 +154,7 @@ export function ProjectLeadForm({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
-              className="h-11 rounded-xl border-slate-200 bg-[#FBFBFD]"
+              className="h-11 rounded-[10px] border-border bg-card"
               aria-label="Email for builder match"
               disabled={isSubmitting}
             />
@@ -171,7 +169,7 @@ export function ProjectLeadForm({
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="(415) 555-0100"
-            className="h-11 rounded-xl border-slate-200 bg-[#FBFBFD]"
+            className="h-11 rounded-[10px] border-border bg-card"
             aria-label="Phone for builder match"
             disabled={isSubmitting}
           />
@@ -236,7 +234,7 @@ export function ProjectLeadForm({
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="h-11 w-full rounded-xl shadow-sm sm:w-auto sm:self-end"
+          className="h-11 w-full rounded-[10px] shadow-editorial sm:w-auto sm:self-end"
         >
           {isSubmitting ? (
             <>

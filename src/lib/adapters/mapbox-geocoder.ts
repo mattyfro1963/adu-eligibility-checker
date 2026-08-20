@@ -1,14 +1,11 @@
-import mbxGeocoding from "@mapbox/mapbox-sdk/services/geocoding";
 import { env } from "@/lib/env";
+import { mapboxRequestHeaders } from "@/lib/adapters/mapbox-headers";
 import type { GeocodeResult } from "@/lib/types/gis";
 
 /** California bounding box: minLng, minLat, maxLng, maxLat. */
 const CALIFORNIA_BBOX: [number, number, number, number] = [
   -124.482003, 32.528832, -114.131211, 42.009518,
 ];
-
-/** Bias autocomplete toward the Bay Area so SF-area typing stays useful. */
-const SF_PROXIMITY: [number, number] = [-122.4194, 37.7749];
 
 interface MapboxContextItem {
   id: string;
@@ -68,7 +65,10 @@ export function addressPartsFromMapboxFeature(
     MapboxAddressFeature,
     "address" | "text" | "place_name" | "context"
   >,
-): Pick<GeocodeResult, "streetLine" | "place" | "region" | "postcode"> {
+): Pick<
+  GeocodeResult,
+  "streetLine" | "place" | "county" | "region" | "postcode"
+> {
   const house = feature.address?.trim() ?? "";
   const street = feature.text?.trim() ?? "";
   const streetLine =
@@ -79,6 +79,7 @@ export function addressPartsFromMapboxFeature(
   return {
     streetLine,
     place: contextText(feature.context, "place"),
+    county: contextText(feature.context, "district"),
     region: contextRegion(feature.context),
     postcode: contextText(feature.context, "postcode"),
   };
@@ -101,17 +102,24 @@ export class MapboxUpstreamError extends Error {
   }
 }
 
-let geocodingClient: ReturnType<typeof mbxGeocoding> | null = null;
-
-function getGeocodingClient(): ReturnType<typeof mbxGeocoding> {
-  const accessToken = env.MAPBOX_ACCESS_TOKEN?.trim();
-  if (!accessToken) {
-    throw new MapboxConfigError();
-  }
-  if (!geocodingClient) {
-    geocodingClient = mbxGeocoding({ accessToken });
-  }
-  return geocodingClient;
+/**
+ * Build the Geocoding v5 forward-geocode URL. Direct fetch (not the Mapbox
+ * SDK) so we can send a Referer header — URL-restricted public tokens are
+ * rejected with 403 on referer-less server-side requests otherwise.
+ *
+ * Statewide CA only: bbox + country=US; no SF proximity bias.
+ */
+function buildForwardGeocodeUrl(query: string, accessToken: string): string {
+  const url = new URL(
+    `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json`,
+  );
+  url.searchParams.set("access_token", accessToken);
+  url.searchParams.set("country", "US");
+  url.searchParams.set("types", "address");
+  url.searchParams.set("bbox", CALIFORNIA_BBOX.join(","));
+  url.searchParams.set("limit", "5");
+  url.searchParams.set("autocomplete", "true");
+  return url.toString();
 }
 
 /** Bbox can leak into NV/OR/AZ; keep only features whose region is California. */
@@ -137,24 +145,6 @@ function toGeocodeResult(feature: MapboxAddressFeature): GeocodeResult | null {
   };
 }
 
-function toUpstreamError(err: unknown): MapboxUpstreamError {
-  if (err instanceof MapboxConfigError) {
-    throw err;
-  }
-  const statusCode =
-    err && typeof err === "object" && "statusCode" in err
-      ? Number((err as { statusCode?: number }).statusCode)
-      : undefined;
-  if (
-    typeof statusCode === "number" &&
-    Number.isFinite(statusCode) &&
-    statusCode >= 400
-  ) {
-    return new MapboxUpstreamError(502);
-  }
-  return new MapboxUpstreamError(503);
-}
-
 async function forwardGeocodeAddresses(
   query: string,
 ): Promise<GeocodeResult[]> {
@@ -163,31 +153,41 @@ async function forwardGeocodeAddresses(
     return [];
   }
 
-  try {
-    const response = await getGeocodingClient()
-      .forwardGeocode({
-        query: trimmed,
-        countries: ["US"],
-        types: ["address"],
-        bbox: CALIFORNIA_BBOX,
-        limit: 5,
-        autocomplete: true,
-        proximity: SF_PROXIMITY,
-      })
-      .send();
-
-    return (response.body.features as MapboxAddressFeature[])
-      .filter(isCaliforniaAddress)
-      .map(toGeocodeResult)
-      .filter((result): result is GeocodeResult => result !== null);
-  } catch (err) {
-    throw toUpstreamError(err);
+  const accessToken = env.MAPBOX_ACCESS_TOKEN?.trim();
+  if (!accessToken) {
+    throw new MapboxConfigError();
   }
+
+  let response: Response;
+  try {
+    response = await fetch(buildForwardGeocodeUrl(trimmed, accessToken), {
+      headers: mapboxRequestHeaders({ Accept: "application/json" }),
+      cache: "no-store",
+    });
+  } catch {
+    throw new MapboxUpstreamError(503);
+  }
+
+  if (!response.ok) {
+    throw new MapboxUpstreamError(response.status >= 500 ? 503 : 502);
+  }
+
+  let body: { features?: MapboxAddressFeature[] };
+  try {
+    body = (await response.json()) as { features?: MapboxAddressFeature[] };
+  } catch {
+    throw new MapboxUpstreamError(502);
+  }
+
+  return (body.features ?? [])
+    .filter(isCaliforniaAddress)
+    .map(toGeocodeResult)
+    .filter((result): result is GeocodeResult => result !== null);
 }
 
 /**
  * CA-only address geocoding. Does not implement `getParcel` — zoning stays
- * on the mock geocoder.
+ * on the zoning lookup facade.
  */
 export const mapboxGeocoder = {
   async searchSuggestions(query: string): Promise<GeocodeResult[]> {

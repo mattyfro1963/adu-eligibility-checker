@@ -3,6 +3,8 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { composeResultsBriefing } from "@/lib/regulations/compose-briefing";
 import { REGULATIONS_AGENT } from "@/lib/regulations/agent";
+import { composeLocationRequirements } from "@/lib/regulations/location-requirements";
+import { resolveJurisdictionGuide } from "@/lib/content/resolve-jurisdiction";
 import { CA_PROFILE } from "@/lib/regulations/states/ca";
 import {
   getStateProfile,
@@ -31,6 +33,7 @@ const sfGeocode: GeocodeResult = {
   formattedAddress: "123 Main St, San Francisco, CA 94117",
   streetLine: "123 Main St",
   place: "San Francisco",
+  county: "San Francisco",
   region: "CA",
   postcode: "94117",
   lat: 37.74,
@@ -70,8 +73,73 @@ describe("regulations registry", () => {
   });
 });
 
+describe("resolveJurisdictionGuide", () => {
+  it("Oakland → Alameda County + Oakland city notes", () => {
+    const resolved = resolveJurisdictionGuide("Oakland", "Alameda");
+    expect(resolved.county?.name).toBe("Alameda County");
+    expect(resolved.city?.name).toBe("Oakland");
+    expect(resolved.countyLabel).toBe("Alameda County");
+  });
+
+  it("South San Francisco ≠ San Francisco", () => {
+    const resolved = resolveJurisdictionGuide(
+      "South San Francisco",
+      "San Mateo",
+    );
+    expect(resolved.county?.name).not.toBe("San Francisco");
+    expect(resolved.city).toBeNull();
+  });
+
+  it("San Francisco County normalizes to San Francisco guide", () => {
+    const resolved = resolveJurisdictionGuide(
+      "San Francisco",
+      "San Francisco County",
+    );
+    expect(resolved.county?.name).toBe("San Francisco");
+  });
+
+  it("rural county fallback matches COUNTY_GUIDES by county name", () => {
+    const resolved = resolveJurisdictionGuide("", "Humboldt County");
+    expect(resolved.county?.name).toBe("Humboldt County");
+    expect(resolved.city).toBeNull();
+  });
+});
+
+describe("composeLocationRequirements", () => {
+  it("always non-empty for CA geocodes", () => {
+    const reqs = composeLocationRequirements({
+      geocode: sfGeocode,
+      report: null,
+    });
+    expect(reqs.length).toBeGreaterThan(0);
+    expect(reqs.some((r) => r.jurisdictionLabel === "California")).toBe(true);
+    expect(
+      reqs.some(
+        (r) => r.id.startsWith("county-") || r.id === "county-fallback",
+      ),
+    ).toBe(true);
+  });
+
+  it("includes Oakland city requirements when place is Oakland", () => {
+    const reqs = composeLocationRequirements({
+      geocode: {
+        ...sfGeocode,
+        place: "Oakland",
+        county: "Alameda",
+        formattedAddress: "100 Broadway, Oakland, CA",
+      },
+      report: null,
+    });
+    expect(
+      reqs.some(
+        (r) => /Oakland/i.test(r.title) || r.jurisdictionLabel === "Oakland",
+      ),
+    ).toBe(true);
+  });
+});
+
 describe("composeResultsBriefing", () => {
-  it("SF pilot report → SF checklist, outline, receipt with mapblklot null and California lot phrasing", () => {
+  it("lot zoning report → CA checklist, outline, receipt with lot_zoning scope", () => {
     const report = evaluateEligibility(mockProperties["addr-r1-clean"]!);
     const briefing = composeResultsBriefing({
       geocode: sfGeocode,
@@ -85,16 +153,17 @@ describe("composeResultsBriefing", () => {
     expect(briefing.receipt.disclaimer).toMatch(
       /Authored by the doihave\.space Regulations Expert/,
     );
-    expect(briefing.receipt.analysisScope).toBe("sf_pilot_lot");
+    expect(briefing.receipt.analysisScope).toBe("lot_zoning");
     expect(briefing.receipt.mapblklot).toBeNull();
     expect(briefing.checklist.length).toBeGreaterThan(0);
-    expect(briefing.checklist[0]?.id).toBe("sf-use");
+    expect(briefing.checklist[0]?.id).toBe("ca-use");
     expect(briefing.outline.some((s) => s.id === "use-of-land")).toBe(true);
     expect(briefing.summary.length).toBeGreaterThanOrEqual(3);
     expect(
       briefing.summary.some((c) => c.text.startsWith("On this California lot")),
     ).toBe(true);
     expect(briefing.guideLinks.length).toBe(3);
+    expect(briefing.requirements.length).toBeGreaterThan(0);
     for (const claim of briefing.summary) {
       assertClaimCited(claim);
     }
@@ -103,66 +172,47 @@ describe("composeResultsBriefing", () => {
     }
   });
 
-  it("CA outside SF (no report) → statewide checklist and context receipt", () => {
+  it("CA outside lot coverage → jurisdiction_context and requirements", () => {
     const briefing = composeResultsBriefing({
       geocode: {
         ...sfGeocode,
         place: "Oakland",
+        county: "Alameda",
         formattedAddress: "100 Broadway, Oakland, CA",
       },
       report: null,
-      zoningError: "Location is outside California pilot zoning coverage.",
+      zoningError: null,
     });
 
     expect(briefing.isCalifornia).toBe(true);
-    expect(briefing.receipt.analysisScope).toBe("statewide_context_only");
+    expect(briefing.receipt.analysisScope).toBe("jurisdiction_context");
     expect(briefing.checklist[0]?.id).toBe("ca-use");
-    expect(briefing.summary.some((c) => /California pilot/i.test(c.text))).toBe(
-      true,
-    );
+    expect(briefing.guideLinks).toEqual([]);
+    expect(briefing.requirements.length).toBeGreaterThan(0);
+    expect(
+      briefing.summary.some((c) =>
+        /not available for this coordinate/i.test(c.text),
+      ),
+    ).toBe(true);
   });
 
-  it("South San Francisco (no report) → statewide checklist, not SF PIM path", () => {
+  it("South San Francisco (no report) → CA checklist, not SF guides", () => {
     const briefing = composeResultsBriefing({
       geocode: {
         ...sfGeocode,
         place: "South San Francisco",
+        county: "San Mateo",
         formattedAddress: "100 El Camino Real, South San Francisco, CA",
       },
       report: null,
-      zoningError: "Location is outside California pilot zoning coverage.",
     });
-
-    // #region agent log
-    fetch("http://127.0.0.1:7651/ingest/cf59ba69-da0c-4d71-88d8-e7a564abec5e", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Debug-Session-Id": "082505",
-      },
-      body: JSON.stringify({
-        sessionId: "082505",
-        runId: "post-fix",
-        hypothesisId: "A",
-        location: "regulations-briefing.test.ts:South San Francisco",
-        message: "South SF checklist gate",
-        data: {
-          place: "South San Francisco",
-          checklistFirstId: briefing.checklist[0]?.id ?? null,
-          hasSfChecklistItems: briefing.checklist.some((item) =>
-            item.id.startsWith("sf-"),
-          ),
-        },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
 
     expect(briefing.isCalifornia).toBe(true);
     expect(briefing.checklist[0]?.id).toBe("ca-use");
     expect(briefing.checklist.some((item) => item.id.startsWith("sf-"))).toBe(
       false,
     );
+    expect(briefing.guideLinks).toEqual([]);
   });
 
   it("unpublished state → only not-published notice, no CA/SF summary claims", () => {
@@ -170,43 +220,17 @@ describe("composeResultsBriefing", () => {
       geocode: {
         ...sfGeocode,
         place: "Austin",
+        county: "Travis",
         region: "TX",
         formattedAddress: "100 Congress Ave, Austin, TX",
       },
       report: null,
     });
 
-    // #region agent log
-    const summaryJoined = briefing.summary.map((c) => c.text).join(" | ");
-    fetch("http://127.0.0.1:7651/ingest/cf59ba69-da0c-4d71-88d8-e7a564abec5e", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Debug-Session-Id": "082505",
-      },
-      body: JSON.stringify({
-        sessionId: "082505",
-        runId: "post-fix",
-        hypothesisId: "C",
-        location: "regulations-briefing.test.ts:unpublished",
-        message: "unpublished summary gate",
-        data: {
-          place: "Austin",
-          region: "TX",
-          isCalifornia: briefing.isCalifornia,
-          summaryLen: briefing.summary.length,
-          summaryHasCaLot: /California (lot|pilot)/i.test(summaryJoined),
-          summaryHasSfAgencies: /SF Planning|DBI/i.test(summaryJoined),
-          summaryHasUnpublished: /not published/i.test(summaryJoined),
-        },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
-
     expect(briefing.isCalifornia).toBe(false);
     expect(briefing.checklist).toEqual([]);
     expect(briefing.outline).toEqual([]);
+    expect(briefing.requirements).toEqual([]);
     expect(briefing.summary).toHaveLength(1);
     expect(briefing.summary[0]?.text).toMatch(/not published/i);
     expect(
@@ -248,7 +272,7 @@ describe("ADU topic coverage and legal sources", () => {
     );
   });
 
-  it("receipt sources include Civil Code § 4751 for both SF pilot and statewide context", () => {
+  it("receipt sources include Civil Code § 4751 for lot zoning and jurisdiction context", () => {
     const sfSources = SF_SOURCE_CATALOG;
     expect(
       sfSources.some((s) => s.source.href.includes("sectionNum=4751")),
@@ -269,6 +293,7 @@ describe("ADU topic coverage and legal sources", () => {
       geocode: {
         ...sfGeocode,
         place: "Sacramento",
+        county: "Sacramento",
         formattedAddress: "1000 I St, Sacramento, CA",
       },
       report: null,
@@ -291,6 +316,7 @@ describe("ADU topic coverage and legal sources", () => {
       "states/ca.ts",
       "states/registry.ts",
       "types.ts",
+      "location-requirements.ts",
     ];
     for (const rel of files) {
       const src = readFileSync(path.join(root, rel), "utf8");
@@ -299,14 +325,15 @@ describe("ADU topic coverage and legal sources", () => {
   });
 });
 
-describe("zero network in regulations / pilot adapters", () => {
-  it("regulations and pilot-zoning modules do not call fetch on gov hosts", () => {
+describe("zero network in regulations / zoning disk adapters", () => {
+  it("regulations and sf-datasf modules do not call fetch on gov hosts", () => {
     const root = path.join(process.cwd(), "src/lib");
     const files = [
       "regulations/compose-briefing.ts",
       "regulations/sources.ts",
       "regulations/sf-source-catalog.ts",
       "regulations/states/ca.ts",
+      "adapters/sf-datasf-zoning.ts",
       "adapters/pilot-zoning.ts",
     ];
     for (const rel of files) {
@@ -348,26 +375,28 @@ describe("California visitor-facing branding", () => {
       path.join(componentsRoot, "SiteHeader/SiteHeader.tsx"),
       "utf8",
     );
-    expect(header).toMatch(/CA SYSTEM ACTIVE/);
+    expect(header).toMatch(/Eligibility Check/);
 
     const search = readFileSync(
       path.join(componentsRoot, "AddressSearch/AddressSearch.tsx"),
       "utf8",
     );
     expect(search).toMatch(/Enter a California address/);
+    expect(search).toMatch(/All CA counties/);
 
     const results = readFileSync(
       path.join(componentsRoot, "ResultsCard/ResultsCard.tsx"),
       "utf8",
     );
     expect(results).toMatch(/California application checklist/);
+    expect(results).toMatch(/JurisdictionRequirements/);
 
     const receipt = readFileSync(
       path.join(componentsRoot, "ResultsCard/SearchReceipt.tsx"),
       "utf8",
     );
     expect(receipt).toMatch(/California lot analysis \(local zoning data\)/);
-    expect(receipt).toMatch(/Statewide context only/);
+    expect(receipt).toMatch(/Jurisdiction context/);
     expect(receipt).toMatch(/Author/);
 
     const briefingSection = readFileSync(
@@ -379,13 +408,10 @@ describe("California visitor-facing branding", () => {
 
   it("uses responsive padding, heights, and 44px touch targets on key surfaces", () => {
     const checks: Array<[string, RegExp[]]> = [
-      [
-        "SiteHeader/SiteHeader.tsx",
-        [/\bpx-4\b/, /sm:px-6/, /\bh-16\b/, /sm:flex/],
-      ],
+      ["SiteHeader/SiteHeader.tsx", [/\bpx-4\b/, /sm:px-6/, /min-h-\[44px\]/]],
       [
         "AddressSearch/AddressSearch.tsx",
-        [/text-3xl/, /sm:text-4xl/, /\bh-16\b/, /min-h-\[44px\]/],
+        [/text-4xl/, /\bh-14\b/, /min-h-\[44px\]/],
       ],
       [
         "ResultsCard/ResultsCard.tsx",
@@ -417,7 +443,7 @@ describe("California visitor-facing branding", () => {
       ],
       [
         "SiteFooter/SiteFooter.tsx",
-        [/\bpx-4\b/, /sm:px-6/, /py-8/, /sm:py-10/, /min-h-\[44px\]/],
+        [/\bpx-4\b/, /sm:px-6/, /py-8/, /min-h-\[44px\]/],
       ],
     ];
 

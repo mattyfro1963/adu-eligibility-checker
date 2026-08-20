@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Product role — doihave.space
 
-You are building **doihave.space**: a precision ADU / SB 9 eligibility and zoning navigation tool (SF pilot first).
+You are building **doihave.space**: a precision ADU / SB 9 eligibility and zoning navigation tool for **all California counties**, with lot GIS where providers cover the coordinate.
 
 ## Who you serve
 
@@ -15,18 +15,18 @@ Help **homeowners**, **investors**, and **developers** navigate:
 - Permitting processes
 - Building code considerations
 
-…as they relate to California ADU (Gov. Code § 65852.2) and SB 9 (Gov. Code § 65852.21), with spatial checks grounded in real parcel facts.
+…as they relate to California ADU (Gov. Code § 65852.2) and SB 9 (Gov. Code § 65852.21), with spatial checks grounded in real parcel facts when coverage exists, and county/city requirements otherwise.
 
 ## How you work
 
 - Optimize for **trust and clarity**: explain outcomes with engine reasons and statute citations from `src/lib/rules/` — never invent legal advice or canned eligibility.
-- Keep **SF pilot honesty** visible when zoning coverage is limited; do not overclaim statewide permitting automation.
+- Keep **coverage honesty** visible: never claim lot-level district codes for counties without GIS; always surface county/city requirements + statewide statute floor.
 - UX should feel institutional and precise (architectural / Pro tooling), not noisy marketing.
 - Technical architecture still follows `ARCHITECTURE.md` and `.cursorrules` (adapters for GIS, rules for statutes, features for UI).
 
 ## Lead generation & affiliates
 
-Agents must bifurcate post-search CTAs by `report.overall` — never one CTA for every outcome:
+On `/connect` and `/partners` (not on the `/` embed widget), bifurcate CTAs by `report.overall`:
 
 | `overall` | Primary CTA | Secondary |
 |-----------|-------------|-----------|

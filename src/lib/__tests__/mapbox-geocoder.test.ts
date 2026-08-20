@@ -52,12 +52,14 @@ describe("addressPartsFromMapboxFeature", () => {
         context: [
           { id: "postcode.1", text: "94105" },
           { id: "place.1", text: "San Francisco" },
+          { id: "district.1", text: "San Francisco" },
           { id: "region.1", text: "California", short_code: "US-CA" },
         ],
       }),
     ).toEqual({
       streetLine: "123 Main St",
       place: "San Francisco",
+      county: "San Francisco",
       region: "CA",
       postcode: "94105",
     });
@@ -72,6 +74,7 @@ describe("addressPartsFromMapboxFeature", () => {
     ).toEqual({
       streetLine: "1 Market St",
       place: "",
+      county: "",
       region: "",
       postcode: "",
     });
@@ -85,6 +88,7 @@ describe("addressPartsFromFormattedAddress", () => {
     ).toEqual({
       streetLine: "123 Main St",
       place: "San Francisco",
+      county: "San Francisco",
       region: "CA",
       postcode: "",
     });
@@ -96,6 +100,7 @@ describe("addressPartsFromFormattedAddress", () => {
     ).toEqual({
       streetLine: "123 Main St",
       place: "San Francisco",
+      county: "San Francisco",
       region: "CA",
       postcode: "94105",
     });

@@ -44,8 +44,8 @@ export function ContractorMatchGrid({
 
   if (matches.length === 0) {
     return (
-      <section className="rounded-[1.5rem] border border-slate-200/80 bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] sm:rounded-[2rem] sm:p-8">
-        <p className="text-sm text-slate-600">
+      <section className="border border-border bg-card p-6 sm:p-8">
+        <p className="text-sm text-muted-foreground">
           No mock contractors matched this structure nearby. Try a different
           structure choice or address.
         </p>
@@ -56,14 +56,14 @@ export function ContractorMatchGrid({
   return (
     <section className="space-y-4" aria-label="Matched contractors">
       <div>
-        <p className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+        <p className="text-[10px] font-normal tracking-widest text-muted-foreground uppercase">
           Local directory
         </p>
-        <h2 className="mt-1 text-lg font-semibold tracking-tight text-slate-900">
+        <h2 className="mt-1 text-lg font-normal tracking-tight text-foreground">
           {matches.length} contractor{matches.length === 1 ? "" : "s"} near your
           address
         </h2>
-        <p className="mt-1 text-sm text-slate-600">
+        <p className="mt-1 text-sm text-muted-foreground">
           Mock Bay Area directory for lead routing — confirm licensing and scope
           directly with each builder.
         </p>
@@ -82,20 +82,20 @@ export function ContractorMatchGrid({
           return (
             <li
               key={contractor.id}
-              className="flex flex-col rounded-[1.5rem] border border-slate-200/80 bg-white p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
+              className="flex flex-col border border-border bg-card p-5"
             >
               <div className="mb-3 flex items-start justify-between gap-2">
-                <h3 className="text-base font-semibold tracking-tight text-slate-900">
+                <h3 className="text-base font-normal tracking-tight text-foreground">
                   {contractor.name}
                 </h3>
-                <span className="shrink-0 rounded-md bg-slate-100 px-2 py-0.5 font-mono text-[10px] font-semibold tracking-wide text-slate-600 uppercase">
+                <span className="shrink-0 rounded-md bg-muted px-2 py-0.5 font-mono text-[10px] font-normal tracking-wide text-muted-foreground uppercase">
                   {contractor.distanceMiles.toFixed(1)} mi
                 </span>
               </div>
-              <p className="mb-3 flex-1 text-sm leading-relaxed text-slate-600">
+              <p className="mb-3 flex-1 text-sm leading-relaxed text-muted-foreground">
                 {contractor.blurb}
               </p>
-              <p className="mb-2 flex items-center gap-1.5 text-xs text-slate-500">
+              <p className="mb-2 flex items-center gap-1.5 text-xs text-muted-foreground">
                 <MapPin size={12} aria-hidden="true" />
                 {contractor.serviceCities.slice(0, 3).join(" · ")}
               </p>
@@ -103,7 +103,7 @@ export function ContractorMatchGrid({
                 {contractor.specialties.map((s) => (
                   <span
                     key={s}
-                    className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-600"
+                    className="rounded-md border border-border bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
                   >
                     {specialtyLabel(s)}
                   </span>
@@ -114,7 +114,7 @@ export function ContractorMatchGrid({
                   type="button"
                   disabled={pending || quoted}
                   onClick={() => void handleQuote(contractor)}
-                  className="h-10 w-full rounded-xl"
+                  className="h-10 w-full rounded-[10px]"
                   aria-label={`Request direct quote from ${contractor.name}`}
                 >
                   {quoted ? (
@@ -134,7 +134,7 @@ export function ContractorMatchGrid({
                     href={contractor.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex min-h-[40px] items-center justify-center gap-1.5 text-xs font-medium text-slate-500 transition-colors hover:text-slate-900"
+                    className="inline-flex min-h-[40px] items-center justify-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
                   >
                     Website
                     <ExternalLink size={12} aria-hidden="true" />

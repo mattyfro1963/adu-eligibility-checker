@@ -3,14 +3,15 @@
 import { useCallback, useRef, useState } from "react";
 import { AddressSearch } from "@/components/features/AddressSearch/AddressSearch";
 import { AnalysisInterstitial } from "@/components/features/AnalysisInterstitial/AnalysisInterstitial";
-import { GetQuotesModal } from "@/components/features/GetQuotesModal/GetQuotesModal";
-import { LandingHeroMedia } from "@/components/features/LandingHeroMedia/LandingHeroMedia";
-import { LeadFallbackForm } from "@/components/features/LeadFallbackForm/LeadFallbackForm";
-import { PartnerOffers } from "@/components/features/PartnerOffers/PartnerOffers";
 import { ResultsCard } from "@/components/features/ResultsCard/ResultsCard";
-import { ValueProps } from "@/components/features/ValueProps/ValueProps";
 import type { GeocodeResult } from "@/lib/types/gis";
 import type { ZoningReport } from "@/lib/types/zoning";
+
+type ZoningApiSuccess = {
+  report: ZoningReport | null;
+  coverage: "lot" | "none";
+  provider?: string | null;
+};
 
 function buildConnectHref(
   result: GeocodeResult,
@@ -21,10 +22,36 @@ function buildConnectHref(
   url.searchParams.set("lat", String(result.lat));
   url.searchParams.set("lng", String(result.lng));
   if (result.place) url.searchParams.set("place", result.place);
+  if (result.county) url.searchParams.set("county", result.county);
   if (result.region) url.searchParams.set("region", result.region);
   if (result.postcode) url.searchParams.set("postcode", result.postcode);
   if (overall) url.searchParams.set("status", overall);
   return `${url.pathname}?${url.searchParams.toString()}`;
+}
+
+function parseZoningPayload(data: unknown): ZoningApiSuccess | null {
+  if (!data || typeof data !== "object") return null;
+
+  // Phase 2 envelope: { report, coverage }
+  if ("coverage" in data) {
+    const coverage = (data as { coverage?: unknown }).coverage;
+    if (coverage !== "lot" && coverage !== "none") return null;
+    const report = (data as { report?: unknown }).report;
+    if (report === null) {
+      return { report: null, coverage };
+    }
+    if (report && typeof report === "object" && "overall" in report) {
+      return { report: report as ZoningReport, coverage };
+    }
+    return null;
+  }
+
+  // Legacy bare ZoningReport (overall present, no coverage wrapper).
+  if ("overall" in data && "zoning" in data) {
+    return { report: data as ZoningReport, coverage: "lot" };
+  }
+
+  return null;
 }
 
 export default function HomePage() {
@@ -34,13 +61,10 @@ export default function HomePage() {
   const [report, setReport] = useState<ZoningReport | null>(null);
   const [isZoningLoading, setIsZoningLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [quotesOpen, setQuotesOpen] = useState(false);
-  const [searchId, setSearchId] = useState<string | null>(null);
   const zoningAbortRef = useRef<AbortController | null>(null);
 
   const handleResolved = useCallback(async (result: GeocodeResult) => {
     setGeocodeResult(result);
-    setQuotesOpen(false);
     zoningAbortRef.current?.abort();
     const controller = new AbortController();
     zoningAbortRef.current = controller;
@@ -48,15 +72,15 @@ export default function HomePage() {
     setIsZoningLoading(true);
     setError(null);
     setReport(null);
-    setSearchId(null);
 
     try {
-      // Same-origin relative URL — avoids apex↔www redirect breaking fetch.
       const url = new URL("/api/zoning", window.location.origin);
       url.searchParams.set("lat", String(result.lat));
       url.searchParams.set("lng", String(result.lng));
+      url.searchParams.set("address", result.formattedAddress);
       const res = await fetch(url.toString(), { signal: controller.signal });
       if (!res.ok) {
+        // Uncovered counties return 200 + coverage:none; only transport/5xx here.
         const body: unknown = await res.json().catch(() => null);
         const message =
           body &&
@@ -67,12 +91,20 @@ export default function HomePage() {
             : "Failed to fetch zoning report";
         throw new Error(message);
       }
-      const data = (await res.json()) as ZoningReport;
-      setReport({
-        ...data,
-        formattedAddress: result.formattedAddress,
-      });
-      setSearchId(crypto.randomUUID());
+      const data: unknown = await res.json();
+      const parsed = parseZoningPayload(data);
+      if (!parsed) {
+        throw new Error("Invalid zoning response");
+      }
+      // coverage:none is expected for most CA — keep report null, no rose error.
+      if (parsed.report) {
+        setReport({
+          ...parsed.report,
+          formattedAddress: result.formattedAddress,
+        });
+      } else {
+        setReport(null);
+      }
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") {
         return;
@@ -97,89 +129,41 @@ export default function HomePage() {
     geocodeResult != null
       ? buildConnectHref(geocodeResult, report?.overall ?? null)
       : "/connect";
-
-  const showLandingHero = !geocodeResult;
+  const compact = Boolean(geocodeResult);
 
   return (
-    <main className="mx-auto w-full max-w-6xl flex-1 space-y-8 px-4 py-8 sm:space-y-10 sm:px-6 sm:py-12 md:py-16">
-      {showLandingHero ? (
-        <div className="grid items-stretch gap-8 lg:grid-cols-2 lg:gap-10 xl:gap-12">
-          <div className="flex flex-col justify-center">
-            <AddressSearch
-              onResolved={handleResolved}
-              onError={handleSearchError}
-              error={error}
-            >
-              <ValueProps />
-            </AddressSearch>
-          </div>
-          <div className="lg:min-h-[560px]">
-            <LandingHeroMedia />
-          </div>
-        </div>
-      ) : (
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="mx-auto w-full max-w-editorial flex-1 px-4 py-8 sm:px-6 sm:py-10"
+    >
+      <div className="search-enter space-y-6 sm:space-y-8">
         <AddressSearch
           onResolved={handleResolved}
           onError={handleSearchError}
           error={error}
-          compact
+          compact={compact}
+          showDemoScenarios={false}
         />
-      )}
 
-      {showInterstitial && geocodeResult ? (
-        <AnalysisInterstitial
-          lat={geocodeResult.lat}
-          lng={geocodeResult.lng}
-          address={geocodeResult.formattedAddress}
-        />
-      ) : null}
+        {showInterstitial && geocodeResult ? (
+          <AnalysisInterstitial
+            lat={geocodeResult.lat}
+            lng={geocodeResult.lng}
+            address={geocodeResult.formattedAddress}
+          />
+        ) : null}
 
-      {showDashboard ? (
-        <ResultsCard
-          report={report}
-          geocodeResult={geocodeResult}
-          isLoading={false}
-          zoningError={error}
-          connectHref={connectHref}
-          onGetQuotes={() => setQuotesOpen(true)}
-        />
-      ) : null}
-
-      {report?.overall === "warning" && geocodeResult && !isZoningLoading ? (
-        <LeadFallbackForm
-          variant="warning"
-          address={geocodeResult.formattedAddress}
-          lat={geocodeResult.lat}
-          lng={geocodeResult.lng}
-          overallStatus="warning"
-        />
-      ) : null}
-
-      {report?.overall === "restricted" && geocodeResult && !isZoningLoading ? (
-        <LeadFallbackForm
-          address={geocodeResult.formattedAddress}
-          lat={geocodeResult.lat}
-          lng={geocodeResult.lng}
-          overallStatus="restricted"
-        />
-      ) : null}
-
-      {report && searchId && !isZoningLoading ? (
-        <PartnerOffers
-          intent={report.overall}
-          searchId={searchId}
-          compact={report.overall !== "eligible"}
-        />
-      ) : null}
-
-      {geocodeResult ? (
-        <GetQuotesModal
-          open={quotesOpen}
-          onOpenChange={setQuotesOpen}
-          geocodeResult={geocodeResult}
-          overallStatus={report?.overall ?? null}
-        />
-      ) : null}
+        {showDashboard ? (
+          <ResultsCard
+            report={report}
+            geocodeResult={geocodeResult}
+            isLoading={false}
+            zoningError={error}
+            connectHref={connectHref}
+          />
+        ) : null}
+      </div>
     </main>
   );
 }

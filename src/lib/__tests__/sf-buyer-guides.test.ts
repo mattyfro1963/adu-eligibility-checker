@@ -38,6 +38,7 @@ const sfGeocode: GeocodeResult = {
   formattedAddress: "123 Main St, San Francisco, CA 94117",
   streetLine: "123 Main St",
   place: "San Francisco",
+  county: "San Francisco",
   region: "CA",
   postcode: "94117",
   lat: 37.74,
@@ -95,7 +96,7 @@ describe("SF buyer guides corpus", () => {
 });
 
 describe("composeResultsBriefing guideLinks", () => {
-  it("attaches SF catalog links on California briefings", () => {
+  it("attaches SF catalog links only for San Francisco place", () => {
     const report = evaluateEligibility(mockProperties["addr-r1-clean"]!);
     const briefing = composeResultsBriefing({
       geocode: sfGeocode,
@@ -107,11 +108,25 @@ describe("composeResultsBriefing guideLinks", () => {
     );
   });
 
+  it("omits SF guideLinks for non-SF California places", () => {
+    const briefing = composeResultsBriefing({
+      geocode: {
+        ...sfGeocode,
+        place: "Oakland",
+        county: "Alameda",
+        formattedAddress: "100 Broadway, Oakland, CA",
+      },
+      report: null,
+    });
+    expect(briefing.guideLinks).toEqual([]);
+  });
+
   it("omits guideLinks for unpublished states", () => {
     const briefing = composeResultsBriefing({
       geocode: {
         ...sfGeocode,
         place: "Austin",
+        county: "Travis",
         region: "TX",
         formattedAddress: "100 Congress Ave, Austin, TX",
       },
@@ -179,10 +194,10 @@ describe("affiliate catalog (eligible monetization data)", () => {
         "https://example.com/tumbleweed?ref=test",
       );
 
-      process.env[key] = "  #  ";
+      process.env[key] = " # ";
       expect(resolveAffiliateHref(key)).toBeNull();
 
-      process.env[key] = "   ";
+      process.env[key] = " ";
       expect(resolveAffiliateHref(key)).toBeNull();
 
       delete process.env[key];
@@ -197,24 +212,20 @@ describe("affiliate catalog (eligible monetization data)", () => {
 describe("monetization gating in UI sources", () => {
   const featuresRoot = path.join(process.cwd(), "src/components/features");
 
-  it("page bifurcates PartnerOffers by overall and hides lead on eligible", () => {
+  it("Connect page hosts partner/lead monetization — not the embed widget", () => {
     const page = readFileSync(
       path.join(process.cwd(), "src/app/page.tsx"),
       "utf8",
     );
-    expect(page).toMatch(/PartnerOffers/);
-    expect(page).toMatch(/intent=\{report\.overall\}/);
-    expect(page).toMatch(/searchId/);
-    expect(page).toMatch(/crypto\.randomUUID/);
-    expect(page).not.toMatch(
-      /overall === "eligible"[\s\S]{0,80}LeadFallbackForm/,
+    expect(page).not.toMatch(/PartnerOffers/);
+    expect(page).not.toMatch(/LeadFallbackForm/);
+    expect(page).toMatch(/coverage/);
+
+    const connect = readFileSync(
+      path.join(featuresRoot, "ConnectPage/ConnectPage.tsx"),
+      "utf8",
     );
-    expect(
-      readFileSync(
-        path.join(featuresRoot, "ResultsCard/ResultsCard.tsx"),
-        "utf8",
-      ),
-    ).not.toMatch(/EligibleNextSteps/);
+    expect(connect).toMatch(/ProjectLeadForm|ContractorMatchGrid/);
   });
 
   it("LeadFallbackForm includes budget + intent and restricted pivot copy", () => {
@@ -229,20 +240,6 @@ describe("monetization gating in UI sources", () => {
     expect(form).toMatch(/data-lead-form="restricted"/);
   });
 
-  it("page shows lead form for warning and restricted, not eligible", () => {
-    const page = readFileSync(
-      path.join(process.cwd(), "src/app/page.tsx"),
-      "utf8",
-    );
-    expect(page).toMatch(/overall === "restricted"/);
-    expect(page).toMatch(/overall === "warning"/);
-    expect(page).toMatch(/LeadFallbackForm/);
-    expect(page).toMatch(/variant="warning"/);
-    expect(page).not.toMatch(
-      /overall === "eligible"[\s\S]{0,80}LeadFallbackForm/,
-    );
-  });
-
   it("Parcel briefing chrome is retitled", () => {
     const briefing = readFileSync(
       path.join(featuresRoot, "ResultsCard/ResultsBriefing.tsx"),
@@ -252,17 +249,12 @@ describe("monetization gating in UI sources", () => {
     expect(briefing).not.toMatch(/Tiny-home briefing/);
   });
 
-  it("Guides appear in header and footer nav", () => {
-    const header = readFileSync(
-      path.join(featuresRoot, "SiteHeader/SiteHeader.tsx"),
+  it("Guides appear in site nav corpus", () => {
+    const nav = readFileSync(
+      path.join(featuresRoot, "../../lib/content/site-nav.ts"),
       "utf8",
     );
-    const footer = readFileSync(
-      path.join(featuresRoot, "SiteFooter/SiteFooter.tsx"),
-      "utf8",
-    );
-    expect(header).toMatch(/href: "\/guides"/);
-    expect(footer).toMatch(/href: "\/guides"/);
+    expect(nav).toMatch(/href: "\/guides"/);
   });
 });
 

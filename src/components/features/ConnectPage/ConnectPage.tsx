@@ -7,6 +7,11 @@ import { AddressSearch } from "@/components/features/AddressSearch/AddressSearch
 import { BuilderSignupPanel } from "@/components/features/BuilderSignupPanel/BuilderSignupPanel";
 import { ContractorMatchGrid } from "@/components/features/ContractorMatchGrid/ContractorMatchGrid";
 import {
+  PageHeader,
+  PageShell,
+} from "@/components/features/PageShell/PageShell";
+import { Button } from "@/components/ui/button";
+import {
   ProjectLeadForm,
   type ProjectLeadFormValues,
 } from "@/components/features/ProjectLeadForm/ProjectLeadForm";
@@ -37,6 +42,7 @@ function parsePrefill(searchParams: URLSearchParams): GeocodeResult | null {
     formattedAddress: address,
     streetLine: address,
     place: searchParams.get("place") ?? "",
+    county: searchParams.get("county") ?? "",
     region: searchParams.get("region") ?? "CA",
     postcode: searchParams.get("postcode") ?? "",
     lat,
@@ -105,12 +111,29 @@ export function ConnectPage() {
       const url = new URL("/api/zoning", window.location.origin);
       url.searchParams.set("lat", String(result.lat));
       url.searchParams.set("lng", String(result.lng));
+      url.searchParams.set("address", result.formattedAddress);
       const res = await fetch(url.toString());
       if (!res.ok) {
         return;
       }
-      const data = (await res.json()) as ZoningReport;
-      setManualStatus(data.overall);
+      const data: unknown = await res.json();
+      if (
+        data &&
+        typeof data === "object" &&
+        "coverage" in data &&
+        (data as { coverage: unknown }).coverage === "lot" &&
+        "report" in data &&
+        (data as { report: unknown }).report &&
+        typeof (data as { report: unknown }).report === "object" &&
+        "overall" in ((data as { report: object }).report as object)
+      ) {
+        setManualStatus((data as { report: ZoningReport }).report.overall);
+        return;
+      }
+      // Legacy bare report
+      if (data && typeof data === "object" && "overall" in data) {
+        setManualStatus((data as ZoningReport).overall);
+      }
     } catch {
       // Zoning is optional context for lead copy — ignore failures.
     }
@@ -234,48 +257,41 @@ export function ConnectPage() {
   );
 
   return (
-    <main className="mx-auto w-full max-w-6xl flex-1 space-y-8 px-4 py-8 sm:space-y-10 sm:px-6 sm:py-12 md:py-16">
-      <header className="space-y-3 border-b border-slate-200/80 pb-8">
-        <p className="text-xs font-semibold tracking-[0.2em] text-slate-400 uppercase">
-          Builder match · Lead routing
-        </p>
-        <h1 className="max-w-3xl text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
-          Connect with ADU and tiny-home builders
-        </h1>
-        <p className="max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
-          Share your project details after an address search. We compile nearby
-          mock contractors for quotes and route high-intent leads to partner
-          builders. Informational matching only — not a permit or marketplace
-          guarantee.
-        </p>
-      </header>
+    <PageShell spacing="compact">
+      <PageHeader
+        eyebrow="Builder match · Lead routing"
+        title="Connect with ADU and tiny-home builders"
+        description="Share your project details after an address search. We compile nearby mock contractors for quotes and route high-intent leads to partner builders. Informational matching only — not a permit or marketplace guarantee."
+      />
 
       {!geocodeResult ? (
         <AddressSearch
           onResolved={handleResolved}
           onError={handleSearchError}
-          showDemoScenarios
+          compact
         />
       ) : (
-        <div className="flex flex-wrap items-start justify-between gap-3 rounded-[1.25rem] border border-slate-200/80 bg-white px-4 py-3 shadow-sm sm:px-5">
+        <div className="flex flex-wrap items-start justify-between gap-3 rounded-[10px] border border-border bg-card px-4 py-3 shadow-editorial sm:px-5">
           <div className="flex min-w-0 items-start gap-3">
-            <div className="rounded-lg border border-slate-100 bg-slate-50 p-2">
+            <div className="rounded-lg border border-border bg-muted p-2">
               <MapPinned
-                className="h-4 w-4 text-slate-700"
+                className="h-4 w-4 text-foreground"
                 aria-hidden="true"
               />
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+              <p className="text-[10px] font-normal tracking-widest text-muted-foreground uppercase">
                 Project address
               </p>
-              <p className="break-words text-sm font-medium text-slate-900">
+              <p className="break-words text-sm font-medium text-foreground">
                 {geocodeResult.formattedAddress}
               </p>
             </div>
           </div>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="sm"
             onClick={() => {
               setClearedQuery(true);
               setManualResult(null);
@@ -284,17 +300,17 @@ export function ConnectPage() {
               setContact(null);
               setLastProject(null);
             }}
-            className="inline-flex min-h-[40px] items-center rounded-lg px-3 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
+            className="min-h-[40px] text-muted-foreground hover:text-foreground"
           >
             Change address
-          </button>
+          </Button>
         </div>
       )}
 
       {error ? (
         <div
           role="alert"
-          className="flex items-start gap-3 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-700 shadow-sm"
+          className="flex items-start gap-3 rounded-[10px] border border-rose-500/30 bg-rose-500/15 p-4 text-rose-400 shadow-editorial"
         >
           <AlertTriangle
             className="mt-0.5 shrink-0"
@@ -322,6 +338,6 @@ export function ConnectPage() {
       ) : null}
 
       <BuilderSignupPanel />
-    </main>
+    </PageShell>
   );
 }

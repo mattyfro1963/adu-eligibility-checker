@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as Sentry from "@sentry/nextjs";
-import { getPilotParcel } from "@/lib/adapters/pilot-zoning";
+import { lookupParcel } from "@/lib/adapters/zoning-lookup";
 import { logger } from "@/lib/logger";
 import { evaluateEligibility } from "@/lib/rules";
 import { zoningQuerySchema } from "@/lib/validations/api-schemas";
@@ -38,22 +38,25 @@ export async function GET(request: NextRequest) {
   await new Promise((resolve) => setTimeout(resolve, LOOKUP_LATENCY_MS));
 
   const { lat: latitude, lng: longitude } = parsed.data;
+  const address = request.nextUrl.searchParams.get("address")?.trim() ?? "";
 
   try {
-    const parcel = await getPilotParcel(latitude, longitude);
+    const { parcel, coverage, provider } = await lookupParcel(
+      latitude,
+      longitude,
+      address,
+    );
 
-    if (!parcel) {
-      log.warn(
-        { lat: latitude, lng: longitude, status: 404 },
-        "Parcel outside California pilot coverage",
+    if (!parcel || coverage === "none") {
+      log.info(
+        { lat: latitude, lng: longitude, coverage: "none", status: 200 },
+        "No lot zoning provider matched — jurisdiction context only",
       );
-      return NextResponse.json(
-        {
-          error:
-            "Location is outside current California pilot zoning coverage. Try an address within pilot coverage (e.g., San Francisco).",
-        },
-        { status: 404 },
-      );
+      return NextResponse.json({
+        report: null,
+        coverage: "none" as const,
+        provider: null,
+      });
     }
 
     const report = evaluateEligibility(parcel);
@@ -64,10 +67,16 @@ export async function GET(request: NextRequest) {
         overall: report.overall,
         aduStatus: report.adu.status,
         sb9Status: report.sb9.status,
+        coverage: "lot",
+        provider,
       },
       "Zoning lookup succeeded",
     );
-    return NextResponse.json(report);
+    return NextResponse.json({
+      report,
+      coverage: "lot" as const,
+      provider,
+    });
   } catch (err) {
     Sentry.captureException(err, { tags: { route: "zoning" } });
     const message = err instanceof Error ? err.message : "Unknown error";

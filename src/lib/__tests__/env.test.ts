@@ -22,7 +22,7 @@ describe("resolveMapboxAccessToken", () => {
   it("treats empty / whitespace primary as missing and uses Vite fallback", () => {
     expect(
       resolveMapboxAccessToken({
-        MAPBOX_ACCESS_TOKEN: "   ",
+        MAPBOX_ACCESS_TOKEN: " ",
         VITE_MAPBOX_ACCESS_TOKEN: "pk.vite",
       }),
     ).toBe("pk.vite");

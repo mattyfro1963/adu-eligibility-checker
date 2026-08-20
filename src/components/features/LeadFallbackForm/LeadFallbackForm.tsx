@@ -122,16 +122,16 @@ export function LeadFallbackForm({
 
   if (submitted) {
     return (
-      <section className="rounded-[1.5rem] border border-slate-200/80 bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] sm:rounded-[2rem] sm:p-8">
-        <p className="break-words text-slate-800">
+      <section className="border border-border bg-card p-6 sm:p-8">
+        <p className="break-words text-foreground">
           Thank you{name ? `, ${name}` : ""}! We&apos;ll review {address} and
           contact you at {email}.
         </p>
-        <p className="mt-3 text-sm text-slate-600">
+        <p className="mt-3 text-sm text-muted-foreground">
           Prefer builder matching now?{" "}
           <Link
             href={connectHref}
-            className="font-medium text-slate-800 underline-offset-2 hover:underline"
+            className="font-medium text-foreground underline-offset-2 hover:underline"
           >
             Open Connect
           </Link>
@@ -145,22 +145,22 @@ export function LeadFallbackForm({
     return (
       <section
         data-lead-form="warning"
-        className="rounded-[1.5rem] border border-amber-200/70 bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] sm:rounded-[2rem] sm:p-8"
+        className="border border-warning/30 bg-card p-6 sm:p-8"
       >
         <div className="mb-6 flex items-start gap-3">
-          <div className="rounded-lg border border-amber-100 bg-amber-50 p-2">
+          <div className="rounded-lg border border-amber-500/30 bg-amber-500/15 p-2">
             <Mail className="h-5 w-5 text-amber-600" aria-hidden="true" />
           </div>
           <div className="min-w-0 space-y-2">
-            <h2 className="text-lg font-semibold tracking-tight text-slate-900">
+            <h2 className="text-lg font-normal tracking-tight text-foreground">
               Specialist review recommended
             </h2>
-            <p className="text-sm font-medium break-words text-amber-900/80">
+            <p className="text-sm font-medium break-words text-muted-foreground">
               This parcel shows warnings in the diagnostics above. A specialist
               can help interpret overlays and permitting pathways — this form
               does not invent new statute.
             </p>
-            <p className="text-sm font-light break-words text-slate-600">
+            <p className="text-sm font-light break-words text-muted-foreground">
               Leave a name and email and we&apos;ll follow up. Optional product
               research links may appear below.
             </p>
@@ -180,7 +180,7 @@ export function LeadFallbackForm({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Your name"
-                className="h-11 rounded-xl border-slate-200 bg-[#FBFBFD]"
+                className="h-11 rounded-[10px] border-border bg-card"
                 aria-label="Full name for specialist review"
               />
             </div>
@@ -195,25 +195,25 @@ export function LeadFallbackForm({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your@email.com"
-                className="h-11 rounded-xl border-slate-200 bg-[#FBFBFD]"
+                className="h-11 rounded-[10px] border-border bg-card"
                 aria-label="Email for specialist review"
               />
             </div>
           </div>
 
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted-foreground">
               Or{" "}
               <Link
                 href={connectHref}
-                className="font-medium text-slate-700 underline-offset-2 hover:underline"
+                className="font-medium text-foreground underline-offset-2 hover:underline"
               >
                 continue to builder match on Connect
               </Link>
             </p>
             <Button
               type="submit"
-              className="h-11 min-h-[44px] w-full rounded-xl bg-amber-500 text-white shadow-md hover:bg-amber-600 sm:w-auto"
+              className="h-11 min-h-[44px] w-full shadow-editorial sm:w-auto"
             >
               Request specialist review
             </Button>
@@ -226,23 +226,23 @@ export function LeadFallbackForm({
   return (
     <section
       data-lead-form="restricted"
-      className="rounded-[1.5rem] border border-rose-200/60 bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] sm:rounded-[2rem] sm:p-8"
+      className="border border-restricted/30 bg-card p-6 sm:p-8"
     >
       <div className="mb-6 flex items-start gap-3">
-        <div className="rounded-lg border border-rose-100 bg-rose-50 p-2">
+        <div className="rounded-lg border border-rose-500/30 bg-rose-500/15 p-2">
           <Mail className="h-5 w-5 text-rose-600" aria-hidden="true" />
         </div>
         <div className="min-w-0 space-y-2">
-          <h2 className="text-lg font-semibold tracking-tight text-slate-900">
+          <h2 className="text-lg font-normal tracking-tight text-foreground">
             Restricted — expert compliance review
           </h2>
-          <p className="text-sm font-medium break-words text-rose-800">
+          <p className="text-sm font-medium break-words text-muted-foreground">
             Movable tiny homes / THOW placement is restricted on this parcel
             under the pilot overlays and applicable local rules. Review the
             diagnostics above for engine reasons — this form does not invent new
             statute.
           </p>
-          <p className="text-sm font-light break-words text-slate-600">
+          <p className="text-sm font-light break-words text-muted-foreground">
             You may still qualify for a permanent-foundation ADU pathway. Local
             compliance experts manually audit complex lots and route referrals
             through our review queue.
@@ -253,7 +253,7 @@ export function LeadFallbackForm({
       {error ? (
         <div
           role="alert"
-          className="mb-4 flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700"
+          className="mb-4 flex items-start gap-2 rounded-[10px] border border-rose-500/30 bg-rose-500/15 p-3 text-sm text-rose-400"
         >
           <AlertTriangle
             size={16}
@@ -277,7 +277,7 @@ export function LeadFallbackForm({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Your name"
-              className="h-11 rounded-xl border-slate-200 bg-[#FBFBFD]"
+              className="h-11 rounded-[10px] border-border bg-card"
               aria-label="Full name for expert review"
             />
           </div>
@@ -292,7 +292,7 @@ export function LeadFallbackForm({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
-              className="h-11 rounded-xl border-slate-200 bg-[#FBFBFD]"
+              className="h-11 rounded-[10px] border-border bg-card"
               aria-label="Email for expert review"
             />
           </div>
@@ -300,7 +300,10 @@ export function LeadFallbackForm({
 
         <div className="flex flex-col gap-3 sm:flex-row">
           <div className="flex-1 space-y-1.5">
-            <Label htmlFor="lead-intent" className="text-xs text-slate-500">
+            <Label
+              htmlFor="lead-intent"
+              className="text-xs text-muted-foreground"
+            >
               Intent
             </Label>
             <select
@@ -308,7 +311,7 @@ export function LeadFallbackForm({
               required
               value={intent}
               onChange={(e) => setIntent(e.target.value)}
-              className="h-11 w-full rounded-xl border border-slate-200 bg-[#FBFBFD] px-3 text-sm text-slate-900 outline-none focus-visible:ring-2 focus-visible:ring-rose-300"
+              className="h-11 w-full rounded-[10px] border border-border bg-card px-3 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="Project intent"
             >
               <option value="" disabled>
@@ -322,7 +325,10 @@ export function LeadFallbackForm({
             </select>
           </div>
           <div className="flex-1 space-y-1.5">
-            <Label htmlFor="lead-budget" className="text-xs text-slate-500">
+            <Label
+              htmlFor="lead-budget"
+              className="text-xs text-muted-foreground"
+            >
               Budget band
             </Label>
             <select
@@ -330,7 +336,7 @@ export function LeadFallbackForm({
               required
               value={budget}
               onChange={(e) => setBudget(e.target.value)}
-              className="h-11 w-full rounded-xl border border-slate-200 bg-[#FBFBFD] px-3 text-sm text-slate-900 outline-none focus-visible:ring-2 focus-visible:ring-rose-300"
+              className="h-11 w-full rounded-[10px] border border-border bg-card px-3 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="Budget band"
             >
               <option value="" disabled>
@@ -346,11 +352,11 @@ export function LeadFallbackForm({
         </div>
 
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-muted-foreground">
             Or{" "}
             <Link
               href={connectHref}
-              className="font-medium text-slate-700 underline-offset-2 hover:underline"
+              className="font-medium text-foreground underline-offset-2 hover:underline"
             >
               continue to builder match on Connect
             </Link>
@@ -358,7 +364,7 @@ export function LeadFallbackForm({
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="h-11 min-h-[44px] w-full rounded-xl bg-rose-600 text-white shadow-md hover:bg-rose-700 sm:w-auto"
+            className="h-11 min-h-[44px] w-full shadow-editorial sm:w-auto"
           >
             {isSubmitting ? "Submitting…" : "Request Review"}
           </Button>

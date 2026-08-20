@@ -7,9 +7,9 @@ import { cn } from "@/lib/utils";
 
 const STEPS = [
   "Locating address",
-  "Fetching parcel / zoning (DataSF PIP)",
-  "Evaluating ADU rules",
-  "Evaluating SB 9 rules",
+  "Resolving county requirements",
+  "Local zoning when available",
+  "Evaluating ADU / SB 9",
 ] as const;
 
 const STEP_MS = 450;
@@ -20,10 +20,6 @@ interface AnalysisInterstitialProps {
   address: string;
 }
 
-/**
- * Full-screen analysis overlay while zoning is in flight.
- * Checklist tracks the real pipeline — no invented overlay layers.
- */
 export function AnalysisInterstitial({
   lat,
   lng,
@@ -57,24 +53,22 @@ export function AnalysisInterstitial({
       aria-live="polite"
       aria-busy="true"
       aria-label="Analyzing parcel"
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-[#1D1D1F]"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-foreground/80"
     >
-      <div className="pointer-events-none absolute inset-0 opacity-35 saturate-0">
+      <div className="pointer-events-none absolute inset-0 opacity-25 saturate-0">
         <AddressMapPreview
           lat={lat}
           lng={lng}
           chrome={false}
-          className="min-h-full rounded-none border-0 bg-[#1D1D1F] shadow-none sm:min-h-full lg:min-h-full"
+          className="min-h-full rounded-none border-0 bg-foreground shadow-none sm:min-h-full lg:min-h-full"
         />
       </div>
       <div
-        className="relative z-10 w-[min(100%-2rem,400px)] rounded-xl border border-border bg-white p-6 shadow-registry"
+        className="relative z-10 w-[min(100%-2rem,400px)] rounded-card border border-border bg-card p-8 shadow-editorial"
         aria-label="Analysis progress"
       >
-        <p className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
-          Parcel analysis
-        </p>
-        <p className="mt-2 text-sm font-medium break-words text-foreground">
+        <p className="font-label text-muted-foreground">Parcel analysis</p>
+        <p className="font-heading mt-3 text-subheading break-words text-foreground">
           {address}
         </p>
         <ol className="mt-5 space-y-3">
@@ -86,9 +80,9 @@ export function AnalysisInterstitial({
                 <span
                   className={cn(
                     "flex size-6 shrink-0 items-center justify-center rounded-full border",
-                    done && "border-emerald-200 bg-emerald-50",
+                    done && "border-emerald-600/30 bg-emerald-500/15",
                     active && "border-primary bg-primary/10",
-                    !done && !active && "border-border bg-[#F5F5F7]",
+                    !done && !active && "border-border bg-muted",
                   )}
                   aria-hidden="true"
                 >
@@ -97,14 +91,14 @@ export function AnalysisInterstitial({
                   ) : active ? (
                     <Loader2 size={14} className="animate-spin text-primary" />
                   ) : (
-                    <span className="size-1.5 rounded-full bg-slate-300" />
+                    <span className="size-1.5 rounded-full bg-border" />
                   )}
                 </span>
                 <span
                   className={cn(
                     "text-sm",
                     done && "text-foreground",
-                    active && "animate-pulse font-medium text-primary",
+                    active && "font-medium text-primary",
                     !done && !active && "text-muted-foreground",
                   )}
                 >
@@ -115,8 +109,8 @@ export function AnalysisInterstitial({
           })}
         </ol>
         <p className="mt-5 text-xs text-muted-foreground">
-          Fire, historic, and coastal overlays are still stubbed false in this
-          SF zoning pilot.
+          Resolving county requirements → local zoning when available → ADU/SB
+          9. Overlay layers remain progressive where GIS is not yet loaded.
         </p>
       </div>
     </div>

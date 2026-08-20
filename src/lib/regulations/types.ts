@@ -4,6 +4,7 @@
  */
 
 import type { RegulationsAuthor } from "@/lib/regulations/agent";
+import type { LocationRequirement } from "@/lib/regulations/location-requirements";
 
 export type SourceRef = {
   label: string;
@@ -39,7 +40,8 @@ export type SearchReceipt = {
   region: string;
   /** SF assessor block/lot when a local parcel index resolved it. */
   mapblklot: string | null;
-  analysisScope: "sf_pilot_lot" | "statewide_context_only";
+  /** Lot GIS when a zoning provider matched; else county/city + statewide context. */
+  analysisScope: "lot_zoning" | "jurisdiction_context";
   corpusVersion: string;
   lastReviewed: string;
   author: RegulationsAuthor;
@@ -59,10 +61,12 @@ export type ResultsBriefing = {
   author: RegulationsAuthor;
   /** Use-first summary sentences for this search. */
   summary: CitedClaim[];
+  /** Jurisdiction-aware requirement list with tiny-home explanations. */
+  requirements: LocationRequirement[];
   checklist: ChecklistItem[];
   /** CA building-path outline; empty when not California. */
   outline: OutlineSection[];
-  /** SF buyer-guide deep links; empty when not California. */
+  /** SF buyer-guide deep links; only when place is San Francisco. */
   guideLinks: GuideLinkRef[];
   receipt: SearchReceipt;
 };

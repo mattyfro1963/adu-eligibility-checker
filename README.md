@@ -1,6 +1,6 @@
 # ADU Eligibility Checker
 
-Check California ADU (Gov. Code Chapter 13, §§ 66310–66342) and SB 9 (Gov. Code §§ 65852.21 / 66411.7) eligibility for San Francisco properties. Zoning comes from a local DataSF GeoJSON pilot (point-in-polygon), not a canned mock status map.
+Check California ADU (Gov. Code Chapter 13, §§ 66310–66342) and SB 9 (Gov. Code §§ 65852.21 / 66411.7) eligibility for **all California counties**. Every search returns jurisdiction-aware tiny-home requirements; lot-level zoning applies where a GIS provider covers the coordinate.
 
 ## Quick Start
 
@@ -22,7 +22,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | `npm run lint`       | ESLint                               |
 | `npm run format`     | Prettier write                       |
 | `npm run typecheck`  | TypeScript check                     |
-| `npm run test`       | Vitest (decision engine + pilot PIP) |
+| `npm run test`       | Vitest (decision engine + zoning PIP) |
 | `npm run test:watch` | Vitest watch mode                    |
 
 ## Architecture (Three Layers)
@@ -33,36 +33,45 @@ Open [http://localhost:3000](http://localhost:3000).
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for the full folder theory, decision-engine if/else spec, page wiring, and security hygiene.
 
-## SF Pilot Zoning
+## Zoning coverage matrix
 
-- **Data:** [`public/data/pilot-zoning.geojson`](./public/data/pilot-zoning.geojson) — SF Zoning Districts from [DataSF 3i4a-hu95](https://data.sfgov.org/d/3i4a-hu95) (PDDL). Large (~33MB); SF coverage only. Runtime reads the local file only — no live DataSF fetches.
-- **Lookup:** `/api/zoning?lat=&lng=` → `src/lib/adapters/pilot-zoning.ts` (Turf `booleanPointInPolygon`) → `evaluateEligibility`. Overlays default to `false` in this pilot.
+| Scope | Provider | Source | Refresh |
+|-------|----------|--------|---------|
+| San Francisco | `sf-datasf` | Local `public/data/pilot-zoning.geojson` (DataSF 3i4a-hu95, PDDL) | Snapshot in repo (~33MB); no live fetch |
+| Optional open-data packs | `open-data` | `public/data/zoning/{jurisdiction}.geojson` | Add packs as licensed; none shipped by default |
+| Statewide parcels | `regrid` | Regrid API (`REGRID_API_KEY`) | Live when key set; skipped when unset |
+| Overlays | stub | Progressive CalFire / coastal / historic | Defaults `false` until local layers |
+
+Provider order in `zoning-lookup.ts`: SF DataSF → open-data packs → Regrid → none.
+
+- **Lookup:** `/api/zoning?lat=&lng=` → `lookupParcel` → `evaluateEligibility` when covered. Response: `{ report, coverage: "lot" \| "none", provider }` with **200** even when uncovered (jurisdiction context still shows in Results).
 - **Turf** stays in adapters only — not in rules or UI.
 
-Search a real San Francisco address (Mapbox geocode when configured, else mock geocode for demo strings). Points outside SF polygons return 404.
+Search any California address (Mapbox geocode when configured, else mock geocode for demo strings). Points without a matching provider return `coverage: "none"` — expected for most counties until Regrid or open-data packs are configured.
 
 ## Product UI
 
-Light premium shell (`#F5F5F7`, sticky `doihave.space` header, `max-w-6xl`). Primary CTA/active/link token is `#0066CC`.
+Embeddable checker on `/` (no site header/footer). Cream canvas (`#F9F8F6`), charcoal text (`#2C2C2C`), taupe accents (`#9E826C`). Primary CTA token is `#0066CC`. Eligibility: `emerald-600` / `amber-500` / `rose-600`.
 
-1. **Search hero** — “Discover your property's true potential.” Mapbox-backed autocomplete (or mock demos when the token is unset) via `/api/geocode`. **Evaluate Lot** submit; SF pilot honesty stays under the bar. Three value props (zoning / parcel facts / ADU & SB 9) sit below search.
-2. **Analysis interstitial** — full-screen overlay while geocode is resolved and zoning is loading. Checklist is honest to the pipeline (locate → DataSF PIP → ADU rules → SB 9 rules). No invented transit overlays.
-3. **Evaluation dashboard** — 60/40 static Mapbox preview (`/api/map-preview`, greyscale) + scrollable data panel (address, APN/`mapblklot`, zoning, overlay facts, ADU/SB 9 segmented `RuleDetail`). **Parcel briefing** + Buyer guides strip remain below. Engine reasons come from `src/lib/rules` (no statute branching in components).
-4. **Get Quotes** — modal reuses `ProjectLeadForm` + `POST /api/lead`; matched contractors render in-modal (`ContractorMatchGrid`). Copy is connect-with-licensed-builders, not a guaranteed marketplace.
-5. **Eligible overall** — `PartnerOffers` product partner grid (build-out / outfit) with disclosure; link to `/partners`. No expert lead form.
-6. **Warning overall** — soft specialist lead (amber) plus a narrow affiliate subset labeled as optional research. No rose restricted CTA.
-7. **Restricted overall** — diagnostics stay visible; `LeadFallbackForm` for expert review, then low-emphasis alternate-pathway offers below the form. Continues to `/connect` (prefilled address) for full project lead + contractor match. Get Quotes still works from the dashboard.
-8. **Connect (`/connect`)** — homeowner project lead form + mock nearby ADU/tiny-home contractor matches; builder beta signup ($20–$100/lead). APIs: `POST /api/lead` (`project` | `quote_interest` | `restricted_review`), `POST /api/builder-signup` (console + optional webhooks).
+1. **Search** — Serif headline + address combobox via `/api/geocode` (statewide CA; no SF proximity bias). **Evaluate** submits; county coverage note under the bar.
+2. **Analysis interstitial** — county requirements → local zoning when available → ADU/SB 9.
+3. **Results** — Map preview + panel (zoning when covered, overlays, ADU/SB 9, briefing, **location requirements**, checklist, citations). Engine reasons from `src/lib/rules` only. Outline link to `/connect` for leads/quotes.
 
-CTAs bifurcate by `overall` after each search (mint `searchId` for affiliate tracking). Partner catalog lives in `src/lib/content/`; statute copy stays in `src/lib/regulations/`.
+Embed on a client site:
+
+```html
+<iframe src="https://your-host/" title="ADU eligibility checker" style="width:100%;min-height:720px;border:0"></iframe>
+```
+
+Partners and specialist leads remain on `/partners` and `/connect`.
 
 ## SF Buyer Guides
 
-Standalone `/guides` (SF-only): THOW legality, cost matrix (crane, trenching `$1,000–$5,000+`, permits), wheels-vs-foundation. Corpus in `src/lib/content/guides/` (zero React). Statewide county directory remains at `/regulations`.
+Standalone `/guides` (SF-focused content): THOW legality, cost matrix (crane, trenching `$1,000–$5,000+`, permits), wheels-vs-foundation. Corpus in `src/lib/content/guides/` (zero React). Briefings attach these links only for San Francisco place matches. Statewide county directory remains at `/regulations`.
 
 ## How Eligibility Is Decided
 
-Parcel **facts** (zoning from PIP; overlays default false) flow from the pilot adapter → `/api/zoning` → `src/lib/rules`. Outcomes are derived by statute branching in `adu-standard.ts` and `sb9-eligibility.ts`, never copied from mock JSON. See ARCHITECTURE.md for the full decision order.
+Parcel **facts** (zoning from a provider; overlays default false) flow from `zoning-lookup` → `/api/zoning` → `src/lib/rules`. Outcomes are derived by statute branching in `adu-standard.ts` and `sb9-eligibility.ts`, never copied from mock JSON. See ARCHITECTURE.md for the full decision order. Without lot coverage, the checker still composes county/city + statewide requirements.
 
 ## Environment Variables
 
@@ -72,11 +81,13 @@ Copy `.env.example` to `.env`. Required:
 
 Optional:
 
-- `MAPBOX_ACCESS_TOKEN` — real address geocoding + static map preview (server-only). If unset, `VITE_MAPBOX_ACCESS_TOKEN` is accepted as a fallback (legacy Vercel/Vite naming). Never use a `NEXT_PUBLIC_*` Mapbox token.
+- `MAPBOX_ACCESS_TOKEN` — real address geocoding + static map preview (server-only). Put it in `.env.local` (or `.env`) and restart `npm run dev`. If unset, `VITE_MAPBOX_ACCESS_TOKEN` is accepted as a fallback (legacy Vercel/Vite naming). Never use a `NEXT_PUBLIC_*` Mapbox token.
 - `VITE_MAPBOX_ACCESS_TOKEN` — optional alias for `MAPBOX_ACCESS_TOKEN` only
 
+**URL-restricted tokens:** if your Mapbox token has URL restrictions in the Mapbox dashboard, keep your site origin (e.g. `https://doihave.space` and `http://localhost:3000`) in the token's allowed URLs. The server adapters send `NEXT_PUBLIC_API_URL` as the `Referer` so restricted tokens work server-side — make sure `NEXT_PUBLIC_API_URL` matches one of the allowed URLs, or use an unrestricted token.
+
 **Vercel:** set `MAPBOX_ACCESS_TOKEN` (preferred) or keep existing `VITE_MAPBOX_ACCESS_TOKEN`. Both are server-only — do not expose as `NEXT_PUBLIC_*`. Redeploy after changing env so geocode + map preview pick up the token.
-- `REGRID_API_KEY` — Phase 2 parcels
+- `REGRID_API_KEY` — statewide parcel/zoning via Regrid (server-only). When unset, non-SF lots use jurisdiction context only unless an open-data pack matches.
 - `NEXT_PUBLIC_SENTRY_DSN` / `SENTRY_DSN` — error reporting (omit to disable)
 - `SENTRY_AUTH_TOKEN` — build-time source map upload (production)
 - `LEAD_WEBHOOK_URL` — optional Slack/Discord-compatible webhook for homeowner project leads, quote interest, and restricted compliance reviews (`POST /api/lead`). Server-only.
@@ -88,7 +99,7 @@ Optional:
 Errors and performance tracing via `@sentry/nextjs` (Developer tier). Sample rates: 100% traces in development, 10% in production. No Session Replay.
 
 - App Router boundaries (`error.tsx`, `global-error.tsx`) call `Sentry.captureException` because Next.js catches those before global handlers.
-- API routes capture unexpected failures in `try/catch`; expected 4xx (validation, not found, outside pilot) are not reported.
+- API routes capture unexpected failures in `try/catch`; expected 4xx (validation) and uncovered zoning (`coverage: "none"`) are not reported.
 
 Verify locally: hit an instrumented path that throws, then check [Issues](https://envirostar-app.sentry.io/issues/?project=adu-eligibility-checker). For readable production stacks, set `SENTRY_AUTH_TOKEN` on Vercel and deploy a build.
 

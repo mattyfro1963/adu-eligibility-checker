@@ -14,44 +14,44 @@ export function CaliforniaOutline({
   return (
     <section
       aria-labelledby="ca-outline-heading"
-      className="rounded-[1.25rem] border border-slate-200/80 bg-white p-5 shadow-sm sm:rounded-[1.5rem] sm:p-6 md:p-8"
+      className="border border-border bg-card p-5 sm:p-6 md:p-8"
     >
       <div className="mb-5 flex items-start gap-3 sm:items-center">
-        <div className="rounded-lg border border-slate-200 bg-slate-100 p-2">
-          <Scale size={18} className="text-slate-700" aria-hidden="true" />
+        <div className="rounded-lg border border-border bg-muted p-2">
+          <Scale size={18} className="text-foreground" aria-hidden="true" />
         </div>
         <div className="min-w-0">
           <h3
             id="ca-outline-heading"
-            className="text-lg font-semibold tracking-tight text-slate-900"
+            className="text-lg font-normal tracking-tight text-foreground"
           >
             California building paths
           </h3>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-muted-foreground">
             Statewide context — state floor first, then local code
           </p>
-          <RegulationsAuthorByline className="mt-1 text-xs text-slate-400" />
+          <RegulationsAuthorByline className="mt-1 text-xs text-muted-foreground" />
         </div>
       </div>
       <div className="space-y-3">
         {sections.map((section) => (
           <details
             key={section.id}
-            className="group rounded-xl border border-slate-200/80 bg-[#F5F5F7]/40 open:bg-white open:shadow-sm"
+            className="group rounded-[10px] border border-border bg-muted/40 open:bg-card "
             open={section.id === "use-of-land"}
           >
-            <summary className="min-h-[44px] cursor-pointer list-none px-4 py-3 font-medium text-slate-900 marker:content-none [&::-webkit-details-marker]:hidden">
+            <summary className="min-h-[44px] cursor-pointer list-none px-4 py-3 font-medium text-foreground marker:content-none [&::-webkit-details-marker]:hidden">
               <span className="flex items-center justify-between gap-3">
                 <span>{section.title}</span>
-                <span className="text-xs font-normal tracking-wide text-slate-400 uppercase group-open:hidden">
+                <span className="text-xs font-normal tracking-wide text-muted-foreground uppercase group-open:hidden">
                   Expand
                 </span>
-                <span className="hidden text-xs font-normal tracking-wide text-slate-400 uppercase group-open:inline">
+                <span className="hidden text-xs font-normal tracking-wide text-muted-foreground uppercase group-open:inline">
                   Collapse
                 </span>
               </span>
             </summary>
-            <ul className="space-y-4 border-t border-slate-100 px-4 py-4">
+            <ul className="space-y-4 border-t border-border px-4 py-4">
               {section.claims.map((claim) => (
                 <li key={claim.text.slice(0, 40)}>
                   <CitedText claim={claim} />

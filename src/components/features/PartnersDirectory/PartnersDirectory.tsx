@@ -1,5 +1,12 @@
 import Link from "next/link";
-import { ArrowLeft, ExternalLink, Package } from "lucide-react";
+import { ExternalLink, Package } from "lucide-react";
+import {
+  PageActionLink,
+  PageAside,
+  PageHeader,
+  PageSection,
+  PageShell,
+} from "@/components/features/PageShell/PageShell";
 import { buildAffiliateHref } from "@/lib/affiliates/track";
 import {
   AFFILIATE_CATEGORY_LABELS,
@@ -25,51 +32,31 @@ export function PartnersDirectory() {
   })).filter((section) => section.partners.length > 0);
 
   return (
-    <article className="mx-auto w-full max-w-6xl flex-1 space-y-10 px-4 py-8 sm:space-y-12 sm:px-6 sm:py-12 md:py-16">
-      <header className="space-y-4 border-b border-slate-200/80 pb-8 sm:pb-10">
-        <p className="text-xs font-semibold tracking-[0.2em] text-slate-400 uppercase">
-          Featured resources
-        </p>
-        <div className="flex items-start gap-3">
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-2">
-            <Package size={18} className="text-slate-600" aria-hidden="true" />
-          </div>
-          <div className="min-w-0 space-y-2">
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl md:text-4xl">
-              Partners &amp; build-out resources
-            </h1>
-            <p className="max-w-2xl text-base text-slate-600 sm:text-lg">
-              Curated manufacturer and product-line links for solar, sanitation,
-              chassis, and compact appliances — research aids after you check a
-              parcel, not endorsements or legal advice.
-            </p>
-          </div>
-        </div>
-        <p className="max-w-3xl text-xs leading-relaxed text-slate-500">
-          {AFFILIATE_DISCLOSURE}
-        </p>
-        <Link
-          href="/"
-          className="inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-800"
-        >
-          <ArrowLeft size={16} aria-hidden="true" />
-          Check a California address
-        </Link>
-      </header>
+    <PageShell>
+      <PageHeader
+        eyebrow="Featured resources"
+        title="Partners & build-out resources"
+        description="Curated manufacturer and product-line links for solar, sanitation, chassis, and compact appliances — research aids after you check a parcel, not endorsements or legal advice."
+        meta={
+          <p className="max-w-3xl text-xs leading-relaxed text-muted-foreground">
+            {AFFILIATE_DISCLOSURE}
+          </p>
+        }
+        actions={
+          <PageActionLink href="/">
+            <Package size={16} aria-hidden="true" />
+            Check a California address
+          </PageActionLink>
+        }
+      />
 
       <div className="space-y-10">
         {sections.map((section) => (
-          <section
+          <PageSection
             key={section.category}
-            aria-labelledby={`partners-${section.category}`}
+            title={section.label}
             className="space-y-4"
           >
-            <h2
-              id={`partners-${section.category}`}
-              className="text-xl font-semibold tracking-tight text-slate-900"
-            >
-              {section.label}
-            </h2>
             <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {section.partners.map((partner) => {
                 const href = buildAffiliateHref(partner, {
@@ -81,9 +68,9 @@ export function PartnersDirectory() {
                       href={href}
                       target="_blank"
                       rel="sponsored noopener noreferrer"
-                      className="flex min-h-[44px] flex-col gap-1 rounded-xl border border-slate-200/80 bg-white p-4 transition-colors hover:border-slate-300 hover:bg-slate-50/80"
+                      className="flex min-h-[44px] flex-col gap-1 rounded-[10px] border border-border bg-card p-4 transition-colors hover:border-border hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none"
                     >
-                      <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-900">
+                      <span className="inline-flex items-center gap-1.5 text-sm font-normal text-foreground">
                         {partner.name}
                         <ExternalLink
                           size={12}
@@ -91,7 +78,7 @@ export function PartnersDirectory() {
                           aria-hidden="true"
                         />
                       </span>
-                      <span className="text-sm leading-relaxed text-slate-600">
+                      <span className="text-sm leading-relaxed text-muted-foreground">
                         {partner.blurb}
                       </span>
                     </a>
@@ -99,26 +86,23 @@ export function PartnersDirectory() {
                 );
               })}
             </ul>
-          </section>
+          </PageSection>
         ))}
       </div>
 
-      <aside
-        className="rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm leading-relaxed text-slate-600"
-        role="note"
-      >
+      <PageAside>
         <p>
           Catalog includes {AFFILIATE_PARTNERS.length} featured resources across{" "}
           {sections.length} categories. Ready to evaluate overlays for your lot?{" "}
           <Link
             href="/"
-            className="font-medium text-slate-900 underline-offset-2 hover:underline"
+            className="font-medium text-foreground underline-offset-2 hover:underline"
           >
             Open the eligibility checker
           </Link>
           .
         </p>
-      </aside>
-    </article>
+      </PageAside>
+    </PageShell>
   );
 }

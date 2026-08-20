@@ -26,9 +26,9 @@ Visual representation and client interaction. Split generic `ui/` from domain `f
 Heart of the app. **Zero React.** Portable to a Node CLI or worker.
 
 - **Engine (`lib/rules/`):** Split ADU (Gov. Code Chapter 13 / § 66314) from SB 9 (§ 65852.21). Real `if`/`else` on parcel **facts**. Do not store Eligible/Warning/Restricted on mock parcels. `lib/rules/index.ts` orchestrates unified `ZoningReport`. Reasons are `CitedClaim[]` with official source URLs.
-- **Mocks and adapters (`lib/mock/` + `lib/adapters/`):** Routes call a `Geocoder` adapter for addresses. SF pilot zoning uses `pilot-zoning.ts` (server-side Turf + `public/data/pilot-zoning.geojson`). **Turf/GeoJSON only in adapters** — never in `lib/rules/` or UI. Phase 2 may add `regrid-geocoder.ts` with zero changes to rules or UI.
+- **Mocks and adapters (`lib/mock/` + `lib/adapters/`):** Routes call a `Geocoder` adapter for addresses. Lot zoning uses `zoning-lookup.ts` (multi-provider: SF DataSF GeoJSON, optional `public/data/zoning/*.geojson` packs, Regrid when `REGRID_API_KEY` is set). **Turf/GeoJSON only in adapters** — never in `lib/rules/` or UI.
 - **Leads (`lib/leads/` + `lib/mock/contractors.ts`):** Haversine contractor matching and webhook dispatch for `/api/lead` and `/api/builder-signup`. Zero React; no database in v1.
-- **Regulations expert (`lib/regulations/` + `lib/content/guides/` + `ca-tiny-home-regulations.ts`):** All law/regulation visitor copy is authored by `REGULATIONS_AGENT` in `lib/regulations/agent.ts`. Components render only; never invent statute prose in UI.
+- **Regulations expert (`lib/regulations/` + `lib/content/guides/` + `ca-tiny-home-regulations.ts`):** All law/regulation visitor copy is authored by `REGULATIONS_AGENT` in `lib/regulations/agent.ts`. `composeLocationRequirements` + `resolveJurisdictionGuide` attach county/city tiny-home requirements. Components render only; never invent statute prose in UI.
 - **Affiliates (`lib/content/affiliates.ts` + `lib/affiliates/track.ts`):** Partner catalog and disclosure live under `lib/content/` (commercial/editorial — never in `lib/regulations/` or `CitedClaim`). Pure `buildAffiliateHref` in `lib/affiliates/track.ts` appends utm + `sid` (and optional `ref`) at search time. Zero React.
 
 ## Decision Engine Logic
@@ -65,29 +65,30 @@ Monitor `src/lib/rules/*.ts`. The engine must contain **actual branching**, not 
 
 ## Page Wiring (`src/app/page.tsx`)
 
-Import features explicitly (no barrels). State: `geocodeResult`, `report`, `isZoningLoading`, `error`, `searchId`.
+`/` is the embeddable checker widget: no site header/footer (`SiteChrome` hides them on `/` only). State: `geocodeResult`, `report`, `isZoningLoading`, `error`.
 
-Flow: Landing two-column hero (`AddressSearch` with `ValueProps` children + `LandingHeroMedia` tiny-home visual) → **Evaluate Lot** → `onResolved` → page fetches `/api/zoning?lat=&lng=` → compact search + `AnalysisInterstitial` while `geocodeResult && isZoningLoading` → on success mint `searchId` (`crypto.randomUUID()`) → `ResultsCard` 60/40 dashboard (static Mapbox preview + scrollable panel, ADU/SB 9 segmented detail, Connect CTA + **Get Quotes** modal) → **bifurcated CTAs by `overall`**:
-
-| `overall` | After ResultsCard |
-|-----------|-------------------|
-| `eligible` | `PartnerOffers` (`intent="eligible"`) — product build-out grid |
-| `warning` | Soft specialist lead (amber) + `PartnerOffers` (`intent="warning"`, narrow subset) |
-| `restricted` | `LeadFallbackForm` + compact `PartnerOffers` (`intent="restricted"`, alternate pathways) |
-
-**Get Quotes** reuses `ProjectLeadForm` + `POST /api/lead` (`type: "project"`) and shows `ContractorMatchGrid` in-modal. Same lead API as `/connect`. No `/exchange`, no payments DB, no Mapbox GL. Primary CTA token is `#0066CC`.
-
-Pass `searchId` into affiliate URL builders so every outbound partner href carries that submission’s tracking slots.
-
-`/connect` is a separate composition root: address → project lead form → `POST /api/lead` (`type: "project"`) → contractor grid; builder panel → `POST /api/builder-signup`.
+Flow: idle `AddressSearch` (serif headline, no ValueProps/demos) → `onResolved` → `/api/zoning?lat=&lng=` → `AnalysisInterstitial` while loading → `ResultsCard` (map, overlays, ADU/SB 9 reasons, briefing, citations). Optional outline link to `/connect`. Monetization (partners, leads, Get Quotes) lives on `/connect` and `/partners`, not on the widget.
 
 Forbidden: pasted AddressSearch markup, rule engine branches, `evaluateEligibility` on client.
 
+## California zoning providers
+
+| Jurisdiction / scope | Provider | Data | Notes |
+|----------------------|----------|------|-------|
+| San Francisco | `sf-datasf-zoning` | `public/data/pilot-zoning.geojson` (DataSF 3i4a-hu95, PDDL) | Local Turf PIP; never live DataSF fetch |
+| Optional county/city packs | `open-data-zoning` | `public/data/zoning/{jurisdiction}.geojson` | Progressive; empty until packs added |
+| Statewide parcels | `regrid-zoning` | Regrid API | Requires `REGRID_API_KEY`; skipped when unset |
+| Overlays (fire/coastal/historic) | `zoning-overlays` | Stub → local snapshots later | Defaults false until layers ship |
+
+`/api/zoning` returns `{ report, coverage: "lot" \| "none", provider }` with **200** when uncovered (not 404). Clients must not treat `coverage: "none"` as an error — county requirements still compose.
+
 ## SF Buyer Guides (`src/lib/content/guides/` + `/guides`)
 
-Zero-React corpus: THOW zoning, cost matrix (crane, trenching `$1,000–$5,000+`, permits), wheels-vs-foundation, `GUIDE_LINKS`. Thin routes in `src/app/guides/`; UI in `src/components/features/Guides/`. CA briefings attach `guideLinks` via `composeResultsBriefing`. No live municipal fee APIs.
+Zero-React corpus: THOW zoning, cost matrix (crane, trenching `$1,000–$5,000+`, permits), wheels-vs-foundation, `GUIDE_LINKS`. Thin routes in `src/app/guides/`; UI in `src/components/features/Guides/`. Briefings attach `guideLinks` only when `place` is San Francisco. No live municipal fee APIs.
 
 ## Outcome Monetization (bifurcated CTAs)
+
+On `/connect` and `/partners` (not on the `/` widget):
 
 | `overall` | Primary | Secondary | Hide |
 |-----------|---------|-----------|------|
@@ -101,7 +102,7 @@ Catalog + `AFFILIATE_DISCLOSURE` in `src/lib/content/affiliates.ts`; href assemb
 
 - `.cursorignore`: `.env*`, `.next/`, `node_modules/`, `*.pem`, `*.key`, `coverage/`, `*.log`.
 - `.env.example` defines `NEXT_PUBLIC_API_URL`, optional Mapbox/Sentry, `LEAD_WEBHOOK_URL` / `BUILDER_WEBHOOK_URL`, and `NEXT_PUBLIC_AFFILIATE_*` placeholders. Never commit `.env`.
-- `src/lib/env.ts` Zod-validates at build/start. Mock-required: `NEXT_PUBLIC_API_URL`. Mapbox/Regrid optional until Phase 2.
+- `src/lib/env.ts` Zod-validates at build/start. Mock-required: `NEXT_PUBLIC_API_URL`. Mapbox optional; Regrid optional for statewide lot coverage.
 
 ## Binding Placement Rules
 

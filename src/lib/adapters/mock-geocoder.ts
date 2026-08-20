@@ -11,7 +11,10 @@ const COORD_EPSILON = 0.0001;
  */
 export function addressPartsFromFormattedAddress(
   formattedAddress: string,
-): Pick<GeocodeResult, "streetLine" | "place" | "region" | "postcode"> {
+): Pick<
+  GeocodeResult,
+  "streetLine" | "place" | "county" | "region" | "postcode"
+> {
   const segments = formattedAddress.split(",").map((s) => s.trim());
   const streetLine = segments[0] ?? formattedAddress;
   const place = segments[1] ?? "";
@@ -19,10 +22,14 @@ export function addressPartsFromFormattedAddress(
   const regionMatch = regionSeg.match(
     /^([A-Za-z]{2})(?:\s+(\d{5}(?:-\d{4})?))?$/,
   );
+  // Demo catalog is SF-only; county follows place when it is San Francisco.
+  const county =
+    place.toLowerCase() === "san francisco" ? "San Francisco" : place;
   if (regionMatch) {
     return {
       streetLine,
       place,
+      county,
       region: regionMatch[1] ?? "",
       postcode: regionMatch[2] ?? "",
     };
@@ -30,6 +37,7 @@ export function addressPartsFromFormattedAddress(
   return {
     streetLine,
     place,
+    county,
     region: regionSeg,
     postcode: "",
   };

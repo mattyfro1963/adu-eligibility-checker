@@ -15,25 +15,25 @@ export function RuleDetail({
   const rationaleSources = primary?.sources ?? [];
 
   return (
-    <article className="group rounded-xl border border-border bg-white p-5 shadow-registry transition-colors hover:border-slate-300 sm:p-6">
+    <article className="group border border-border bg-card p-5 transition-colors hover:border-primary/40 sm:p-6">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
-        <span className="rounded border border-slate-200/80 bg-[#F5F5F7] px-2.5 py-1 font-mono text-[10px] font-semibold tracking-widest text-slate-500 uppercase shadow-inner">
+        <span className="border border-border bg-muted px-2.5 py-1 font-mono text-[10px] font-normal tracking-widest text-muted-foreground uppercase">
           {category}
         </span>
         <EligibilityBadge status={result.status} />
       </div>
 
-      <h4 className="mb-2 text-lg font-semibold tracking-tight text-slate-900 transition-colors group-hover:text-black">
+      <h4 className="mb-2 text-lg font-medium tracking-[-0.02em] text-foreground">
         {title}
       </h4>
 
       {primary ? (
         <CitedText
           claim={primary}
-          className="mb-3 text-sm leading-relaxed font-light text-slate-500"
+          className="mb-3 text-sm leading-relaxed font-light text-muted-foreground"
         />
       ) : (
-        <p className="mb-3 text-sm leading-relaxed font-light text-slate-500">
+        <p className="mb-3 text-sm leading-relaxed font-light text-muted-foreground">
           No additional detail from the rules engine.
         </p>
       )}
@@ -50,16 +50,14 @@ export function RuleDetail({
         <div className="mb-5" />
       )}
 
-      <div className="flex items-start gap-3 rounded-xl border border-slate-200/60 bg-[#F5F5F7] p-3.5 sm:p-4">
+      <div className="flex items-start gap-3 border border-border bg-muted p-3.5 sm:p-4">
         <div
-          className="mt-0.5 w-1 shrink-0 self-stretch rounded-full bg-slate-300"
+          className="mt-0.5 w-1 shrink-0 self-stretch rounded-full bg-border"
           aria-hidden="true"
         />
         <div className="min-w-0 space-y-1.5">
-          <p className="font-mono text-xs leading-relaxed text-slate-600">
-            <span className="mr-1 font-semibold text-slate-900">
-              RATIONALE:
-            </span>
+          <p className="font-mono text-xs leading-relaxed text-muted-foreground">
+            <span className="mr-1 font-normal text-foreground">RATIONALE:</span>
             {category === "ADU"
               ? "Gov. Code Chapter 13 (§§ 66310–66342)"
               : "Gov. Code §§ 65852.21 & 66411.7 (2021 SB 9)"}
@@ -70,7 +68,7 @@ export function RuleDetail({
                 text: "Official references for this program card.",
                 sources: rationaleSources,
               }}
-              className="text-xs leading-relaxed text-slate-500"
+              className="text-xs leading-relaxed text-muted-foreground"
             />
           ) : null}
         </div>

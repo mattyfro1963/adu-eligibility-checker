@@ -53,7 +53,7 @@ const parsed = envSchema.safeParse({
 if (!parsed.success) {
   console.error("Invalid environment variables:");
   for (const issue of parsed.error.issues) {
-    console.error(`  ${issue.path.join(".")}: ${issue.message}`);
+    console.error(` ${issue.path.join(".")}: ${issue.message}`);
   }
   throw new Error("Invalid environment variables");
 }

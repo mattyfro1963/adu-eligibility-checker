@@ -23,7 +23,7 @@ export function WheelsVsFoundationGuide() {
       <section aria-labelledby="decision-tree-heading" className="space-y-6">
         <h2
           id="decision-tree-heading"
-          className="text-lg font-semibold tracking-tight text-slate-900 sm:text-xl"
+          className="text-lg font-normal tracking-tight text-foreground sm:text-xl"
         >
           Decision tree
         </h2>
@@ -32,19 +32,19 @@ export function WheelsVsFoundationGuide() {
             <li
               key={node.id}
               id={node.id}
-              className="rounded-xl border border-slate-200/80 bg-white p-5 sm:p-6"
+              className="rounded-[10px] border border-border bg-card p-5 sm:p-6"
             >
-              <p className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
+              <p className="text-xs font-normal tracking-wider text-muted-foreground uppercase">
                 Step {index + 1}
               </p>
-              <h3 className="mt-1 text-base font-semibold text-slate-900">
+              <h3 className="mt-1 text-base font-normal text-foreground">
                 {node.question}
               </h3>
               <div className="mt-3">
                 {isCitedClaim(node.guidance) ? (
                   <CitedText claim={node.guidance} as="div" />
                 ) : (
-                  <p className="text-sm leading-relaxed text-slate-600">
+                  <p className="text-sm leading-relaxed text-muted-foreground">
                     {node.guidance.text}
                   </p>
                 )}
@@ -53,17 +53,17 @@ export function WheelsVsFoundationGuide() {
                 {node.outcomes.map((outcome) => (
                   <li
                     key={outcome.label}
-                    className="rounded-lg border border-slate-100 bg-slate-50/80 px-3 py-3"
+                    className="rounded-lg border border-border bg-muted px-3 py-3"
                   >
-                    <p className="text-sm font-medium text-slate-900">
+                    <p className="text-sm font-medium text-foreground">
                       {outcome.label}
                       {outcome.nextId ? (
-                        <span className="ml-2 text-xs font-normal text-slate-500">
+                        <span className="ml-2 text-xs font-normal text-muted-foreground">
                           → continue at #{outcome.nextId}
                         </span>
                       ) : null}
                     </p>
-                    <p className="mt-1 text-sm leading-relaxed text-slate-600">
+                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                       {outcome.summary}
                     </p>
                   </li>
@@ -77,29 +77,29 @@ export function WheelsVsFoundationGuide() {
       <section aria-labelledby="comparison-heading" className="space-y-4">
         <h2
           id="comparison-heading"
-          className="text-lg font-semibold tracking-tight text-slate-900 sm:text-xl"
+          className="text-lg font-normal tracking-tight text-foreground sm:text-xl"
         >
           Side-by-side trade-offs
         </h2>
-        <div className="overflow-x-auto rounded-xl border border-slate-200/80 bg-white shadow-sm">
+        <div className="overflow-x-auto rounded-[10px] border border-border bg-card shadow-editorial">
           <table className="w-full min-w-[36rem] border-collapse text-left text-sm">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/80">
+              <tr className="border-b border-border bg-muted">
                 <th
                   scope="col"
-                  className="px-4 py-3 font-semibold text-slate-700"
+                  className="px-4 py-3 font-normal text-foreground"
                 >
                   Dimension
                 </th>
                 <th
                   scope="col"
-                  className="px-4 py-3 font-semibold text-slate-700"
+                  className="px-4 py-3 font-normal text-foreground"
                 >
                   Wheels / THOW
                 </th>
                 <th
                   scope="col"
-                  className="px-4 py-3 font-semibold text-slate-700"
+                  className="px-4 py-3 font-normal text-foreground"
                 >
                   Foundation ADU
                 </th>
@@ -109,18 +109,18 @@ export function WheelsVsFoundationGuide() {
               {COMPARISON_ROWS.map((row) => (
                 <tr
                   key={row.id}
-                  className="border-b border-slate-100 align-top last:border-b-0"
+                  className="border-b border-border align-top last:border-b-0"
                 >
                   <th
                     scope="row"
-                    className="px-4 py-3 font-medium text-slate-900"
+                    className="px-4 py-3 font-medium text-foreground"
                   >
                     {row.dimension}
                   </th>
-                  <td className="px-4 py-3 leading-relaxed text-slate-600">
+                  <td className="px-4 py-3 leading-relaxed text-muted-foreground">
                     {row.wheels}
                   </td>
-                  <td className="px-4 py-3 leading-relaxed text-slate-600">
+                  <td className="px-4 py-3 leading-relaxed text-muted-foreground">
                     {row.foundation}
                   </td>
                 </tr>

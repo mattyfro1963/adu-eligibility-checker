@@ -11,7 +11,7 @@ Read `ARCHITECTURE.md` for the full canonical spec. Key constraints:
 
 1. **`src/app/`** — Thin routes, client `page.tsx` imports features + `useState` glue. No pasted UI, no rules.
 2. **`src/components/`** — `ui/` + `features/`, no barrels, named exports, lucide-react only.
-3. **`src/lib/`** — Zero React. Rules in `lib/rules/`, facts in `lib/mock/`, adapters for geocode + SF pilot zoning. **Server-side Turf + local GeoJSON only in `lib/adapters/`** (never rules or UI). Law/regulation copy lives in `lib/regulations/`, `lib/content/guides/`, and `ca-tiny-home-regulations.ts` — authored by `REGULATIONS_AGENT` (`lib/regulations/agent.ts`); components render only.
+3. **`src/lib/`** — Zero React. Rules in `lib/rules/`, facts in `lib/mock/`, adapters for geocode + multi-provider zoning (`zoning-lookup`). **Server-side Turf + local GeoJSON only in `lib/adapters/`** (never rules or UI). Law/regulation copy lives in `lib/regulations/`, `lib/content/guides/`, and `ca-tiny-home-regulations.ts` — authored by `REGULATIONS_AGENT` (`lib/regulations/agent.ts`); components render only.
 
 ## Decision Engine (`src/lib/rules/`)
 
@@ -23,8 +23,8 @@ Real `if`/`else` on parcel facts. Never canned status on mock data.
 
 ## Page Wiring
 
-`page.tsx` must import `AddressSearch`, `ValueProps`, `LandingHeroMedia`, `AnalysisInterstitial`, `ResultsCard`, `LeadFallbackForm`, `PartnerOffers`, `GetQuotesModal`. State: geocodeResult, report, isZoningLoading, error, searchId. Landing: two-column hero (`AddressSearch` + `ValueProps` children, `LandingHeroMedia`). Show interstitial while geocode is resolved and zoning is loading. No `evaluateEligibility` on client.
+`/` is the embeddable widget (no site header/footer). `page.tsx` imports `AddressSearch`, `AnalysisInterstitial`, `ResultsCard`. State: `geocodeResult`, `report`, `isZoningLoading`, `error`. Flow: search → `/api/zoning` (`coverage: lot|none`) → interstitial → ResultsCard (map + requirements + engine reasons). Uncovered counties are not errors. Monetization CTAs live on `/connect` and `/partners`, not on `/`. No `evaluateEligibility` on client.
 
 ## Forbidden
 
-Root `app/`, React in `src/lib/`, component barrels, Turf in rules/UI (adapters OK for SF pilot), statute logic in components.
+Root `app/`, React in `src/lib/`, component barrels, Turf in rules/UI (adapters OK), statute logic in components.

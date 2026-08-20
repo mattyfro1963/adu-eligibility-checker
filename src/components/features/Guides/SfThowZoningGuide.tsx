@@ -22,7 +22,7 @@ export function SfThowZoningGuide() {
         >
           <h2
             id={`thow-${section.id}`}
-            className="text-lg font-semibold tracking-tight text-slate-900 sm:text-xl"
+            className="text-lg font-normal tracking-tight text-foreground sm:text-xl"
           >
             {section.title}
           </h2>

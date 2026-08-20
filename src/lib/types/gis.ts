@@ -6,6 +6,8 @@ export interface GeocodeResult {
   streetLine: string;
   /** City / locality (Mapbox `place` context). */
   place: string;
+  /** County (Mapbox `district` context), e.g. `Alameda` or `San Francisco`. */
+  county: string;
   /** State / region (e.g. `CA` or `California`). */
   region: string;
   /** ZIP / postal code when available. */

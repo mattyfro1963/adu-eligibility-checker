@@ -17,7 +17,7 @@ export function CostMatrixGuide() {
       <section aria-labelledby="cost-columns-heading" className="space-y-4">
         <h2
           id="cost-columns-heading"
-          className="text-lg font-semibold tracking-tight text-slate-900 sm:text-xl"
+          className="text-lg font-normal tracking-tight text-foreground sm:text-xl"
         >
           Build paths compared
         </h2>
@@ -25,10 +25,10 @@ export function CostMatrixGuide() {
           {COST_COLUMNS.map((col) => (
             <div
               key={col.id}
-              className="rounded-xl border border-slate-200/80 bg-white p-4 sm:p-5"
+              className="rounded-[10px] border border-border bg-card p-4 sm:p-5"
             >
-              <p className="font-semibold text-slate-900">{col.label}</p>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600">
+              <p className="font-normal text-foreground">{col.label}</p>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                 {col.summary}
               </p>
             </div>
@@ -39,17 +39,17 @@ export function CostMatrixGuide() {
       <section aria-labelledby="cost-matrix-heading" className="space-y-4">
         <h2
           id="cost-matrix-heading"
-          className="text-lg font-semibold tracking-tight text-slate-900 sm:text-xl"
+          className="text-lg font-normal tracking-tight text-foreground sm:text-xl"
         >
           Line-item cost matrix
         </h2>
-        <div className="overflow-x-auto rounded-xl border border-slate-200/80 bg-white shadow-sm">
+        <div className="overflow-x-auto rounded-[10px] border border-border bg-card shadow-editorial">
           <table className="w-full min-w-[40rem] border-collapse text-left text-sm">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/80">
+              <tr className="border-b border-border bg-muted">
                 <th
                   scope="col"
-                  className="px-4 py-3 font-semibold text-slate-700"
+                  className="px-4 py-3 font-normal text-foreground"
                 >
                   Line item
                 </th>
@@ -57,7 +57,7 @@ export function CostMatrixGuide() {
                   <th
                     key={col.id}
                     scope="col"
-                    className="px-4 py-3 font-semibold text-slate-700"
+                    className="px-4 py-3 font-normal text-foreground"
                   >
                     {col.label}
                   </th>
@@ -68,15 +68,15 @@ export function CostMatrixGuide() {
               {COST_LINE_ITEMS.map((line) => (
                 <tr
                   key={line.id}
-                  className="border-b border-slate-100 align-top last:border-b-0"
+                  className="border-b border-border align-top last:border-b-0"
                 >
                   <th
                     scope="row"
-                    className="px-4 py-3 font-medium text-slate-900"
+                    className="px-4 py-3 font-medium text-foreground"
                   >
                     <span>{line.label}</span>
                     {line.note ? (
-                      <span className="mt-1 block text-xs font-normal leading-relaxed text-slate-500">
+                      <span className="mt-1 block text-xs font-normal leading-relaxed text-muted-foreground">
                         {line.note}
                       </span>
                     ) : null}
@@ -84,7 +84,7 @@ export function CostMatrixGuide() {
                   {COST_COLUMNS.map((col) => (
                     <td
                       key={col.id}
-                      className="px-4 py-3 font-mono text-xs text-slate-700 sm:text-sm"
+                      className="px-4 py-3 font-mono text-xs text-foreground sm:text-sm"
                     >
                       {line.amounts[col.id]}
                     </td>

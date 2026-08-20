@@ -8,7 +8,7 @@ import { Check } from "lucide-react";
 export function LandingHeroMedia() {
   return (
     <aside
-      className="landing-hero-media relative aspect-[4/3] min-h-[280px] overflow-hidden rounded-2xl sm:min-h-[340px] lg:aspect-auto lg:min-h-full lg:h-full"
+      className="landing-hero-media relative aspect-[4/3] min-h-[280px] overflow-hidden rounded-[10px] sm:min-h-[340px] lg:aspect-auto lg:min-h-full lg:h-full"
       aria-label="Modern backyard tiny home ADU example"
     >
       <Image
@@ -20,7 +20,7 @@ export function LandingHeroMedia() {
         className="object-cover object-center"
       />
       <div
-        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-900/35 via-transparent to-transparent"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-foreground/35 via-transparent to-transparent"
         aria-hidden="true"
       />
 
@@ -31,8 +31,8 @@ export function LandingHeroMedia() {
       />
 
       <div className="landing-hero-callout absolute bottom-6 left-5 right-5 sm:bottom-8 sm:left-8 sm:right-auto">
-        <div className="inline-flex max-w-[16rem] items-start gap-2.5 rounded-lg bg-slate-800/95 px-3.5 py-2.5 text-left text-white shadow-lg backdrop-blur-sm">
-          <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-500">
+        <div className="inline-flex max-w-[16rem] items-start gap-2.5 rounded-lg bg-card px-3.5 py-2.5 text-left text-white shadow-editorial backdrop-blur-sm">
+          <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-foreground text-background">
             <Check size={12} strokeWidth={3} aria-hidden="true" />
           </span>
           <span className="text-sm leading-snug font-medium tracking-tight">

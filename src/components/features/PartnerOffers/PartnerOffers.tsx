@@ -34,39 +34,34 @@ const INTENT_COPY: Record<
     subtitle:
       "Curated manufacturer resources for power, sanitation, chassis, and compact appliances — confirm permits locally before purchase.",
     Icon: Package,
-    sectionClass:
-      "rounded-[1.5rem] border border-slate-200/80 bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] sm:rounded-[2rem] sm:p-8",
-    iconWrapClass: "rounded-lg border border-emerald-100 bg-emerald-50 p-2",
-    iconClass: "text-emerald-700",
-    linkHoverClass: "hover:border-emerald-200 hover:bg-emerald-50/40",
+    sectionClass: "border border-border bg-card p-6 sm:p-8",
+    iconWrapClass: "rounded-[6px] border border-border bg-muted p-2",
+    iconClass: "text-foreground",
+    linkHoverClass: "hover:border-border hover:bg-muted",
   },
   warning: {
     title: "Research options",
     subtitle:
       "Optional product research while you resolve parcel constraints — secondary to a specialist review.",
     Icon: Search,
-    sectionClass:
-      "rounded-[1.5rem] border border-slate-200/80 bg-slate-50/80 p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] sm:rounded-[2rem] sm:p-6",
-    iconWrapClass: "rounded-lg border border-amber-100 bg-amber-50 p-2",
-    iconClass: "text-amber-600",
-    linkHoverClass: "hover:border-amber-200 hover:bg-amber-50/40",
+    sectionClass: "border border-border bg-muted/50 p-5 sm:p-6",
+    iconWrapClass: "rounded-[6px] border border-border bg-muted p-2",
+    iconClass: "text-foreground",
+    linkHoverClass: "hover:border-border hover:bg-muted",
   },
   restricted: {
     title: "Alternate pathways",
     subtitle:
       "Low-emphasis manufacturer links some builders research when foundation ADU timing is blocked — not a workaround for restricted overlays.",
     Icon: Route,
-    sectionClass:
-      "rounded-[1.5rem] border border-slate-200/60 bg-slate-50/60 p-5 shadow-[0_8px_30px_rgb(0,0,0,0.03)] sm:rounded-[2rem] sm:p-6",
-    iconWrapClass: "rounded-lg border border-slate-200 bg-white p-2",
-    iconClass: "text-slate-500",
-    linkHoverClass: "hover:border-slate-300 hover:bg-white",
+    sectionClass: "border border-border bg-muted/40 p-5 sm:p-6",
+    iconWrapClass: "rounded-lg border border-border bg-card p-2",
+    iconClass: "text-muted-foreground",
+    linkHoverClass: "hover:border-border hover:bg-card",
   },
 };
 
-function groupByCategory(
-  partners: AffiliatePartner[],
-): {
+function groupByCategory(partners: AffiliatePartner[]): {
   category: AffiliateCategory;
   label: string;
   partners: AffiliatePartner[];
@@ -116,17 +111,17 @@ export function PartnerOffers({
         <div className="min-w-0">
           <h3
             id={`partner-offers-${intent}-heading`}
-            className="text-lg font-semibold tracking-tight text-slate-900"
+            className="text-lg font-normal tracking-tight text-foreground"
           >
             {copy.title}
           </h3>
-          <p className="text-xs text-slate-500">{copy.subtitle}</p>
+          <p className="text-xs text-muted-foreground">{copy.subtitle}</p>
         </div>
       </div>
 
       <p
         data-affiliate-disclosure
-        className="mb-5 text-xs leading-relaxed text-slate-500 sm:mb-6"
+        className="mb-5 text-xs leading-relaxed text-muted-foreground sm:mb-6"
       >
         {AFFILIATE_DISCLOSURE}
       </p>
@@ -138,7 +133,7 @@ export function PartnerOffers({
             data-affiliate-category={section.category}
             className="space-y-3"
           >
-            <h4 className="text-xs font-bold tracking-widest text-slate-400 uppercase">
+            <h4 className="text-xs font-normal tracking-widest text-muted-foreground uppercase">
               {section.label}
             </h4>
             <ul
@@ -155,9 +150,9 @@ export function PartnerOffers({
                     target="_blank"
                     rel="sponsored noopener noreferrer"
                     data-affiliate-partner={partner.id}
-                    className={`flex min-h-[44px] flex-col gap-1 rounded-xl border border-slate-200/80 bg-white/80 p-4 transition-colors ${copy.linkHoverClass}`}
+                    className={`flex min-h-[44px] flex-col gap-1 rounded-[10px] border border-border bg-card p-4 transition-colors ${copy.linkHoverClass}`}
                   >
-                    <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-900">
+                    <span className="inline-flex items-center gap-1.5 text-sm font-normal text-foreground">
                       {partner.name}
                       <ExternalLink
                         size={12}
@@ -168,8 +163,8 @@ export function PartnerOffers({
                     <span
                       className={
                         isCompact
-                          ? "text-xs leading-relaxed text-slate-500"
-                          : "text-sm leading-relaxed text-slate-600"
+                          ? "text-xs leading-relaxed text-muted-foreground"
+                          : "text-sm leading-relaxed text-muted-foreground"
                       }
                     >
                       {partner.blurb}
@@ -183,10 +178,10 @@ export function PartnerOffers({
       </div>
 
       {intent === "eligible" ? (
-        <p className="mt-5 text-sm text-slate-600 sm:mt-6">
+        <p className="mt-5 text-sm text-muted-foreground sm:mt-6">
           <Link
             href="/partners"
-            className="font-medium text-slate-900 underline-offset-2 hover:underline"
+            className="font-medium text-foreground underline-offset-2 hover:underline"
           >
             Browse the full partners directory
           </Link>

@@ -1,4 +1,5 @@
 import { env } from "@/lib/env";
+import { mapboxRequestHeaders } from "@/lib/adapters/mapbox-headers";
 
 /** Light basemap — client may apply greyscale/contrast CSS on the PNG. */
 const MAPBOX_STYLE = "mapbox/light-v11";
@@ -73,7 +74,7 @@ export async function fetchMapboxStaticPng(
   let response: Response;
   try {
     response = await fetch(url, {
-      headers: { Accept: "image/png" },
+      headers: mapboxRequestHeaders({ Accept: "image/png" }),
       // Static tiles are immutable for a given URL.
       cache: "force-cache",
     });

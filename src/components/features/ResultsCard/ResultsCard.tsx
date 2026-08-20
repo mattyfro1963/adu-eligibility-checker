@@ -13,6 +13,7 @@ import { AddressMapPreview } from "@/components/features/AddressMapPreview/Addre
 import { ApplicationChecklist } from "@/components/features/ResultsCard/ApplicationChecklist";
 import { BuyerGuideLinks } from "@/components/features/ResultsCard/BuyerGuideLinks";
 import { CaliforniaOutline } from "@/components/features/ResultsCard/CaliforniaOutline";
+import { JurisdictionRequirements } from "@/components/features/ResultsCard/JurisdictionRequirements";
 import { RegulationsAuthorByline } from "@/components/features/ResultsCard/RegulationsAuthorByline";
 import { ResultsBriefingSection } from "@/components/features/ResultsCard/ResultsBriefing";
 import { RuleDetail } from "@/components/features/ResultsCard/RuleDetail";
@@ -30,7 +31,7 @@ interface ResultsCardProps {
   report: ZoningReport | null;
   geocodeResult: GeocodeResult | null;
   isLoading?: boolean;
-  /** Zoning API error (e.g. outside SF) — still show CA briefing. */
+  /** Zoning API transport/5xx error — uncovered counties are not errors. */
   zoningError?: string | null;
   /** Prefill link to `/connect` builder match. */
   connectHref?: string;
@@ -50,13 +51,13 @@ function OverlayRow({
   detectedClassName: string;
 }) {
   return (
-    <div className="flex items-center justify-between border-b border-slate-100 py-3.5">
+    <div className="flex items-center justify-between border-b border-border py-3.5">
       <span className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
         <Icon size={16} className="text-muted-foreground" aria-hidden="true" />
         {label}
       </span>
       <span
-        className={`text-sm font-semibold ${detected ? detectedClassName : "text-foreground"}`}
+        className={`text-sm font-normal ${detected ? detectedClassName : "text-foreground"}`}
       >
         {detected ? "Detected" : "Clear"}
       </span>
@@ -75,7 +76,7 @@ function ProgramToggle({
     <div
       role="tablist"
       aria-label="Program detail"
-      className="grid grid-cols-2 gap-1 rounded-xl border border-border bg-[#F5F5F7] p-1"
+      className="grid grid-cols-2 gap-1 rounded-input border border-border bg-muted p-1"
     >
       {(
         [
@@ -95,9 +96,9 @@ function ProgramToggle({
             }
             onClick={() => onChange(tab.id)}
             className={cn(
-              "inline-flex min-h-[40px] items-center justify-center rounded-lg px-2 text-xs font-semibold tracking-wide uppercase transition-colors",
+              "inline-flex min-h-[40px] items-center justify-center rounded-pill px-2 text-caption font-medium transition-colors",
               selected
-                ? "bg-white text-primary shadow-sm"
+                ? "bg-card text-foreground shadow-editorial"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
@@ -110,7 +111,7 @@ function ProgramToggle({
 }
 
 /**
- * Evaluation dashboard: 60/40 map + scrollable data panel, plus briefing.
+ * Evaluation dashboard: cinematic map + scrollable data panel, plus briefing.
  * Statute copy comes from lib/regulations + rules — no invented overlays.
  */
 export function ResultsCard({
@@ -139,19 +140,21 @@ export function ResultsCard({
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 space-y-6 duration-700 fill-mode-both sm:space-y-8">
-      <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-5 lg:items-stretch">
-        <div className="h-[280px] rounded-xl border border-border bg-white p-2 shadow-registry sm:h-[360px] lg:col-span-3 lg:h-[min(720px,calc(100vh-8rem))]">
-          <AddressMapPreview lat={lat} lng={lng} />
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:items-stretch lg:gap-8">
+        <div className="overflow-hidden rounded-card shadow-editorial lg:col-span-3 lg:h-[min(720px,calc(100vh-8rem))]">
+          <AddressMapPreview
+            lat={lat}
+            lng={lng}
+            className="min-h-[280px] sm:min-h-[360px] lg:min-h-full"
+          />
         </div>
 
-        <div className="relative flex flex-col overflow-hidden rounded-xl border border-border bg-white shadow-registry lg:col-span-2 lg:max-h-[min(720px,calc(100vh-8rem))]">
-          <div className="flex-1 space-y-5 overflow-y-auto p-5 sm:p-6">
+        <div className="relative flex flex-col overflow-hidden rounded-card border border-border bg-card shadow-editorial lg:col-span-2 lg:max-h-[min(720px,calc(100vh-8rem))]">
+          <div className="flex-1 space-y-6 overflow-y-auto p-8">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                  Parcel evaluation
-                </p>
-                <h3 className="mt-1 text-xl leading-tight font-semibold break-words text-foreground">
+                <p className="font-label text-muted-foreground">Parcel evaluation</p>
+                <h3 className="font-heading mt-2 text-heading-sm leading-tight break-words text-foreground">
                   {address}
                 </h3>
                 {mapblklot ? (
@@ -165,7 +168,7 @@ export function ResultsCard({
               ) : null}
             </div>
 
-            <div className="flex items-center justify-between border-b border-slate-100 py-3.5">
+            <div className="flex items-center justify-between border-b border-border py-3.5">
               <span className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                 <Building2
                   size={16}
@@ -174,15 +177,13 @@ export function ResultsCard({
                 />
                 Base Zoning
               </span>
-              <span className="rounded-md border border-border bg-[#F5F5F7] px-2.5 py-1 font-mono text-xs font-semibold text-foreground">
+              <span className="rounded-input border border-border bg-muted px-2.5 py-1 font-mono text-xs font-normal text-foreground">
                 {report?.zoning ?? "—"}
               </span>
             </div>
 
             <div>
-              <p className="mb-1 text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                Overlay facts
-              </p>
+              <p className="font-label mb-2 text-muted-foreground">Overlay facts</p>
               <OverlayRow
                 label="Coastal Zone"
                 icon={Trees}
@@ -206,11 +207,9 @@ export function ResultsCard({
             </div>
 
             {report ? (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-                    Programs
-                  </span>
+                  <span className="font-label text-muted-foreground">Programs</span>
                   <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                     ADU <EligibilityBadge status={report.adu.status} />
                   </span>
@@ -242,19 +241,19 @@ export function ResultsCard({
           </div>
 
           {geocodeResult ? (
-            <div className="sticky bottom-0 z-10 flex flex-col gap-2 border-t border-border bg-white p-4 sm:flex-row sm:items-center">
+            <div className="sticky bottom-0 z-10 flex flex-col gap-2 border-t border-border bg-card p-6 sm:flex-row sm:items-center">
               {onGetQuotes ? (
                 <Button
                   type="button"
                   onClick={onGetQuotes}
-                  className="h-11 min-h-[44px] flex-1 rounded-xl"
+                  className="h-11 min-h-[44px] flex-1"
                 >
                   Get Quotes
                 </Button>
               ) : null}
               <Link
                 href={connectHref}
-                className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-white px-4 text-sm font-medium text-foreground transition-colors hover:bg-[#F5F5F7]"
+                className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-button border border-border bg-background px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted"
               >
                 Open Connect
                 <ArrowRight size={16} aria-hidden="true" />
@@ -267,6 +266,7 @@ export function ResultsCard({
       {briefing && !isLoading ? (
         <>
           <ResultsBriefingSection summary={briefing.summary} />
+          <JurisdictionRequirements requirements={briefing.requirements} />
           <BuyerGuideLinks links={briefing.guideLinks} />
           <ApplicationChecklist
             items={briefing.checklist}

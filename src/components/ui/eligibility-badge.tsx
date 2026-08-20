@@ -16,25 +16,25 @@ const statusConfig: Record<
     label: "Eligible",
     icon: CheckCircle2,
     className:
-      "border-emerald-200/60 bg-emerald-50 text-emerald-700 [a]:hover:bg-emerald-50",
+      "border-emerald-600/35 bg-emerald-600/10 text-emerald-600 [a]:hover:bg-emerald-600/15",
   },
   warning: {
     label: "Warning",
     icon: AlertTriangle,
     className:
-      "border-amber-200/60 bg-amber-50 text-amber-700 [a]:hover:bg-amber-50",
+      "border-amber-500/35 bg-amber-500/10 text-amber-500 [a]:hover:bg-amber-500/15",
   },
   restricted: {
     label: "Restricted",
     icon: XCircle,
     className:
-      "border-rose-200/60 bg-rose-50 text-rose-700 [a]:hover:bg-rose-50",
+      "border-rose-600/35 bg-rose-600/10 text-rose-600 [a]:hover:bg-rose-600/15",
   },
 };
 
 /**
  * Thin eligibility status badge over shadcn Badge.
- * Keeps emerald / amber / rose semantics for ADU & SB 9 results.
+ * Chromatic emerald / amber / rose — eligibility/stat context only.
  */
 export function EligibilityBadge({
   status,
@@ -52,10 +52,10 @@ export function EligibilityBadge({
     <Badge
       variant="outline"
       className={cn(
-        "gap-1.5 rounded-full border shadow-sm backdrop-blur-md",
+        "gap-1.5 rounded-pill border shadow-none",
         size === "lg"
-          ? "h-auto px-4 py-1.5 text-sm font-semibold"
-          : "h-auto px-2.5 py-1 text-[11px] font-semibold tracking-wider uppercase",
+          ? "h-auto px-4 py-1.5 text-sm font-medium"
+          : "h-auto px-2.5 py-1 text-[11px] font-medium tracking-[-0.02em] uppercase",
         config.className,
         className,
       )}
@@ -63,7 +63,7 @@ export function EligibilityBadge({
     >
       <Icon
         className={size === "lg" ? "size-[18px]!" : "size-3.5!"}
-        strokeWidth={2.5}
+        strokeWidth={2}
         aria-hidden="true"
       />
       {config.label}

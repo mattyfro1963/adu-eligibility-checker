@@ -62,15 +62,15 @@ export function Dialog({
         }
       }}
       className={cn(
-        "z-[70] m-auto max-h-[min(90dvh,800px)] w-[min(100%-1.5rem,42rem)] overflow-y-auto rounded-xl border border-border bg-white p-0 text-foreground shadow-registry backdrop:bg-[#1D1D1F]/70 open:fixed open:inset-0",
+        "z-[70] m-auto max-h-[min(90dvh,800px)] w-[min(100%-1.5rem,42rem)] overflow-y-auto rounded-card border border-border bg-card p-0 text-foreground shadow-editorial backdrop:bg-foreground/40 open:fixed open:inset-0",
         className,
       )}
     >
-      <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-border bg-white px-5 py-4">
+      <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-border bg-card px-8 py-6">
         <div className="min-w-0">
           <h2
             id={titleId}
-            className="text-base font-semibold tracking-tight text-foreground"
+            className="font-heading text-subheading text-foreground"
           >
             {title}
           </h2>
@@ -86,13 +86,13 @@ export function Dialog({
         <button
           type="button"
           onClick={() => onOpenChange(false)}
-          className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          className="inline-flex size-9 shrink-0 items-center justify-center rounded-[8px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           aria-label="Close dialog"
         >
           <X size={18} aria-hidden="true" />
         </button>
       </div>
-      <div className="px-5 py-4">{children}</div>
+      <div className="px-8 py-6">{children}</div>
     </dialog>
   );
 }

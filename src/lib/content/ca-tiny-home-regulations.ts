@@ -11,12 +11,24 @@ export type ResourceLink = {
   href: string;
 };
 
+/** Structured requirement seed for search results (not only /regulations prose). */
+export type JurisdictionRequirementSeed = {
+  id: string;
+  title: string;
+  tinyHomeExplanation: string;
+};
+
 export type JurisdictionNote = {
   name: string;
   summary: string;
   parkModel?: string;
   links: ResourceLink[];
   cities?: JurisdictionNote[];
+  /**
+   * Optional explicit requirement bullets. When omitted, search results seed
+   * from `summary` / `parkModel` via `requirementsFromJurisdictionNote`.
+   */
+  requirements?: JurisdictionRequirementSeed[];
 };
 
 export type TinyHomeCommunity = {
@@ -388,6 +400,20 @@ export const COUNTY_GUIDES: JurisdictionNote[] = [
       "Favorable for tiny homes generally. Units are commonly capped around 400 sq ft of floor area excluding lofts; minimum floor area may be set case-by-case by planning staff.",
     parkModel:
       "Park-model / THOW rules are not always explicit—confirm with county or city staff before relying on wheels-on occupancy.",
+    requirements: [
+      {
+        id: "alameda-size-cap",
+        title: "County size / floor-area expectations",
+        tinyHomeExplanation:
+          "Alameda County guidance commonly caps tiny homes around 400 sq ft of floor area excluding lofts; planning staff may set minimum floor area case-by-case. Confirm current standards before ordering a unit.",
+      },
+      {
+        id: "alameda-thow",
+        title: "THOW / park-model confirmation",
+        tinyHomeExplanation:
+          "Park-model / THOW rules are not always explicit in the county code—confirm with county or city staff before relying on wheels-on occupancy as a permanent dwelling.",
+      },
+    ],
     links: [
       {
         label: "Code of Ordinances",
@@ -403,6 +429,14 @@ export const COUNTY_GUIDES: JurisdictionNote[] = [
         name: "Oakland",
         summary:
           "Allows both foundation tiny homes and tiny homes on wheels through the city’s vehicular residential / THOW pathway. A permit is required.",
+        requirements: [
+          {
+            id: "oakland-vehicular-residential",
+            title: "Oakland vehicular residential / THOW permit",
+            tinyHomeExplanation:
+              "Oakland allows foundation tiny homes and tiny homes on wheels through the city’s vehicular residential / THOW pathway. A city permit is required before occupied placement.",
+          },
+        ],
         links: [
           {
             label: "Apply for vehicular residential facilities",
@@ -844,6 +878,20 @@ export const COUNTY_GUIDES: JurisdictionNote[] = [
     summary:
       "Allows tiny homes that meet 2022 CBC standards. Park models for permanent residence are typically limited to designated settings under statewide rules.",
     parkModel: "Confirm with SF Planning / DBI for ADU or park pathways.",
+    requirements: [
+      {
+        id: "sf-cbc-dwelling",
+        title: "CBC-compliant dwelling / ADU path",
+        tinyHomeExplanation:
+          "San Francisco allows tiny homes that meet California Building Code standards as dwelling units when zoning and ADU rules are met. Confirm primary use, district standards, and permits with SF Planning and DBI.",
+      },
+      {
+        id: "sf-park-model",
+        title: "Park model / THOW permanence",
+        tinyHomeExplanation:
+          "Park models for permanent residence are typically limited to designated settings. Confirm ADU or park pathways with SF Planning / DBI before wheels-on occupancy.",
+      },
+    ],
     links: [
       {
         label: "Building",

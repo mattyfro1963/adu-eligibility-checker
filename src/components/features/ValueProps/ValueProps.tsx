@@ -3,36 +3,39 @@ import { House, Map, Ruler } from "lucide-react";
 const ITEMS = [
   {
     icon: House,
-    title: "Ease of Use",
+    title: "Ease of use",
     body: "Simple address input with fast results.",
   },
   {
     icon: Map,
-    title: "Instant Mapping",
-    body: "Instant GIS mapping of your parcel.",
+    title: "Instant mapping",
+    body: "GIS parcel context for your lot.",
   },
   {
     icon: Ruler,
-    title: "Compliance Check",
-    body: "Immediate ADU & SB 9 compliance status.",
+    title: "Compliance check",
+    body: "ADU and SB 9 status from parcel facts.",
   },
 ] as const;
 
 export function ValueProps() {
   return (
-    <ul className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-3">
+    <ul className="rule-grid grid grid-cols-1 sm:grid-cols-3">
       {ITEMS.map((item) => {
         const Icon = item.icon;
         return (
-          <li key={item.title} className="flex gap-3 sm:flex-col sm:gap-2">
-            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[#F5F5F7] text-slate-700 sm:size-8">
-              <Icon size={16} aria-hidden="true" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-foreground">
+          <li
+            key={item.title}
+            className="flex flex-col items-center gap-3 px-4 py-4 text-center sm:py-5"
+          >
+            <span className="flex size-10 items-center justify-center rounded-thumb border border-border text-foreground">
+              <Icon size={16} strokeWidth={1.5} aria-hidden="true" />
+            </span>
+            <div className="min-w-0 space-y-1">
+              <p className="font-label text-caption text-muted-foreground">
                 {item.title}
               </p>
-              <p className="mt-0.5 text-[13px] leading-snug text-muted-foreground">
+              <p className="text-[13px] leading-snug text-muted-foreground">
                 {item.body}
               </p>
             </div>
