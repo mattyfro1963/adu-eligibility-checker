@@ -4,9 +4,9 @@ import {
   PageActionLink,
   PageAside,
   PageHeader,
-  PageSection,
   PageShell,
 } from "@/components/features/PageShell/PageShell";
+import { ExpandableSection } from "@/components/ui/expandable-section";
 import { buildAffiliateHref } from "@/lib/affiliates/track";
 import {
   AFFILIATE_CATEGORY_LABELS,
@@ -50,12 +50,14 @@ export function PartnersDirectory() {
         }
       />
 
-      <div className="space-y-10">
-        {sections.map((section) => (
-          <PageSection
+      <div className="space-y-4">
+        {sections.map((section, index) => (
+          <ExpandableSection
             key={section.category}
+            id={`partners-${section.category}`}
             title={section.label}
-            className="space-y-4"
+            description={`${section.partners.length} featured resource${section.partners.length === 1 ? "" : "s"}`}
+            defaultOpen={index === 0}
           >
             <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {section.partners.map((partner) => {
@@ -68,7 +70,7 @@ export function PartnersDirectory() {
                       href={href}
                       target="_blank"
                       rel="sponsored noopener noreferrer"
-                      className="flex min-h-[44px] flex-col gap-1 rounded-[10px] border border-border bg-card p-4 transition-colors hover:border-border hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none"
+                      className="flex min-h-[44px] flex-col gap-1 rounded-[10px] border border-border bg-card p-4 transition-colors hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none"
                     >
                       <span className="inline-flex items-center gap-1.5 text-sm font-normal text-foreground">
                         {partner.name}
@@ -86,7 +88,7 @@ export function PartnersDirectory() {
                 );
               })}
             </ul>
-          </PageSection>
+          </ExpandableSection>
         ))}
       </div>
 

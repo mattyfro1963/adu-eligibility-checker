@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { BriefcaseBusiness, Loader2 } from "lucide-react";
+import { ExpandableSection } from "@/components/ui/expandable-section";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -57,9 +58,12 @@ export function BuilderSignupPanel({ onSubmit }: BuilderSignupPanelProps) {
   }
 
   return (
-    <section
+    <ExpandableSection
       id="builder-partners"
-      className="rounded-card border border-border bg-card p-8 shadow-editorial sm:p-8"
+      title="Are you a licensed California builder?"
+      description="Join the beta lead network — homeowners arrive with address, structure, and budget captured."
+      defaultOpen={false}
+      variant="card"
     >
       <div className="mb-6 flex items-start gap-3">
         <div className="rounded-[8px] border border-border bg-muted p-2">
@@ -70,13 +74,10 @@ export function BuilderSignupPanel({ onSubmit }: BuilderSignupPanelProps) {
         </div>
         <div className="min-w-0">
           <p className="font-label text-muted-foreground">Builder network</p>
-          <h2 className="font-heading mt-2 text-heading-sm text-foreground">
-            Are you a licensed California builder?
-          </h2>
           <p className="mt-2 text-body text-muted-foreground">
             Buy high-intent, pre-qualified property leads in your ZIP codes
-            ($20–$100/lead). Join our beta network — homeowners arrive with
-            address, structure, and budget already captured.
+            ($20–$100/lead). Informational matching only — not a permit or
+            marketplace guarantee.
           </p>
         </div>
       </div>
@@ -178,6 +179,6 @@ export function BuilderSignupPanel({ onSubmit }: BuilderSignupPanelProps) {
           </Button>
         </form>
       )}
-    </section>
+    </ExpandableSection>
   );
 }

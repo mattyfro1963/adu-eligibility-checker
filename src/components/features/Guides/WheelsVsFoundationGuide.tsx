@@ -1,5 +1,6 @@
 import { CitedText } from "@/components/features/ResultsCard/CitedText";
 import { GuideLayout } from "@/components/features/Guides/GuideLayout";
+import { ExpandableSection } from "@/components/ui/expandable-section";
 import {
   COMPARISON_ROWS,
   DECISION_NODES,
@@ -20,35 +21,29 @@ export function WheelsVsFoundationGuide() {
       meta={WHEELS_VS_FOUNDATION_META}
       lead={WHEELS_VS_FOUNDATION_INTRO.lead}
     >
-      <section aria-labelledby="decision-tree-heading" className="space-y-6">
+      <section aria-labelledby="decision-tree-heading" className="space-y-4">
         <h2
           id="decision-tree-heading"
-          className="text-lg font-normal tracking-tight text-foreground sm:text-xl"
+          className="font-display text-lg tracking-tight text-foreground sm:text-xl"
         >
           Decision tree
         </h2>
-        <ol className="space-y-5">
+        <div className="space-y-3">
           {DECISION_NODES.map((node, index) => (
-            <li
+            <ExpandableSection
               key={node.id}
               id={node.id}
-              className="rounded-[10px] border border-border bg-card p-5 sm:p-6"
+              title={`Step ${index + 1}: ${node.question}`}
+              defaultOpen={index === 0}
+              variant="muted"
             >
-              <p className="text-xs font-normal tracking-wider text-muted-foreground uppercase">
-                Step {index + 1}
-              </p>
-              <h3 className="mt-1 text-base font-normal text-foreground">
-                {node.question}
-              </h3>
-              <div className="mt-3">
-                {isCitedClaim(node.guidance) ? (
-                  <CitedText claim={node.guidance} as="div" />
-                ) : (
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    {node.guidance.text}
-                  </p>
-                )}
-              </div>
+              {isCitedClaim(node.guidance) ? (
+                <CitedText claim={node.guidance} as="div" />
+              ) : (
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  {node.guidance.text}
+                </p>
+              )}
               <ul className="mt-4 space-y-3">
                 {node.outcomes.map((outcome) => (
                   <li
@@ -69,18 +64,17 @@ export function WheelsVsFoundationGuide() {
                   </li>
                 ))}
               </ul>
-            </li>
+            </ExpandableSection>
           ))}
-        </ol>
+        </div>
       </section>
 
-      <section aria-labelledby="comparison-heading" className="space-y-4">
-        <h2
-          id="comparison-heading"
-          className="text-lg font-normal tracking-tight text-foreground sm:text-xl"
-        >
-          Side-by-side trade-offs
-        </h2>
+      <ExpandableSection
+        id="comparison-heading"
+        title="Side-by-side trade-offs"
+        description="Wheels / THOW versus foundation ADU across key dimensions"
+        defaultOpen={false}
+      >
         <div className="overflow-x-auto rounded-[10px] border border-border bg-card shadow-editorial">
           <table className="w-full min-w-[36rem] border-collapse text-left text-sm">
             <thead>
@@ -128,7 +122,7 @@ export function WheelsVsFoundationGuide() {
             </tbody>
           </table>
         </div>
-      </section>
+      </ExpandableSection>
     </GuideLayout>
   );
 }

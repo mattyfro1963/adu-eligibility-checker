@@ -6,6 +6,8 @@ import { AlertTriangle, MapPinned } from "lucide-react";
 import { AddressSearch } from "@/components/features/AddressSearch/AddressSearch";
 import { BuilderSignupPanel } from "@/components/features/BuilderSignupPanel/BuilderSignupPanel";
 import { ContractorMatchGrid } from "@/components/features/ContractorMatchGrid/ContractorMatchGrid";
+import { LeadFallbackForm } from "@/components/features/LeadFallbackForm/LeadFallbackForm";
+import { PartnerOffers } from "@/components/features/PartnerOffers/PartnerOffers";
 import {
   PageHeader,
   PageShell,
@@ -324,12 +326,57 @@ export function ConnectPage() {
       ) : null}
 
       {geocodeResult && !matches ? (
-        <ProjectLeadForm
-          address={geocodeResult.formattedAddress}
-          overallStatus={overallStatus}
-          isSubmitting={isSubmitting}
-          onSubmit={handleProjectSubmit}
-        />
+        <>
+          {overallStatus === "eligible" ? (
+            <>
+              <PartnerOffers intent="eligible" />
+              <ProjectLeadForm
+                address={geocodeResult.formattedAddress}
+                overallStatus={overallStatus}
+                isSubmitting={isSubmitting}
+                onSubmit={handleProjectSubmit}
+              />
+            </>
+          ) : null}
+
+          {overallStatus === "warning" ? (
+            <>
+              <LeadFallbackForm
+                address={geocodeResult.formattedAddress}
+                lat={geocodeResult.lat}
+                lng={geocodeResult.lng}
+                variant="warning"
+                overallStatus="warning"
+              />
+              <PartnerOffers intent="warning" compact />
+            </>
+          ) : null}
+
+          {overallStatus === "restricted" ? (
+            <>
+              <LeadFallbackForm
+                address={geocodeResult.formattedAddress}
+                lat={geocodeResult.lat}
+                lng={geocodeResult.lng}
+                variant="restricted"
+                overallStatus="restricted"
+              />
+              <PartnerOffers intent="restricted" compact />
+            </>
+          ) : null}
+
+          {overallStatus == null ||
+          (overallStatus !== "eligible" &&
+            overallStatus !== "warning" &&
+            overallStatus !== "restricted") ? (
+            <ProjectLeadForm
+              address={geocodeResult.formattedAddress}
+              overallStatus={overallStatus}
+              isSubmitting={isSubmitting}
+              onSubmit={handleProjectSubmit}
+            />
+          ) : null}
+        </>
       ) : null}
 
       {matches ? (

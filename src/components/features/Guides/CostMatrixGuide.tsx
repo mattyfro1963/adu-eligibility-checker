@@ -1,4 +1,5 @@
 import { GuideLayout } from "@/components/features/Guides/GuideLayout";
+import { ExpandableSection } from "@/components/ui/expandable-section";
 import {
   COST_COLUMNS,
   COST_LINE_ITEMS,
@@ -36,14 +37,14 @@ export function CostMatrixGuide() {
         </div>
       </section>
 
-      <section aria-labelledby="cost-matrix-heading" className="space-y-4">
-        <h2
+      <section aria-labelledby="cost-matrix-heading">
+        <ExpandableSection
           id="cost-matrix-heading"
-          className="text-lg font-normal tracking-tight text-foreground sm:text-xl"
+          title="Line-item cost matrix"
+          description="Crane, trenching, permits, and path-specific totals"
+          defaultOpen={false}
         >
-          Line-item cost matrix
-        </h2>
-        <div className="overflow-x-auto rounded-[10px] border border-border bg-card shadow-editorial">
+          <div className="overflow-x-auto rounded-[10px] border border-border bg-card shadow-editorial">
           <table className="w-full min-w-[40rem] border-collapse text-left text-sm">
             <thead>
               <tr className="border-b border-border bg-muted">
@@ -94,6 +95,7 @@ export function CostMatrixGuide() {
             </tbody>
           </table>
         </div>
+        </ExpandableSection>
       </section>
     </GuideLayout>
   );

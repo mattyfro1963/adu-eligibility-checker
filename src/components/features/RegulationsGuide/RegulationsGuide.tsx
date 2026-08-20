@@ -2,7 +2,6 @@ import Link from "next/link";
 import {
   ExternalLink,
   MapPinned,
-  Package,
   Scale,
   ShieldAlert,
 } from "lucide-react";
@@ -14,6 +13,7 @@ import {
   PageShell,
   TocNav,
 } from "@/components/features/PageShell/PageShell";
+import { ExpandableSection } from "@/components/ui/expandable-section";
 import { RegulationsAuthorByline } from "@/components/features/ResultsCard/RegulationsAuthorByline";
 import { buildAffiliateHref } from "@/lib/affiliates/track";
 import {
@@ -235,30 +235,38 @@ export function RegulationsGuide() {
 
           <section
             id="directories"
-            className="scroll-mt-24 grid gap-8 lg:grid-cols-2"
+            className="scroll-mt-24"
           >
-            <div className="space-y-3">
-              <h2 className="text-xl font-normal tracking-tight text-foreground">
-                County resource directory
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Direct links to planning, building, and tiny-home materials.
-              </p>
-              <div className="border border-border bg-card p-5">
-                <ResourceList links={COUNTY_DIRECTORY} />
+            <ExpandableSection
+              title="Official resource directories"
+              description="County planning links and major city ordinances"
+              defaultOpen={false}
+            >
+              <div className="grid gap-8 lg:grid-cols-2">
+                <div className="space-y-3">
+                  <h3 className="text-base font-normal tracking-tight text-foreground">
+                    County resource directory
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Direct links to planning, building, and tiny-home materials.
+                  </p>
+                  <div className="rounded-[10px] border border-border bg-card p-5">
+                    <ResourceList links={COUNTY_DIRECTORY} />
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <h3 className="text-base font-normal tracking-tight text-foreground">
+                    Major cities
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    City rules can differ from the surrounding county—check both.
+                  </p>
+                  <div className="rounded-[10px] border border-border bg-card p-5">
+                    <ResourceList links={CITY_DIRECTORY} />
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="space-y-3">
-              <h2 className="text-xl font-normal tracking-tight text-foreground">
-                Major cities
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                City rules can differ from the surrounding county—check both.
-              </p>
-              <div className="border border-border bg-card p-5">
-                <ResourceList links={CITY_DIRECTORY} />
-              </div>
-            </div>
+            </ExpandableSection>
           </section>
 
           <section id="unclear" className="scroll-mt-24 space-y-4">
@@ -291,105 +299,103 @@ export function RegulationsGuide() {
             </p>
           </section>
 
-          <section id="communities" className="scroll-mt-24 space-y-4">
-            <h2 className="text-xl font-normal tracking-tight text-foreground">
-              Example tiny-home communities
-            </h2>
-            <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground">
-              When local rules require a designated park, established
-              communities can be a practical placement option. Verify current
-              availability and residency rules directly with each site.
-            </p>
-            <ul className="grid gap-4 md:grid-cols-3">
-              {COMMUNITIES.map((community) => (
-                <li
-                  key={community.name}
-                  className="border border-border bg-card p-5"
-                >
-                  <p className="font-medium text-foreground">
-                    {community.name}
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {community.address}
-                  </p>
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                    {community.notes}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          <section id="partners" className="scroll-mt-24 space-y-4">
-            <div className="flex items-center gap-2">
-              <Package
-                size={18}
-                className="text-muted-foreground"
-                aria-hidden="true"
-              />
-              <h2 className="text-xl font-normal tracking-tight text-foreground">
-                Partners &amp; build-out resources
-              </h2>
-            </div>
-            <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground">
-              After you understand local rules, manufacturer product lines can
-              help you research solar, sanitation, chassis, and compact
-              appliances. These are curated featured resources — not
-              endorsements or permit substitutes.{" "}
-              <Link
-                href="/partners"
-                className="font-medium text-foreground underline-offset-2 hover:underline"
-              >
-                Browse the full partners directory
-              </Link>
-              .
-            </p>
-            <p className="max-w-3xl text-xs leading-relaxed text-muted-foreground">
-              {AFFILIATE_DISCLOSURE}
-            </p>
-            <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {PARTNER_TEASER_CATEGORIES.map((category) => {
-                const partner = affiliatesByCategory(category)[0];
-                if (!partner) return null;
-                const href = buildAffiliateHref(partner, {
-                  intent: "eligible",
-                });
-                return (
+          <section id="communities" className="scroll-mt-24">
+            <ExpandableSection
+              title="Example tiny-home communities"
+              description="Designated parks when local rules require community placement"
+              defaultOpen={false}
+            >
+              <p className="mb-4 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+                When local rules require a designated park, established
+                communities can be a practical placement option. Verify current
+                availability and residency rules directly with each site.
+              </p>
+              <ul className="grid gap-4 md:grid-cols-3">
+                {COMMUNITIES.map((community) => (
                   <li
-                    key={category}
-                    className="border border-border bg-card p-5"
+                    key={community.name}
+                    className="rounded-[10px] border border-border bg-card p-5"
                   >
-                    <p className="text-xs font-normal tracking-wider text-muted-foreground uppercase">
-                      {AFFILIATE_CATEGORY_LABELS[category]}
+                    <p className="font-medium text-foreground">
+                      {community.name}
                     </p>
-                    <a
-                      href={href}
-                      target="_blank"
-                      rel="sponsored noopener noreferrer"
-                      className="mt-2 inline-flex min-h-[44px] items-center gap-1.5 text-sm font-normal text-foreground underline-offset-2 hover:underline"
-                    >
-                      {partner.name}
-                      <ExternalLink
-                        size={12}
-                        className="shrink-0 opacity-60"
-                        aria-hidden="true"
-                      />
-                    </a>
-                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                      {partner.blurb}
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {community.address}
+                    </p>
+                    <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                      {community.notes}
                     </p>
                   </li>
-                );
-              })}
-            </ul>
-            <p className="text-sm text-muted-foreground">
-              <Link
-                href="/partners"
-                className="font-medium text-foreground underline-offset-2 hover:underline"
-              >
-                See all partner categories
-              </Link>
-            </p>
+                ))}
+              </ul>
+            </ExpandableSection>
+          </section>
+
+          <section id="partners" className="scroll-mt-24">
+            <ExpandableSection
+              title="Partners & build-out resources"
+              description="Curated manufacturer links — not endorsements or permit substitutes"
+              defaultOpen={false}
+            >
+              <p className="mb-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+                After you understand local rules, manufacturer product lines can
+                help you research solar, sanitation, chassis, and compact
+                appliances.{" "}
+                <Link
+                  href="/partners"
+                  className="font-medium text-foreground underline-offset-2 hover:underline"
+                >
+                  Browse the full partners directory
+                </Link>
+                .
+              </p>
+              <p className="mb-5 max-w-3xl text-xs leading-relaxed text-muted-foreground">
+                {AFFILIATE_DISCLOSURE}
+              </p>
+              <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {PARTNER_TEASER_CATEGORIES.map((category) => {
+                  const partner = affiliatesByCategory(category)[0];
+                  if (!partner) return null;
+                  const href = buildAffiliateHref(partner, {
+                    intent: "eligible",
+                  });
+                  return (
+                    <li
+                      key={category}
+                      className="rounded-[10px] border border-border bg-card p-5"
+                    >
+                      <p className="text-xs font-normal tracking-wider text-muted-foreground uppercase">
+                        {AFFILIATE_CATEGORY_LABELS[category]}
+                      </p>
+                      <a
+                        href={href}
+                        target="_blank"
+                        rel="sponsored noopener noreferrer"
+                        className="mt-2 inline-flex min-h-[44px] items-center gap-1.5 text-sm font-normal text-foreground underline-offset-2 hover:underline"
+                      >
+                        {partner.name}
+                        <ExternalLink
+                          size={12}
+                          className="shrink-0 opacity-60"
+                          aria-hidden="true"
+                        />
+                      </a>
+                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                        {partner.blurb}
+                      </p>
+                    </li>
+                  );
+                })}
+              </ul>
+              <p className="mt-5 text-sm text-muted-foreground">
+                <Link
+                  href="/partners"
+                  className="font-medium text-foreground underline-offset-2 hover:underline"
+                >
+                  See all partner categories
+                </Link>
+              </p>
+            </ExpandableSection>
           </section>
 
           <section id="faqs" className="scroll-mt-24 space-y-4">

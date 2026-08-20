@@ -196,7 +196,7 @@ export function PageAside({
     <aside
       role="note"
       className={cn(
-        "rounded-[10px] border border-border bg-muted p-5 text-sm leading-relaxed text-muted-foreground",
+        "rounded-card border border-border bg-muted p-5 text-sm leading-relaxed text-muted-foreground shadow-elevated",
         className,
       )}
     >
@@ -222,7 +222,7 @@ export function ContentLinkCard({
     <Link href={href} className="group block outline-none">
       <Card
         size="sm"
-        className="border border-border bg-card ring-0 transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/50"
+        className="rounded-card border border-border bg-card shadow-elevated ring-0 transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/50"
       >
         <div className="flex min-h-[44px] items-start gap-4">
           {icon ? (

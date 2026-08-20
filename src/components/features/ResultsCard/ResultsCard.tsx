@@ -21,6 +21,7 @@ import { StatutoryComplianceChecklist } from "@/components/features/ResultsCard/
 import { SearchReceiptCard } from "@/components/features/ResultsCard/SearchReceipt";
 import { Button } from "@/components/ui/button";
 import { EligibilityBadge } from "@/components/ui/eligibility-badge";
+import { ExpandableSection } from "@/components/ui/expandable-section";
 import { composeResultsBriefing } from "@/lib/regulations/compose-briefing";
 import { buildStatutoryEvaluations } from "@/lib/rules/statutory-evaluations";
 import { cn } from "@/lib/utils";
@@ -169,8 +170,8 @@ export function ResultsCard({
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 space-y-6 duration-700 fill-mode-both sm:space-y-8">
-      <div className="grid grid-cols-1 gap-0 lg:grid-cols-5 lg:items-stretch">
-        <div className="relative flex flex-col overflow-hidden border border-neutral-200 bg-white lg:col-span-2 lg:max-h-[min(720px,calc(100vh-8rem))] lg:border-r-0">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:items-stretch lg:gap-8">
+        <div className="relative flex flex-col overflow-hidden rounded-card border border-border bg-card shadow-elevated lg:col-span-2 lg:max-h-[min(720px,calc(100vh-8rem))] lg:border-r-0">
           <div className="flex-1 space-y-6 overflow-y-auto p-8">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
@@ -283,11 +284,19 @@ export function ResultsCard({
                   </div>
                 )}
                 {statutoryEvaluations.length > 0 ? (
-                  <StatutoryComplianceChecklist
-                    report={report}
-                    evaluations={statutoryEvaluations}
-                    program={program}
-                  />
+                  <ExpandableSection
+                    title="Statutory compliance checklist"
+                    description="Lot facts cross-checked against cited code sections"
+                    defaultOpen={false}
+                    variant="muted"
+                    contentClassName="p-0 sm:p-0"
+                  >
+                    <StatutoryComplianceChecklist
+                      report={report}
+                      evaluations={statutoryEvaluations}
+                      program={program}
+                    />
+                  </ExpandableSection>
                 ) : null}
                 <RegulationsAuthorByline className="text-xs text-muted-foreground" />
               </div>
@@ -295,19 +304,19 @@ export function ResultsCard({
           </div>
 
           {geocodeResult ? (
-            <div className="sticky bottom-0 z-10 flex flex-col gap-2 border-t border-neutral-200 bg-white p-6 sm:flex-row sm:items-center">
+            <div className="sticky bottom-0 z-10 flex flex-col gap-2 border-t border-border bg-card p-6 sm:flex-row sm:items-center">
               {onGetQuotes ? (
                 <Button
                   type="button"
                   onClick={onGetQuotes}
-                  className="h-11 min-h-[44px] flex-1 rounded-none bg-black text-white hover:bg-black/90"
+                  className="h-11 min-h-[44px] flex-1 rounded-button bg-primary text-primary-foreground hover:bg-primary/90"
                 >
                   Get Quotes
                 </Button>
               ) : null}
               <Link
                 href={connectHref}
-                className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-none border border-neutral-300 bg-white px-4 text-sm font-medium text-black transition-colors hover:bg-neutral-50"
+                className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-button border border-border bg-card px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted"
               >
                 Open Connect
                 <ArrowRight size={16} aria-hidden="true" />
@@ -320,7 +329,8 @@ export function ResultsCard({
           <AddressMapPreview
             lat={lat}
             lng={lng}
-            label={address !== "—" ? address : null}
+            status={report?.overall ?? null}
+            label={address}
             sublabel={mapCalloutSublabel}
             className="min-h-[280px] rounded-none border-0 sm:min-h-[360px] lg:min-h-full"
           />
@@ -330,21 +340,42 @@ export function ResultsCard({
       {briefing && !isLoading ? (
         <>
           <ResultsBriefingSection summary={briefing.summary} />
-          <JurisdictionRequirements requirements={briefing.requirements} />
-          <BuyerGuideLinks links={briefing.guideLinks} />
-          <ApplicationChecklist
-            items={briefing.checklist}
-            title="California application checklist"
-          />
+          <ExpandableSection
+            title="Requirements & application steps"
+            description="California application checklist, county/city notes, and SF buyer guides"
+            defaultOpen
+          >
+            <div className="space-y-6">
+              <JurisdictionRequirements
+                requirements={briefing.requirements}
+                embedded
+              />
+              <ApplicationChecklist items={briefing.checklist} embedded />
+              <BuyerGuideLinks links={briefing.guideLinks} />
+            </div>
+          </ExpandableSection>
         </>
       ) : null}
 
       {briefing && !isLoading && briefing.isCalifornia ? (
-        <CaliforniaOutline sections={briefing.outline} />
+        <ExpandableSection
+          title="California building paths"
+          description="Statewide context — state floor first, then local code"
+          defaultOpen={false}
+        >
+          <CaliforniaOutline sections={briefing.outline} embedded />
+        </ExpandableSection>
       ) : null}
 
       {briefing && !isLoading ? (
-        <SearchReceiptCard receipt={briefing.receipt} />
+        <ExpandableSection
+          title="Search receipt & sources"
+          description="Provenance, corpus version, and official links for this visit"
+          defaultOpen={false}
+          variant="muted"
+        >
+          <SearchReceiptCard receipt={briefing.receipt} embedded />
+        </ExpandableSection>
       ) : null}
     </div>
   );

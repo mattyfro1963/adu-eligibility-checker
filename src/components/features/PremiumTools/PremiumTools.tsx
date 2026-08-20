@@ -19,6 +19,7 @@ import {
   PageShell,
 } from "@/components/features/PageShell/PageShell";
 import { Button } from "@/components/ui/button";
+import { ExpandableSection } from "@/components/ui/expandable-section";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -47,7 +48,7 @@ function ProductCard({
   const Icon = ICON_MAP[tool.icon];
 
   return (
-    <li className="flex flex-col border border-border bg-card p-5 sm:p-6">
+    <li className="flex flex-col rounded-card border border-border bg-card p-5 shadow-elevated sm:p-6">
       <div className="flex items-start justify-between gap-3">
         <div className="rounded-lg border border-border bg-muted p-2">
           <Icon size={18} className="text-foreground" aria-hidden={true} />
@@ -73,20 +74,29 @@ function ProductCard({
         </p>
       </div>
 
-      <ul className="mt-4 space-y-2 border-t border-border pt-4">
-        {tool.includes.map((item) => (
-          <li
-            key={item}
-            className="flex gap-2 text-sm leading-relaxed text-muted-foreground"
-          >
-            <span
-              className="mt-2 h-1 w-1 shrink-0 rounded-full bg-border"
-              aria-hidden="true"
-            />
-            {item}
-          </li>
-        ))}
-      </ul>
+      <ExpandableSection
+        title="What's included"
+        description={`${tool.includes.length} checklist items`}
+        defaultOpen={false}
+        variant="muted"
+        className="mt-4 border-0 bg-transparent shadow-none"
+        contentClassName="px-0 py-0 sm:px-0 sm:py-0"
+      >
+        <ul className="space-y-2 px-4 py-3">
+          {tool.includes.map((item) => (
+            <li
+              key={item}
+              className="flex gap-2 text-sm leading-relaxed text-muted-foreground"
+            >
+              <span
+                className="mt-2 h-1 w-1 shrink-0 rounded-full bg-border"
+                aria-hidden="true"
+              />
+              {item}
+            </li>
+          ))}
+        </ul>
+      </ExpandableSection>
 
       <Button
         type="button"

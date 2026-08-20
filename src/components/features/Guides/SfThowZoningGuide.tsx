@@ -1,5 +1,6 @@
 import { CitedText } from "@/components/features/ResultsCard/CitedText";
 import { GuideLayout } from "@/components/features/Guides/GuideLayout";
+import { ExpandableSection } from "@/components/ui/expandable-section";
 import {
   SF_THOW_INTRO,
   SF_THOW_META,
@@ -13,19 +14,13 @@ export function SfThowZoningGuide() {
       lead={SF_THOW_INTRO.lead}
       disclaimer={SF_THOW_INTRO.disclaimer}
     >
-      {SF_THOW_SECTIONS.map((section) => (
-        <section
+      {SF_THOW_SECTIONS.map((section, index) => (
+        <ExpandableSection
           key={section.id}
           id={section.id}
-          aria-labelledby={`thow-${section.id}`}
-          className="space-y-4"
+          title={section.title}
+          defaultOpen={index === 0}
         >
-          <h2
-            id={`thow-${section.id}`}
-            className="text-lg font-normal tracking-tight text-foreground sm:text-xl"
-          >
-            {section.title}
-          </h2>
           <ul className="space-y-4">
             {section.claims.map((claim) => (
               <li key={claim.text.slice(0, 64)}>
@@ -33,7 +28,7 @@ export function SfThowZoningGuide() {
               </li>
             ))}
           </ul>
-        </section>
+        </ExpandableSection>
       ))}
     </GuideLayout>
   );

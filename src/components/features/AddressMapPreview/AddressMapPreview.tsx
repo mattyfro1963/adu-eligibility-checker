@@ -2,7 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MapPin } from "lucide-react";
+import { MapPinOverlay } from "@/components/features/AddressMapPreview/MapPinOverlay";
 import { cn } from "@/lib/utils";
+import type { EligibilityStatus } from "@/lib/types/zoning";
 
 interface AddressMapPreviewProps {
   lat: number | null;
@@ -10,10 +12,12 @@ interface AddressMapPreviewProps {
   className?: string;
   /** When false, hide callout chrome (analysis backdrop). */
   chrome?: boolean;
-  /** Primary line in the map callout (e.g. street address). */
+  /** Primary line in the map pin popover (e.g. street address). */
   label?: string | null;
-  /** Secondary line in the callout header (e.g. city / APN). */
+  /** Secondary line — reserved for future pin popover detail. */
   sublabel?: string | null;
+  /** Engine overall status for pin coloring. */
+  status?: EligibilityStatus | null;
 }
 
 function mapPreviewSrc(lat: number, lng: number): string {
@@ -27,7 +31,8 @@ function mapPreviewSrc(lat: number, lng: number): string {
 
 /**
  * Mapbox Static Images proxy — monochrome store-locator presentation:
- * full-bleed grayscale basemap, black pin, optional black/white callout.
+ * full-bleed grayscale basemap with status-colored FeaturePin overlay.
+ * Falls back to a projected pin on a mock CA layer when Mapbox is unset.
  */
 export function AddressMapPreview({
   lat,
@@ -35,7 +40,8 @@ export function AddressMapPreview({
   className = "",
   chrome = true,
   label = null,
-  sublabel = null,
+  sublabel: _sublabel = null,
+  status = null,
 }: AddressMapPreviewProps) {
   const hasCoords =
     typeof lat === "number" &&
@@ -119,29 +125,29 @@ export function AddressMapPreview({
 
   const objectUrl = src && image?.src === src ? image.objectUrl : null;
   const failedReason = src && failed?.src === src ? failed.reason : null;
-  const showAwaiting = !hasCoords || !src || failedReason || !objectUrl;
-  const awaitingLabel = !hasCoords
-    ? "Awaiting Target Coordinates"
-    : failedReason === "unconfigured"
-      ? "Map Preview Not Configured"
-      : failedReason === "error"
-        ? "Map Preview Unavailable"
-        : "Loading Map Preview";
+  const showMapboxImage = Boolean(objectUrl);
+  const showMockLayer = hasCoords && !showMapboxImage;
+  const showPin = hasCoords && (showMapboxImage || showMockLayer);
+  const pinLabel =
+    label && label.trim().length > 0 ? label.trim() : undefined;
+  const pinStatus = status ?? undefined;
+  const pinInteractive = chrome;
 
-  const showCallout =
-    chrome && label && objectUrl && !showAwaiting && label.trim().length > 0;
+  const showAwaitingChrome = chrome && !hasCoords;
+  const showLoadingChrome =
+    chrome && hasCoords && !showMapboxImage && !failedReason;
 
   return (
     <div
       className={cn(
-        "group relative h-full min-h-[240px] overflow-hidden bg-[#e4e4e4] sm:min-h-[320px] lg:min-h-[350px]",
+        "group relative h-full min-h-[240px] overflow-hidden bg-muted sm:min-h-[320px] lg:min-h-[350px]",
         className,
       )}
     >
-      {objectUrl && !showAwaiting ? (
+      {showMapboxImage ? (
         // eslint-disable-next-line @next/next/no-img-element -- blob URL from proxied Mapbox PNG
         <img
-          src={objectUrl}
+          src={objectUrl!}
           alt={
             hasCoords
               ? `Map preview centered on ${lat!.toFixed(5)}, ${lng!.toFixed(5)}`
@@ -152,41 +158,46 @@ export function AddressMapPreview({
             filter: "grayscale(100%) contrast(108%) brightness(103%)",
           }}
         />
+      ) : showMockLayer ? (
+        <div
+          className="absolute inset-0 z-0 bg-brand-cream"
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, rgb(154 143 130 / 0.08) 1px, transparent 1px),
+              linear-gradient(to bottom, rgb(154 143 130 / 0.08) 1px, transparent 1px)
+            `,
+            backgroundSize: "32px 32px",
+          }}
+          aria-hidden="true"
+        />
       ) : (
-        <div className="absolute inset-0 bg-[#ececec]" />
+        <div className="absolute inset-0 bg-muted" aria-hidden="true" />
       )}
 
-      {showCallout ? (
-        <div
-          className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center"
-          aria-hidden="true"
-        >
-          <div className="absolute top-[38%] left-1/2 w-[min(18rem,calc(100%-2rem))] -translate-x-1/2 -translate-y-full">
-            <div className="overflow-hidden shadow-[0_8px_30px_rgb(0_0_0_/_0.12)]">
-              <div className="bg-black px-4 py-3 text-white">
-                <p className="truncate text-sm leading-snug font-medium">
-                  {label}
-                </p>
-                {sublabel ? (
-                  <p className="mt-1 truncate text-xs text-white/75">
-                    {sublabel}
-                  </p>
-                ) : null}
-              </div>
-            </div>
-            <div
-              className="mx-auto h-0 w-0 border-x-8 border-t-8 border-x-transparent border-t-black"
-              aria-hidden="true"
-            />
-          </div>
-        </div>
+      {showPin ? (
+        <MapPinOverlay
+          lat={lat!}
+          lng={lng!}
+          mode={showMapboxImage ? "center" : "projected"}
+          status={pinStatus}
+          label={pinLabel}
+          interactive={pinInteractive}
+        />
       ) : null}
 
-      {chrome && showAwaiting ? (
+      {showAwaitingChrome ? (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/60 backdrop-blur-sm">
           <span className="flex items-center gap-2 border border-neutral-300 bg-white px-5 py-2.5 text-[11px] font-normal tracking-widest text-neutral-600 uppercase shadow-sm">
             <MapPin size={14} className="text-black" aria-hidden="true" />
-            {awaitingLabel}
+            Awaiting Target Coordinates
+          </span>
+        </div>
+      ) : null}
+
+      {showLoadingChrome ? (
+        <div className="pointer-events-none absolute inset-x-0 top-4 z-10 flex justify-center">
+          <span className="border border-brand-taupe/30 bg-white/90 px-4 py-2 text-[11px] font-normal tracking-widest text-brand-charcoal/80 uppercase shadow-sm backdrop-blur-sm">
+            Loading Map Preview
           </span>
         </div>
       ) : null}

@@ -14,34 +14,20 @@ function formatIssuedAt(iso: string): string {
 }
 
 /** On-page search receipt — provenance stamp, not a shareable permalink. */
-export function SearchReceiptCard({ receipt }: { receipt: SearchReceipt }) {
+export function SearchReceiptCard({
+  receipt,
+  embedded = false,
+}: {
+  receipt: SearchReceipt;
+  embedded?: boolean;
+}) {
   const scopeLabel =
     receipt.analysisScope === "lot_zoning"
       ? "California lot analysis (local zoning data)"
       : "Jurisdiction context (county / city + statewide)";
 
-  return (
-    <section
-      aria-labelledby="search-receipt-heading"
-      className="border border-border bg-muted/50 p-5 sm:p-6 md:p-8"
-    >
-      <div className="mb-5 flex items-center gap-3">
-        <div className="rounded-lg border border-border bg-card p-2">
-          <Receipt size={18} className="text-foreground" aria-hidden="true" />
-        </div>
-        <div>
-          <h3
-            id="search-receipt-heading"
-            className="text-[10px] font-normal tracking-widest text-muted-foreground uppercase"
-          >
-            Search receipt
-          </h3>
-          <p className="text-sm font-medium text-foreground">
-            Provenance for this visit
-          </p>
-        </div>
-      </div>
-
+  const body = (
+    <>
       <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
         <div>
           <dt className="text-[10px] font-normal tracking-widest text-muted-foreground uppercase">
@@ -124,6 +110,35 @@ export function SearchReceiptCard({ receipt }: { receipt: SearchReceipt }) {
           {receipt.disclaimer}
         </p>
       </div>
+    </>
+  );
+
+  if (embedded) {
+    return body;
+  }
+
+  return (
+    <section
+      aria-labelledby="search-receipt-heading"
+      className="rounded-card border border-border bg-muted/50 p-5 sm:p-6 md:p-8"
+    >
+      <div className="mb-5 flex items-center gap-3">
+        <div className="rounded-lg border border-border bg-card p-2">
+          <Receipt size={18} className="text-foreground" aria-hidden="true" />
+        </div>
+        <div>
+          <h3
+            id="search-receipt-heading"
+            className="text-[10px] font-normal tracking-widest text-muted-foreground uppercase"
+          >
+            Search receipt
+          </h3>
+          <p className="text-sm font-medium text-foreground">
+            Provenance for this visit
+          </p>
+        </div>
+      </div>
+      {body}
     </section>
   );
 }

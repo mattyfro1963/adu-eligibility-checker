@@ -38,7 +38,7 @@ export function GuideLayout({
         }
       />
 
-      <div className="space-y-10 sm:space-y-12">{children}</div>
+      <div className="space-y-6">{children}</div>
 
       {disclaimer ? (
         <p className="border-t border-border pt-6 text-xs leading-relaxed text-muted-foreground">
