@@ -139,7 +139,7 @@ export default function HomePage() {
     <main
       id="main-content"
       tabIndex={-1}
-      className="mx-auto w-full max-w-editorial flex-1 px-4 py-8 sm:px-6 sm:py-10"
+      className="mx-auto w-full max-w-layout flex-1 px-4 py-10 sm:px-6 sm:py-14"
     >
       <div className="search-enter space-y-6 sm:space-y-8">
         <AddressSearch

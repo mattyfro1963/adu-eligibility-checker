@@ -1,10 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useSyncExternalStore, type ReactNode } from "react";
-import { MapPin, Search } from "lucide-react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
+import { Search } from "lucide-react";
+import { SearchAudienceToggle } from "@/components/features/AddressSearch/SearchAudienceToggle";
+import { SearchTopicCards } from "@/components/features/AddressSearch/SearchTopicCards";
 import { useAddressSearch } from "@/components/features/AddressSearch/useAddressSearch";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import type { SearchAudience } from "@/lib/content/search-topics";
 import type { GeocodeResult } from "@/lib/types/gis";
 
 interface AddressSearchProps {
@@ -55,6 +63,7 @@ export function AddressSearch({
   compact = false,
   children,
 }: AddressSearchProps) {
+  const [audience, setAudience] = useState<SearchAudience>("homeowner");
   const {
     query,
     suggestions,
@@ -99,184 +108,175 @@ export function AddressSearch({
 
   return (
     <section
-      className={cn("flex flex-col", compact ? "space-y-6" : "space-y-8")}
+      className={cn(
+        "flex flex-col",
+        compact ? "space-y-4" : "mx-auto w-full max-w-3xl space-y-8",
+      )}
     >
       {!compact ? (
-        <header className="space-y-4 text-center">
-          <p className="font-label text-[11px] text-muted-foreground">
-            California ADU &amp; SB 9
-          </p>
-          <h1 className="font-display text-heading tracking-display sm:text-display">
-            Check your lot.
+        <header className="space-y-3 text-center">
+          <h1 className="font-display text-3xl tracking-tight uppercase sm:text-5xl">
+            Check your lot?
           </h1>
-          <p className="mx-auto max-w-md text-base font-normal leading-relaxed tracking-body text-muted-foreground">
-            California ADU and SB 9 eligibility with county requirements for
-            every address — lot GIS in SF; jurisdiction guidance elsewhere (no
-            paid data required).
+          <p className="mx-auto max-w-lg text-base text-muted-foreground">
+            Enter a California address below for ADU and SB 9 eligibility,
+            county requirements, and tiny-home guidance.
           </p>
         </header>
       ) : null}
 
-      <div className="overflow-hidden rounded-card border border-border bg-card shadow-editorial">
-        <div ref={containerRef} className="relative w-full p-8">
-          <label htmlFor="address-search" className="sr-only">
-            Search property address
-          </label>
-          <form
-            id="search-form"
-            onSubmit={(e) => {
-              e.preventDefault();
-              void handleSubmit();
-            }}
-            className="relative"
+      <div
+        ref={containerRef}
+        className={cn("relative w-full", compact ? "space-y-2" : "space-y-6")}
+      >
+        <label htmlFor="address-search" className="sr-only">
+          Search property address
+        </label>
+        <form
+          id="search-form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void handleSubmit();
+          }}
+          className="relative"
+        >
+          <div
+            className={cn(
+              "relative flex items-center rounded-2xl bg-secondary transition-colors",
+              compact ? "h-12" : "h-14 sm:h-16",
+              hasError && "ring-2 ring-rose-600 ring-inset",
+            )}
           >
-            <div
+            <input
+              id="address-search"
+              type="text"
+              role="combobox"
+              value={query}
+              onChange={(e) => handleQueryChange(e.target.value)}
+              onFocus={() => setIsOpen(true)}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") {
+                  setIsOpen(false);
+                }
+              }}
+              placeholder="Enter a California address..."
               className={cn(
-                "relative flex h-14 items-center rounded-input border bg-background transition-colors",
-                hasError
-                  ? "border-rose-600"
-                  : "border-border focus-within:border-foreground",
+                "h-full w-full rounded-2xl bg-transparent pr-14 pl-5 text-body text-foreground placeholder:text-muted-foreground focus:outline-none",
+                compact ? "text-sm" : "text-base",
               )}
+              aria-label="Property address search"
+              aria-autocomplete="list"
+              aria-expanded={showList}
+              aria-controls={listboxId}
+              aria-haspopup="listbox"
+              aria-invalid={hasError}
+              autoComplete="off"
+              disabled={isResolving}
+            />
+            <button
+              type="submit"
+              disabled={isResolving || !query.trim()}
+              className="absolute top-1/2 right-4 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center text-muted-foreground transition-colors hover:text-foreground disabled:opacity-40"
+              aria-label={isResolving ? "Locating address" : "Search address"}
             >
-              <MapPin
-                className="absolute left-4 text-muted-foreground"
-                size={18}
-                strokeWidth={1.5}
-                aria-hidden="true"
-              />
-              <input
-                id="address-search"
-                type="text"
-                role="combobox"
-                value={query}
-                onChange={(e) => handleQueryChange(e.target.value)}
-                onFocus={() => setIsOpen(true)}
-                onKeyDown={(e) => {
-                  if (e.key === "Escape") {
-                    setIsOpen(false);
-                  }
-                }}
-                placeholder="Enter a California address..."
-                className="h-full w-full rounded-input bg-transparent pr-28 pl-11 text-body text-foreground placeholder:text-muted-foreground focus:outline-none focus-visible:ring-0 sm:pr-36"
-                aria-label="Property address search"
-                aria-autocomplete="list"
-                aria-expanded={showList}
-                aria-controls={listboxId}
-                aria-haspopup="listbox"
-                aria-invalid={hasError}
-                autoComplete="off"
-                disabled={isResolving}
-              />
-              <Button
-                type="submit"
-                disabled={isResolving || !query.trim()}
-                className="absolute top-1/2 right-1.5 h-10 -translate-y-1/2 gap-2 px-4"
-                aria-label="Evaluate lot"
-              >
-                {isResolving ? (
-                  <>
-                    <span
-                      className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground"
-                      aria-hidden="true"
-                    />
-                    Locating
-                  </>
-                ) : (
-                  <>
-                    <Search size={14} strokeWidth={1.5} aria-hidden="true" />
-                    Evaluate
-                  </>
-                )}
-              </Button>
-            </div>
-          </form>
-          {hasError ? (
-            <p
-              role="alert"
-              className="mt-2 text-left text-caption text-rose-600"
-            >
-              {error}
-            </p>
-          ) : null}
+              {isResolving ? (
+                <span
+                  className="h-5 w-5 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-foreground"
+                  aria-hidden="true"
+                />
+              ) : (
+                <Search size={20} strokeWidth={1.75} aria-hidden="true" />
+              )}
+            </button>
+          </div>
+        </form>
 
-          {showList ? (
-            <ul
-              id={listboxId}
-              role="listbox"
-              className="absolute z-20 mt-2 w-[calc(100%-4rem)] overflow-hidden rounded-input border border-border bg-card shadow-editorial"
-            >
-              {suggestions.map((suggestion) => {
-                const secondary = secondaryLine(suggestion);
-                return (
-                  <li
-                    key={suggestion.addressId}
-                    role="option"
-                    aria-selected="false"
+        {hasError ? (
+          <p role="alert" className="text-left text-caption text-rose-600">
+            {error}
+          </p>
+        ) : null}
+
+        {showList ? (
+          <ul
+            id={listboxId}
+            role="listbox"
+            className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-border bg-background shadow-md"
+          >
+            {suggestions.map((suggestion) => {
+              const secondary = secondaryLine(suggestion);
+              return (
+                <li
+                  key={suggestion.addressId}
+                  role="option"
+                  aria-selected="false"
+                >
+                  <button
+                    type="button"
+                    onClick={() => selectAddress(suggestion)}
+                    className="flex min-h-[44px] w-full items-start gap-3 border-b border-border px-4 py-3 text-left last:border-b-0 hover:bg-muted"
+                    aria-label={`Select ${suggestion.formattedAddress}`}
                   >
-                    <button
-                      type="button"
-                      onClick={() => selectAddress(suggestion)}
-                      className="flex min-h-[44px] w-full items-start gap-3 border-b border-border px-3 py-3 text-left last:border-b-0 hover:bg-muted"
-                      aria-label={`Select ${suggestion.formattedAddress}`}
-                    >
-                      <MapPin
-                        className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
-                        strokeWidth={1.5}
-                        aria-hidden="true"
-                      />
-                      <span className="min-w-0">
-                        <span className="block truncate text-sm font-medium text-foreground">
-                          {suggestion.streetLine || suggestion.formattedAddress}
-                        </span>
-                        {secondary ? (
-                          <span className="mt-0.5 block truncate text-xs text-muted-foreground">
-                            {secondary}
-                          </span>
-                        ) : null}
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-medium text-foreground">
+                        {suggestion.streetLine || suggestion.formattedAddress}
                       </span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          ) : null}
-        </div>
-
-        {!compact && children ? (
-          <div className="border-t border-border px-8 py-6">{children}</div>
+                      {secondary ? (
+                        <span className="mt-0.5 block truncate text-xs text-muted-foreground">
+                          {secondary}
+                        </span>
+                      ) : null}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
         ) : null}
 
         {!compact ? (
-          <p className="border-t border-border px-8 py-4 text-center text-caption leading-relaxed text-muted-foreground">
+          <div className="flex justify-center">
+            <SearchAudienceToggle value={audience} onChange={setAudience} />
+          </div>
+        ) : null}
+
+        {!compact && children ? <div>{children}</div> : null}
+
+        {!compact ? (
+          <p className="text-center text-caption text-muted-foreground">
             All CA counties — free county requirements; SF lot GIS when
             available.
           </p>
         ) : null}
 
         {demosEnabled && !compact ? (
-          <div className="border-t border-border px-8 py-6">
-            <div className="flex flex-col items-center gap-3">
-              <span className="font-label text-muted-foreground">
-                Simulate scenarios
-              </span>
-              <div className="flex flex-wrap justify-center gap-2">
-                {DEMO_SCENARIOS.map((demo) => (
-                  <button
-                    key={demo.label}
-                    type="button"
-                    onClick={() => {
-                      void resolveQuery(demo.query);
-                    }}
-                    className="min-h-[44px] rounded-pill border border-border bg-background px-4 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
-                  >
-                    {demo.label}
-                  </button>
-                ))}
-              </div>
+          <div className="flex flex-col items-center gap-3 pt-2">
+            <span className="font-label text-muted-foreground">
+              Simulate scenarios
+            </span>
+            <div className="flex flex-wrap justify-center gap-2">
+              {DEMO_SCENARIOS.map((demo) => (
+                <button
+                  key={demo.label}
+                  type="button"
+                  onClick={() => {
+                    void resolveQuery(demo.query);
+                  }}
+                  className="min-h-[44px] rounded-full border border-border bg-background px-4 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+                >
+                  {demo.label}
+                </button>
+              ))}
             </div>
           </div>
         ) : null}
       </div>
+
+      {!compact ? (
+        <div className="mx-auto w-full max-w-5xl pt-4">
+          <SearchTopicCards />
+        </div>
+      ) : null}
     </section>
   );
 }

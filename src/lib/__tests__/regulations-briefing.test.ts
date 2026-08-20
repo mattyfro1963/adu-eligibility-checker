@@ -412,7 +412,7 @@ describe("California visitor-facing branding", () => {
       ["SiteHeader/SiteHeader.tsx", [/\bpx-4\b/, /sm:px-6/, /min-h-\[44px\]/]],
       [
         "AddressSearch/AddressSearch.tsx",
-        [/text-heading|text-display/, /\bh-14\b/, /min-h-\[44px\]/],
+        [/uppercase/, /rounded-2xl/, /min-h-\[44px\]/],
       ],
       [
         "ResultsCard/ResultsCard.tsx",
