@@ -1,11 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { mockGeocoder } from "@/lib/adapters/mock-geocoder";
+import {
+  MapboxConfigError,
+  MapboxUpstreamError,
+  mapboxGeocoder,
+} from "@/lib/adapters/mapbox-geocoder";
+import { env } from "@/lib/env";
 import { geocodeQuerySchema } from "@/lib/validations/api-schemas";
 
 export const dynamic = "force-dynamic";
 
-const MOCK_LATENCY_MS = 400;
-const MOCK_ERROR_RATE = 0.08;
+function geocodingUnavailable(status: 502 | 503) {
+  return NextResponse.json(
+    { error: "Geocoding service unavailable" },
+    { status },
+  );
+}
 
 export async function GET(request: NextRequest) {
   const q = request.nextUrl.searchParams.get("q");
@@ -18,24 +27,39 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  await new Promise((resolve) => setTimeout(resolve, MOCK_LATENCY_MS));
-
-  if (Math.random() < MOCK_ERROR_RATE) {
+  // CA-only Mapbox; zoning still mock.
+  if (!env.MAPBOX_ACCESS_TOKEN?.trim()) {
     return NextResponse.json(
-      { error: "Simulated geocoding timeout. Please try again." },
-      { status: 503 },
+      { error: "Geocoding is not configured" },
+      { status: 500 },
     );
   }
 
-  const results = await mockGeocoder.searchSuggestions(parsed.data.q);
+  try {
+    const results = await mapboxGeocoder.searchSuggestions(parsed.data.q);
 
-  if (results.length === 0) {
-    const exact = await mockGeocoder.geocode(parsed.data.q);
-    if (!exact) {
-      return NextResponse.json({ error: "Address not found" }, { status: 404 });
+    if (results.length === 0) {
+      const exact = await mapboxGeocoder.geocode(parsed.data.q);
+      if (!exact) {
+        return NextResponse.json(
+          { error: "Address not found" },
+          { status: 404 },
+        );
+      }
+      return NextResponse.json({ results: [exact] });
     }
-    return NextResponse.json({ results: [exact] });
-  }
 
-  return NextResponse.json({ results });
+    return NextResponse.json({ results });
+  } catch (err) {
+    if (err instanceof MapboxConfigError) {
+      return NextResponse.json(
+        { error: "Geocoding is not configured" },
+        { status: 500 },
+      );
+    }
+    if (err instanceof MapboxUpstreamError) {
+      return geocodingUnavailable(err.status);
+    }
+    return geocodingUnavailable(502);
+  }
 }

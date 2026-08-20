@@ -92,3 +92,21 @@ export const mockProperties: Record<string, Parcel> = {
 };
 
 export const mockPropertyList = Object.values(mockProperties);
+
+const MOCK_PARCEL_IDS = Object.keys(mockProperties);
+
+/**
+ * Stable hash of quantized coordinates so the same lat/lng always maps
+ * onto the same mock parcel. Zoning stays on this catalog; Mapbox ids are
+ * never sent to `/api/zoning`.
+ */
+export function mockParcelIdFromCoordinates(lat: number, lng: number): string {
+  const latBits = Math.round(lat * 1e6);
+  const lngBits = Math.round(lng * 1e6);
+  const hash = ((latBits * 73856093) ^ (lngBits * 19349663)) >>> 0;
+  const id = MOCK_PARCEL_IDS[hash % MOCK_PARCEL_IDS.length];
+  if (!id) {
+    throw new Error("Mock parcel catalog is empty");
+  }
+  return id;
+}

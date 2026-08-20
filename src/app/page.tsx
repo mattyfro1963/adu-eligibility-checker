@@ -44,7 +44,10 @@ export default function HomePage() {
         throw new Error(message);
       }
       const data = (await res.json()) as ZoningReport;
-      setReport(data);
+      setReport({
+        ...data,
+        formattedAddress: result.formattedAddress,
+      });
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") {
         return;
