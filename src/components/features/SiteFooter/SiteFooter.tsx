@@ -4,6 +4,7 @@ const FOOTER_LINKS = [
   { href: "/", label: "Checker" },
   { href: "/guides", label: "Guides" },
   { href: "/regulations", label: "Regulations" },
+  { href: "/premium", label: "Premium" },
   { href: "/connect", label: "Connect" },
 ] as const;
 
@@ -41,7 +42,7 @@ export function SiteFooter() {
         </nav>
       </div>
       <div className="border-t border-slate-100">
-        <p className="mx-auto max-w-6xl px-4 py-4 text-xs text-slate-400 sm:px-6">
+        <p className="mx-auto max-w-6xl px-4 py-4 text-xs leading-relaxed text-slate-400 sm:px-6">
           Informational only — not legal advice. Confirm requirements with your
           local planning and building departments.
         </p>
