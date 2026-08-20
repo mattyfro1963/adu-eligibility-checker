@@ -27,6 +27,7 @@ Heart of the app. **Zero React.** Portable to a Node CLI or worker.
 
 - **Engine (`lib/rules/`):** Split ADU (Gov. Code Chapter 13 / § 66314) from SB 9 (§ 65852.21). Real `if`/`else` on parcel **facts**. Do not store Eligible/Warning/Restricted on mock parcels. `lib/rules/index.ts` orchestrates unified `ZoningReport`. Reasons are `CitedClaim[]` with official source URLs.
 - **Mocks and adapters (`lib/mock/` + `lib/adapters/`):** Routes call a `Geocoder` adapter for addresses. SF pilot zoning uses `pilot-zoning.ts` (server-side Turf + `public/data/pilot-zoning.geojson`). **Turf/GeoJSON only in adapters** — never in `lib/rules/` or UI. Phase 2 may add `regrid-geocoder.ts` with zero changes to rules or UI.
+- **Leads (`lib/leads/` + `lib/mock/contractors.ts`):** Haversine contractor matching and webhook dispatch for `/api/lead` and `/api/builder-signup`. Zero React; no database in v1.
 
 ## Decision Engine Logic
 
@@ -64,14 +65,30 @@ Monitor `src/lib/rules/*.ts`. The engine must contain **actual branching**, not 
 
 Import features explicitly (no barrels). State: `geocodeResult`, `report`, `isZoningLoading`, `error`.
 
-Flow: `AddressSearch` → `onResolved` → page fetches `/api/zoning?lat=&lng=` → pilot PIP adapter → rules → `Spinner` while loading → `LeadFallbackForm` when `overall === "restricted"` → `ResultsCard` otherwise.
+Flow: `AddressSearch` → `onResolved` → page fetches `/api/zoning?lat=&lng=` → pilot PIP adapter → rules → `Spinner` while loading → `ResultsCard` (diagnostics + parcel briefing + guide links; Connect CTA) → `EligibleNextSteps` affiliates **only** when `overall === "eligible"` → `LeadFallbackForm` **only** when `overall === "restricted"` (below diagnostics; posts `type: "restricted_review"` to `/api/lead`). Warning: ResultsCard + guides, no affiliates, no hard lead form.
+
+`/connect` is a separate composition root: address → project lead form → `POST /api/lead` (`type: "project"`) → contractor grid; builder panel → `POST /api/builder-signup`.
 
 Forbidden: pasted AddressSearch markup, rule engine branches, `evaluateEligibility` on client.
+
+## SF Buyer Guides (`src/lib/content/guides/` + `/guides`)
+
+Zero-React corpus: THOW zoning, cost matrix (crane, trenching `$1,000–$5,000+`, permits), wheels-vs-foundation, `GUIDE_LINKS`. Thin routes in `src/app/guides/`; UI in `src/components/features/Guides/`. CA briefings attach `guideLinks` via `composeResultsBriefing`. No live municipal fee APIs.
+
+## Outcome Monetization
+
+| `overall` | Show | Hide |
+|-----------|------|------|
+| `eligible` | ResultsCard, guide links, affiliate next-steps (`src/lib/content/affiliates/`) | Lead form |
+| `warning` | ResultsCard, guide links | Affiliates; hard lead gate |
+| `restricted` | ResultsCard diagnostics + restricted pivot + `LeadFallbackForm` → `/api/lead` | Product affiliates |
+
+Affiliate hrefs from `NEXT_PUBLIC_AFFILIATE_*`; FTC disclosure in catalog. Leads optionally forward via `LEAD_WEBHOOK_URL` (server-only). No visitor-facing commission or referral payout amounts.
 
 ## Security and Git Hygiene
 
 - `.cursorignore`: `.env*`, `.next/`, `node_modules/`, `*.pem`, `*.key`, `coverage/`, `*.log`.
-- `.env.example` defines `NEXT_PUBLIC_API_URL`. Never commit `.env`.
+- `.env.example` defines `NEXT_PUBLIC_API_URL`, optional Mapbox/Sentry, `LEAD_WEBHOOK_URL` / `BUILDER_WEBHOOK_URL`, and `NEXT_PUBLIC_AFFILIATE_*` placeholders. Never commit `.env`.
 - `src/lib/env.ts` Zod-validates at build/start. Mock-required: `NEXT_PUBLIC_API_URL`. Mapbox/Regrid optional until Phase 2.
 
 ## Binding Placement Rules

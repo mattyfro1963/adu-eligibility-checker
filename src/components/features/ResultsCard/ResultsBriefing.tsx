@@ -2,7 +2,7 @@ import { BookOpen } from "lucide-react";
 import { CitedText } from "@/components/features/ResultsCard/CitedText";
 import type { CitedClaim } from "@/lib/regulations/types";
 
-/** Use-first tiny-home why-this-lot summary from compose-briefing. */
+/** Use-first why-this-lot summary from compose-briefing. */
 export function ResultsBriefingSection({ summary }: { summary: CitedClaim[] }) {
   return (
     <section
@@ -18,7 +18,7 @@ export function ResultsBriefingSection({ summary }: { summary: CitedClaim[] }) {
             id="results-briefing-heading"
             className="text-lg font-semibold tracking-tight text-slate-900"
           >
-            Tiny-home briefing
+            Parcel briefing
           </h3>
           <p className="text-xs text-slate-500">
             Why this address may or may not legally house a tiny home for your

@@ -8,6 +8,21 @@ import { LeadFallbackForm } from "@/components/features/LeadFallbackForm/LeadFal
 import type { GeocodeResult } from "@/lib/types/gis";
 import type { ZoningReport } from "@/lib/types/zoning";
 
+function buildConnectHref(
+  result: GeocodeResult,
+  overall?: ZoningReport["overall"] | null,
+): string {
+  const url = new URL("/connect", "http://local.invalid");
+  url.searchParams.set("address", result.formattedAddress);
+  url.searchParams.set("lat", String(result.lat));
+  url.searchParams.set("lng", String(result.lng));
+  if (result.place) url.searchParams.set("place", result.place);
+  if (result.region) url.searchParams.set("region", result.region);
+  if (result.postcode) url.searchParams.set("postcode", result.postcode);
+  if (overall) url.searchParams.set("status", overall);
+  return `${url.pathname}?${url.searchParams.toString()}`;
+}
+
 export default function HomePage() {
   const [geocodeResult, setGeocodeResult] = useState<GeocodeResult | null>(
     null,
@@ -68,6 +83,10 @@ export default function HomePage() {
   }, []);
 
   const showResults = Boolean(geocodeResult) || Boolean(report);
+  const connectHref =
+    geocodeResult != null
+      ? buildConnectHref(geocodeResult, report?.overall ?? null)
+      : "/connect";
 
   return (
     <main className="mx-auto w-full max-w-6xl flex-1 space-y-8 px-4 py-8 sm:space-y-10 sm:px-6 sm:py-12 md:py-16">
@@ -93,12 +112,16 @@ export default function HomePage() {
           geocodeResult={geocodeResult}
           isLoading={isZoningLoading}
           zoningError={error}
+          connectHref={connectHref}
         />
       ) : null}
 
-      {report?.overall === "restricted" ? (
+      {report?.overall === "restricted" && geocodeResult ? (
         <LeadFallbackForm
-          address={geocodeResult?.formattedAddress ?? report.formattedAddress}
+          address={geocodeResult.formattedAddress}
+          lat={geocodeResult.lat}
+          lng={geocodeResult.lng}
+          overallStatus="restricted"
         />
       ) : null}
     </main>

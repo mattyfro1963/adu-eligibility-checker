@@ -88,6 +88,7 @@ describe("composeResultsBriefing", () => {
     expect(
       briefing.summary.some((c) => c.text.startsWith("On this California lot")),
     ).toBe(true);
+    expect(briefing.guideLinks.length).toBe(3);
     for (const claim of briefing.summary) {
       assertClaimCited(claim);
     }

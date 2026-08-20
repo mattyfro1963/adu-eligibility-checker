@@ -46,8 +46,15 @@ Search a real San Francisco address (Mapbox geocode when configured, else mock g
 Light premium shell (`#F5F5F7`, sticky `doihave.space` header, `max-w-6xl`):
 
 1. **Search hero** — Mapbox-backed autocomplete (or mock demos when the token is unset) via `/api/geocode`.
-2. **Results bento** — Mapbox Static preview (`/api/map-preview`, greyscale + CAD reticle) beside **Target Acquired** summary; **Regulatory Diagnostics** map ADU / SB 9 reasons from `src/lib/rules` (no statute branching in components).
-3. **Restricted overall** — same bento plus `LeadFallbackForm` for expert review.
+2. **Results bento** — Mapbox Static preview (`/api/map-preview`, greyscale + CAD reticle) beside **Target Acquired** summary; **Parcel briefing** + Buyer guides strip; **Regulatory Diagnostics** map ADU / SB 9 reasons from `src/lib/rules` (no statute branching in components).
+3. **Eligible overall** — `EligibleNextSteps` affiliate blocks when affiliate env URLs are set. No lead form.
+4. **Warning overall** — ResultsCard + guide links only (no affiliates, no hard lead gate).
+5. **Restricted overall** — diagnostics stay visible; `LeadFallbackForm` CTA continues to `/connect` (prefilled address) for full project lead + contractor match.
+6. **Connect (`/connect`)** — homeowner project lead form + mock nearby ADU/tiny-home contractor matches; builder beta signup ($20–$100/lead). APIs: `POST /api/lead` (`project` | `quote_interest` | `restricted_review`), `POST /api/builder-signup` (console + optional webhooks).
+
+## SF Buyer Guides
+
+Standalone `/guides` (SF-only): THOW legality, cost matrix (crane, trenching `$1,000–$5,000+`, permits), wheels-vs-foundation. Corpus in `src/lib/content/guides/` (zero React). Statewide county directory remains at `/regulations`.
 
 ## How Eligibility Is Decided
 
@@ -68,6 +75,9 @@ Optional:
 - `REGRID_API_KEY` — Phase 2 parcels
 - `NEXT_PUBLIC_SENTRY_DSN` / `SENTRY_DSN` — error reporting (omit to disable)
 - `SENTRY_AUTH_TOKEN` — build-time source map upload (production)
+- `LEAD_WEBHOOK_URL` — optional Slack/Discord-compatible webhook for homeowner project leads, quote interest, and restricted compliance reviews (`POST /api/lead`). Server-only.
+- `BUILDER_WEBHOOK_URL` — optional webhook for builder partner signups (`POST /api/builder-signup`)
+- `NEXT_PUBLIC_AFFILIATE_*` — optional affiliate outbound URLs for eligible next-steps (see `.env.example`). Cards omit when unset. No commission rates in UI copy.
 
 ## Sentry
 

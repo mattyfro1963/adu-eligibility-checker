@@ -1,9 +1,19 @@
 "use client";
 
 import { useMemo } from "react";
-import { Building2, Info, Landmark, ShieldAlert, Trees } from "lucide-react";
+import Link from "next/link";
+import {
+  ArrowRight,
+  Building2,
+  Info,
+  Landmark,
+  ShieldAlert,
+  Trees,
+} from "lucide-react";
 import { AddressMapPreview } from "@/components/features/AddressMapPreview/AddressMapPreview";
+import { EligibleNextSteps } from "@/components/features/EligibleNextSteps/EligibleNextSteps";
 import { ApplicationChecklist } from "@/components/features/ResultsCard/ApplicationChecklist";
+import { BuyerGuideLinks } from "@/components/features/ResultsCard/BuyerGuideLinks";
 import { CaliforniaOutline } from "@/components/features/ResultsCard/CaliforniaOutline";
 import { ResultsBriefingSection } from "@/components/features/ResultsCard/ResultsBriefing";
 import { RuleDetail } from "@/components/features/ResultsCard/RuleDetail";
@@ -20,6 +30,8 @@ interface ResultsCardProps {
   isLoading?: boolean;
   /** Zoning API error (e.g. outside SF) — still show CA briefing. */
   zoningError?: string | null;
+  /** Prefill link to `/connect` builder match. */
+  connectHref?: string;
 }
 
 function OverlayRow({
@@ -57,6 +69,7 @@ export function ResultsCard({
   geocodeResult,
   isLoading = false,
   zoningError = null,
+  connectHref = "/connect",
 }: ResultsCardProps) {
   const lat = geocodeResult?.lat ?? null;
   const lng = geocodeResult?.lng ?? null;
@@ -158,6 +171,8 @@ export function ResultsCard({
       {briefing && !isLoading ? (
         <>
           <ResultsBriefingSection summary={briefing.summary} />
+          <BuyerGuideLinks links={briefing.guideLinks} />
+          {report?.overall === "eligible" ? <EligibleNextSteps /> : null}
           <ApplicationChecklist
             items={briefing.checklist}
             title="California application checklist"
@@ -202,6 +217,26 @@ export function ResultsCard({
 
       {briefing && !isLoading ? (
         <SearchReceiptCard receipt={briefing.receipt} />
+      ) : null}
+
+      {!isLoading && geocodeResult ? (
+        <aside className="flex flex-col gap-3 rounded-[1.5rem] border border-slate-200/80 bg-slate-50/80 p-5 sm:flex-row sm:items-center sm:justify-between sm:rounded-[2rem] sm:p-6">
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+              Builder match
+            </p>
+            <p className="mt-1 text-sm text-slate-700">
+              Match with ADU / tiny-home builders for quotes near this parcel.
+            </p>
+          </div>
+          <Link
+            href={connectHref}
+            className="inline-flex min-h-[44px] shrink-0 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-100"
+          >
+            Open Connect
+            <ArrowRight size={16} aria-hidden="true" />
+          </Link>
+        </aside>
       ) : null}
     </div>
   );

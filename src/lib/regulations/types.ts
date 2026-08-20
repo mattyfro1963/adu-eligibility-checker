@@ -44,6 +44,12 @@ export type SearchReceipt = {
   disclaimer: string;
 };
 
+export type GuideLinkRef = {
+  slug: string;
+  title: string;
+  href: string;
+};
+
 export type ResultsBriefing = {
   region: string;
   isCalifornia: boolean;
@@ -52,6 +58,8 @@ export type ResultsBriefing = {
   checklist: ChecklistItem[];
   /** CA building-path outline; empty when not California. */
   outline: OutlineSection[];
+  /** SF buyer-guide deep links; empty when not California. */
+  guideLinks: GuideLinkRef[];
   receipt: SearchReceipt;
 };
 

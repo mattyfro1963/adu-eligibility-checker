@@ -2,7 +2,9 @@ import Link from "next/link";
 
 const FOOTER_LINKS = [
   { href: "/", label: "Checker" },
+  { href: "/guides", label: "Guides" },
   { href: "/regulations", label: "Regulations" },
+  { href: "/connect", label: "Connect" },
 ] as const;
 
 export function SiteFooter() {

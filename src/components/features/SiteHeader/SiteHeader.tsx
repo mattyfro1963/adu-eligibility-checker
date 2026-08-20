@@ -7,7 +7,9 @@ import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { href: "/", label: "Checker" },
+  { href: "/guides", label: "Guides" },
   { href: "/regulations", label: "Regulations" },
+  { href: "/connect", label: "Connect" },
 ] as const;
 
 function isActivePath(pathname: string, href: string): boolean {

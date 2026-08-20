@@ -121,6 +121,12 @@ export function RegulationsGuide() {
           >
             Check a California address
           </Link>
+          <Link
+            href="/connect"
+            className="inline-flex min-h-[44px] items-center rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+          >
+            Match with builders
+          </Link>
           <a
             href="#county-guides"
             className="inline-flex min-h-[44px] items-center rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
@@ -334,6 +340,13 @@ export function RegulationsGuide() {
             className="font-medium text-slate-900 underline-offset-2 hover:underline"
           >
             Open the eligibility checker
+          </Link>
+          . Looking for contractors?{" "}
+          <Link
+            href="/connect"
+            className="font-medium text-slate-900 underline-offset-2 hover:underline"
+          >
+            Match with ADU builders
           </Link>
           .
         </p>

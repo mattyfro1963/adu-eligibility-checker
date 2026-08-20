@@ -3,6 +3,7 @@
  * from the CA profile — never generates statute prose and never fetches gov hosts.
  */
 
+import { GUIDE_LINKS } from "@/lib/content/guides/catalog";
 import {
   CORPUS_VERSION,
   LAST_REVIEWED,
@@ -16,6 +17,7 @@ import { SRC } from "@/lib/regulations/sources";
 import { getStateProfile } from "@/lib/regulations/states/registry";
 import type {
   CitedClaim,
+  GuideLinkRef,
   ResultsBriefing,
   SearchReceipt,
 } from "@/lib/regulations/types";
@@ -121,6 +123,15 @@ export function composeResultsBriefing(
 
   const outline = isCalifornia && profile.published ? profile.outline : [];
 
+  const guideLinks: GuideLinkRef[] =
+    isCalifornia && profile.published
+      ? GUIDE_LINKS.map((link) => ({
+          slug: link.slug,
+          title: link.title,
+          href: link.href,
+        }))
+      : [];
+
   const sourcesUsed =
     analysisScope === "sf_pilot_lot"
       ? sfPilotReceiptSources()
@@ -145,6 +156,7 @@ export function composeResultsBriefing(
     summary,
     checklist,
     outline,
+    guideLinks,
     receipt,
   };
 }
