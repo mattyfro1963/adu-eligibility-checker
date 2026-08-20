@@ -11,12 +11,20 @@ const envSchema = z.object({
     z.string().min(1).optional(),
   ),
   REGRID_API_KEY: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
+  /** Optional — Sentry no-ops when unset (local/CI without secrets). */
+  NEXT_PUBLIC_SENTRY_DSN: z.preprocess(
+    emptyToUndefined,
+    z.string().url().optional(),
+  ),
+  SENTRY_DSN: z.preprocess(emptyToUndefined, z.string().url().optional()),
 });
 
 const parsed = envSchema.safeParse({
   NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
   MAPBOX_ACCESS_TOKEN: process.env.MAPBOX_ACCESS_TOKEN,
   REGRID_API_KEY: process.env.REGRID_API_KEY,
+  NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  SENTRY_DSN: process.env.SENTRY_DSN,
 });
 
 if (!parsed.success) {

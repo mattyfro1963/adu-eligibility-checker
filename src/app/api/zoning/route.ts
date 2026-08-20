@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { getPilotParcel } from "@/lib/adapters/pilot-zoning";
 import { logger } from "@/lib/logger";
 import { evaluateEligibility } from "@/lib/rules";
@@ -37,32 +38,46 @@ export async function GET(request: NextRequest) {
   await new Promise((resolve) => setTimeout(resolve, LOOKUP_LATENCY_MS));
 
   const { lat: latitude, lng: longitude } = parsed.data;
-  const parcel = await getPilotParcel(latitude, longitude);
 
-  if (!parcel) {
-    log.warn(
-      { lat: latitude, lng: longitude, status: 404 },
-      "Parcel outside SF pilot coverage",
+  try {
+    const parcel = await getPilotParcel(latitude, longitude);
+
+    if (!parcel) {
+      log.warn(
+        { lat: latitude, lng: longitude, status: 404 },
+        "Parcel outside SF pilot coverage",
+      );
+      return NextResponse.json(
+        {
+          error:
+            "Location is outside San Francisco pilot zoning coverage. Try an SF address.",
+        },
+        { status: 404 },
+      );
+    }
+
+    const report = evaluateEligibility(parcel);
+    log.info(
+      {
+        addressId: report.addressId,
+        zoning: report.zoning,
+        overall: report.overall,
+        aduStatus: report.adu.status,
+        sb9Status: report.sb9.status,
+      },
+      "Zoning lookup succeeded",
+    );
+    return NextResponse.json(report);
+  } catch (err) {
+    Sentry.captureException(err, { tags: { route: "zoning" } });
+    const message = err instanceof Error ? err.message : "Unknown error";
+    log.error(
+      { err: message, lat: latitude, lng: longitude, status: 500 },
+      "Zoning lookup failed",
     );
     return NextResponse.json(
-      {
-        error:
-          "Location is outside San Francisco pilot zoning coverage. Try an SF address.",
-      },
-      { status: 404 },
+      { error: "Zoning lookup failed" },
+      { status: 500 },
     );
   }
-
-  const report = evaluateEligibility(parcel);
-  log.info(
-    {
-      addressId: report.addressId,
-      zoning: report.zoning,
-      overall: report.overall,
-      aduStatus: report.adu.status,
-      sb9Status: report.sb9.status,
-    },
-    "Zoning lookup succeeded",
-  );
-  return NextResponse.json(report);
 }

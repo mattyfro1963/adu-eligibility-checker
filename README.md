@@ -55,7 +55,18 @@ Optional:
 
 - `MAPBOX_ACCESS_TOKEN` — real address geocoding
 - `REGRID_API_KEY` — Phase 2 parcels
+- `NEXT_PUBLIC_SENTRY_DSN` / `SENTRY_DSN` — error reporting (omit to disable)
+- `SENTRY_AUTH_TOKEN` — build-time source map upload (production)
+
+## Sentry
+
+Errors and performance tracing via `@sentry/nextjs` (Developer tier). Sample rates: 100% traces in development, 10% in production. No Session Replay.
+
+- App Router boundaries (`error.tsx`, `global-error.tsx`) call `Sentry.captureException` because Next.js catches those before global handlers.
+- API routes capture unexpected failures in `try/catch`; expected 4xx (validation, not found, outside pilot) are not reported.
+
+Verify locally: hit an instrumented path that throws, then check [Issues](https://envirostar-app.sentry.io/issues/?project=adu-eligibility-checker). For readable production stacks, set `SENTRY_AUTH_TOKEN` on Vercel and deploy a build.
 
 ## Tech Stack
 
-Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Zod, Vitest, lucide-react, `@turf/turf` (server adapters only).
+Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Zod, Vitest, lucide-react, `@sentry/nextjs`, `@turf/turf` (server adapters only).

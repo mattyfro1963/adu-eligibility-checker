@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import {
   MapboxConfigError,
   MapboxUpstreamError,
@@ -70,6 +71,8 @@ export async function GET(request: NextRequest) {
     );
     return NextResponse.json({ results });
   } catch (err) {
+    Sentry.captureException(err, { tags: { route: "geocode" } });
+
     if (err instanceof MapboxConfigError) {
       log.error({ err: err.message, status: 500 }, "Mapbox config error");
       return NextResponse.json(
