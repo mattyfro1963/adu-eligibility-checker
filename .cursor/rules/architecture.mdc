@@ -27,4 +27,4 @@ Real `if`/`else` on parcel facts. Never canned status on mock data.
 
 ## Forbidden
 
-Root `app/`, React in `src/lib/`, component barrels, Turf in rules/UI (adapters OK for SF pilot), Pino/Sentry in MVP, statute logic in components.
+Root `app/`, React in `src/lib/`, component barrels, Turf in rules/UI (adapters OK for SF pilot), Sentry in MVP, statute logic in components.
