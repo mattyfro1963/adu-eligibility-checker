@@ -15,7 +15,7 @@ describe("buildMapboxStaticUrl", () => {
     expect(url).toContain(
       "https://api.mapbox.com/styles/v1/mapbox/light-v11/static/",
     );
-    expect(url).toContain("pin-s+333333(-122.4194,37.7749)");
+    expect(url).toContain("pin-l+000000(-122.4194,37.7749)");
     expect(url).toContain(
       `/-122.4194,37.7749,${STATIC_MAP_DEFAULTS.zoom},0/${STATIC_MAP_DEFAULTS.width}x${STATIC_MAP_DEFAULTS.height}@2x`,
     );

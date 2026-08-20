@@ -34,6 +34,10 @@ export const SRC = {
     label: "Gov. Code § 66411.7",
     href: "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=GOV&sectionNum=66411.7",
   },
+  gov66441_1: {
+    label: "Gov. Code § 66441.1",
+    href: "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=GOV&sectionNum=66441.1",
+  },
   civ4751: {
     label: "Civil Code § 4751",
     href: "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=CIV&sectionNum=4751",

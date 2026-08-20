@@ -8,8 +8,12 @@ interface AddressMapPreviewProps {
   lat: number | null;
   lng: number | null;
   className?: string;
-  /** When false, hide CAD reticle / awaiting chrome (analysis backdrop). */
+  /** When false, hide callout chrome (analysis backdrop). */
   chrome?: boolean;
+  /** Primary line in the map callout (e.g. street address). */
+  label?: string | null;
+  /** Secondary line in the callout header (e.g. city / APN). */
+  sublabel?: string | null;
 }
 
 function mapPreviewSrc(lat: number, lng: number): string {
@@ -22,14 +26,16 @@ function mapPreviewSrc(lat: number, lng: number): string {
 }
 
 /**
- * Mapbox Static Images proxy with cinematic presentation:
- * full-bleed crop, near-black Bone editorial chrome.
+ * Mapbox Static Images proxy — monochrome store-locator presentation:
+ * full-bleed grayscale basemap, black pin, optional black/white callout.
  */
 export function AddressMapPreview({
   lat,
   lng,
   className = "",
   chrome = true,
+  label = null,
+  sublabel = null,
 }: AddressMapPreviewProps) {
   const hasCoords =
     typeof lat === "number" &&
@@ -122,10 +128,13 @@ export function AddressMapPreview({
         ? "Map Preview Unavailable"
         : "Loading Map Preview";
 
+  const showCallout =
+    chrome && label && objectUrl && !showAwaiting && label.trim().length > 0;
+
   return (
     <div
       className={cn(
-        "group relative h-full min-h-[240px] overflow-hidden rounded-card border border-border bg-muted sm:min-h-[320px] lg:min-h-[350px]",
+        "group relative h-full min-h-[240px] overflow-hidden bg-[#e4e4e4] sm:min-h-[320px] lg:min-h-[350px]",
         className,
       )}
     >
@@ -138,35 +147,45 @@ export function AddressMapPreview({
               ? `Map preview centered on ${lat!.toFixed(5)}, ${lng!.toFixed(5)}`
               : "Map preview"
           }
-          className="absolute inset-0 z-0 h-full w-full border-0 object-cover transition-all duration-1000 ease-in-out"
+          className="absolute inset-0 z-0 h-full w-full border-0 object-cover"
           style={{
-            filter: "grayscale(100%) contrast(115%) opacity(70%)",
+            filter: "grayscale(100%) contrast(108%) brightness(103%)",
           }}
         />
       ) : (
-        <div className="absolute inset-0 bg-muted" />
+        <div className="absolute inset-0 bg-[#ececec]" />
       )}
 
-      <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-
-      {chrome ? (
-        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center opacity-80 transition-opacity duration-700">
-          <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-border">
-            <div className="absolute h-px w-full bg-border" />
-            <div className="absolute h-full w-px bg-border" />
-            <div className="z-20 h-1.5 w-1.5 rounded-full bg-foreground ring-4 ring-background/80" />
+      {showCallout ? (
+        <div
+          className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center"
+          aria-hidden="true"
+        >
+          <div className="absolute top-[38%] left-1/2 w-[min(18rem,calc(100%-2rem))] -translate-x-1/2 -translate-y-full">
+            <div className="overflow-hidden shadow-[0_8px_30px_rgb(0_0_0_/_0.12)]">
+              <div className="bg-black px-4 py-3 text-white">
+                <p className="truncate text-sm leading-snug font-medium">
+                  {label}
+                </p>
+                {sublabel ? (
+                  <p className="mt-1 truncate text-xs text-white/75">
+                    {sublabel}
+                  </p>
+                ) : null}
+              </div>
+            </div>
+            <div
+              className="mx-auto h-0 w-0 border-x-8 border-t-8 border-x-transparent border-t-black"
+              aria-hidden="true"
+            />
           </div>
         </div>
       ) : null}
 
       {chrome && showAwaiting ? (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-card/40 backdrop-blur-md">
-          <span className="flex items-center gap-2 rounded-pill border border-border bg-card px-5 py-2.5 text-[11px] font-normal tracking-widest text-muted-foreground uppercase shadow-editorial">
-            <MapPin
-              size={14}
-              className="animate-bounce text-foreground"
-              aria-hidden="true"
-            />
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/60 backdrop-blur-sm">
+          <span className="flex items-center gap-2 border border-neutral-300 bg-white px-5 py-2.5 text-[11px] font-normal tracking-widest text-neutral-600 uppercase shadow-sm">
+            <MapPin size={14} className="text-black" aria-hidden="true" />
             {awaitingLabel}
           </span>
         </div>

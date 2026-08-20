@@ -57,7 +57,24 @@ export function evaluateSb9Eligibility(parcel: Parcel): EligibilityResult {
     };
   }
 
-  // 3. Hard stop: VHFHSZ / mapped fire overlay as SB 9 exclusion.
+  // 3. Hard stop: lot area below SB 9 urban lot-split minimum when known.
+  if (
+    parcel.lotSizeSqFt != null &&
+    parcel.lotSizeSqFt > 0 &&
+    parcel.lotSizeSqFt < 1200
+  ) {
+    return {
+      status: "restricted",
+      reasons: [
+        {
+          text: `Lot area (${parcel.lotSizeSqFt.toLocaleString()} sq ft) is below the 1,200 sq ft minimum for SB 9 urban lot splits under Gov. Code § 66441.1.`,
+          sources: [...SB9_SOURCES, SRC.gov66441_1],
+        },
+      ],
+    };
+  }
+
+  // 4. Hard stop: VHFHSZ / mapped fire overlay as SB 9 exclusion.
   // Why: SB 9's wildfire and hazard-area limitations are applied more
   // strictly than ADU's warning-only treatment under Chapter 13.
   if (overlays.vhfhsz || overlays.fireHazard) {
@@ -74,7 +91,7 @@ export function evaluateSb9Eligibility(parcel: Parcel): EligibilityResult {
 
   let status: "eligible" | "warning" = "eligible";
 
-  // 4. Coastal zone: warning — additional Coastal Act / CDP review.
+  // 5. Coastal zone: warning — additional Coastal Act / CDP review.
   if (overlays.coastalZone) {
     status = "warning";
     reasons.push({
@@ -83,7 +100,7 @@ export function evaluateSb9Eligibility(parcel: Parcel): EligibilityResult {
     });
   }
 
-  // 5. Default: single-family, no SB 9 exclusions → eligible.
+  // 6. Default: single-family, no SB 9 exclusions → eligible.
   if (reasons.length === 0) {
     reasons.push({
       text: "Single-family residential zoning with no SB 9 exclusions. Two-unit and lot-split path available under Gov. Code §§ 65852.21 and 66411.7 (2021 SB 9 — not the 2025 ADU-ordinance bill also numbered SB 9).",

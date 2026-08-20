@@ -53,14 +53,14 @@ export function AnalysisInterstitial({
       aria-live="polite"
       aria-busy="true"
       aria-label="Analyzing parcel"
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-foreground/80"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70"
     >
-      <div className="pointer-events-none absolute inset-0 opacity-25 saturate-0">
+      <div className="pointer-events-none absolute inset-0">
         <AddressMapPreview
           lat={lat}
           lng={lng}
           chrome={false}
-          className="min-h-full rounded-none border-0 bg-foreground shadow-none sm:min-h-full lg:min-h-full"
+          className="min-h-full rounded-none border-0 bg-[#e4e4e4] shadow-none sm:min-h-full lg:min-h-full"
         />
       </div>
       <div

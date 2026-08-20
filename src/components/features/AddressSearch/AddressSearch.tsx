@@ -10,6 +10,7 @@ import {
 import { Search } from "lucide-react";
 import { SearchAudienceToggle } from "@/components/features/AddressSearch/SearchAudienceToggle";
 import { SearchTopicCards } from "@/components/features/AddressSearch/SearchTopicCards";
+import { SearchGlobe } from "@/components/features/SearchGlobe/SearchGlobe";
 import { useAddressSearch } from "@/components/features/AddressSearch/useAddressSearch";
 import { cn } from "@/lib/utils";
 import type { SearchAudience } from "@/lib/content/search-topics";
@@ -21,14 +22,18 @@ interface AddressSearchProps {
   error?: string | null;
   showDemoScenarios?: boolean;
   compact?: boolean;
+  focusLat?: number | null;
+  focusLng?: number | null;
+  globeLoading?: boolean;
   children?: ReactNode;
 }
 
 const DEMO_SCENARIOS = [
-  { label: "123 Main St", query: "123 Main St" },
-  { label: "100 Market St", query: "100 Market St" },
-  { label: "555 Beach", query: "555 Beach" },
-  { label: "789 Pine", query: "789 Pine" },
+  { label: "Clean R-1", query: "123 Main St" },
+  { label: "Historic demo", query: "321 historic elm" },
+  { label: "Coastal demo", query: "555 coastal beach" },
+  { label: "Small lot", query: "950 small lot" },
+  { label: "Commercial", query: "100 commercial market" },
 ] as const;
 
 function secondaryLine(suggestion: GeocodeResult): string {
@@ -61,6 +66,9 @@ export function AddressSearch({
   error = null,
   showDemoScenarios,
   compact = false,
+  focusLat = null,
+  focusLng = null,
+  globeLoading = false,
   children,
 }: AddressSearchProps) {
   const [audience, setAudience] = useState<SearchAudience>("homeowner");
@@ -115,10 +123,13 @@ export function AddressSearch({
     >
       {!compact ? (
         <header className="space-y-3 text-center">
-          <h1 className="font-display text-3xl tracking-tight uppercase sm:text-5xl">
-            Check your lot?
+          <span className="font-mono text-xs uppercase tracking-widest text-brand-taupe">
+            State of California · ADU &amp; SB 9
+          </span>
+          <h1 className="font-quote text-4xl font-normal text-brand-charcoal sm:text-5xl">
+            Small Footprint. Elevated Living.
           </h1>
-          <p className="mx-auto max-w-lg text-base text-muted-foreground">
+          <p className="mx-auto max-w-lg text-base text-brand-charcoal/80">
             Enter a California address below for ADU and SB 9 eligibility,
             county requirements, and tiny-home guidance.
           </p>
@@ -142,8 +153,8 @@ export function AddressSearch({
         >
           <div
             className={cn(
-              "relative flex items-center rounded-2xl bg-secondary transition-colors",
-              compact ? "h-12" : "h-14 sm:h-16",
+              "relative flex items-center border border-brand-taupe/40 bg-white shadow-elevated transition-colors focus-within:border-brand-charcoal",
+              compact ? "h-12 rounded-xl" : "h-14 rounded-none sm:h-16",
               hasError && "ring-2 ring-rose-600 ring-inset",
             )}
           >
@@ -161,7 +172,7 @@ export function AddressSearch({
               }}
               placeholder="Enter a California address..."
               className={cn(
-                "h-full w-full rounded-2xl bg-transparent pr-14 pl-5 text-body text-foreground placeholder:text-muted-foreground focus:outline-none",
+                "h-full w-full bg-transparent pr-14 pl-5 text-body text-brand-charcoal placeholder:text-brand-taupe/70 focus:outline-none",
                 compact ? "text-sm" : "text-base",
               )}
               aria-label="Property address search"
@@ -176,7 +187,7 @@ export function AddressSearch({
             <button
               type="submit"
               disabled={isResolving || !query.trim()}
-              className="absolute top-1/2 right-4 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center text-muted-foreground transition-colors hover:text-foreground disabled:opacity-40"
+              className="absolute top-1/2 right-4 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center text-brand-charcoal transition-colors hover:text-brand-wood disabled:opacity-40"
               aria-label={isResolving ? "Locating address" : "Search address"}
             >
               {isResolving ? (
@@ -201,7 +212,7 @@ export function AddressSearch({
           <ul
             id={listboxId}
             role="listbox"
-            className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-border bg-background shadow-md"
+            className="absolute z-20 mt-2 w-full overflow-hidden border border-brand-taupe/30 bg-white shadow-elevated"
           >
             {suggestions.map((suggestion) => {
               const secondary = secondaryLine(suggestion);
@@ -237,6 +248,16 @@ export function AddressSearch({
         {!compact ? (
           <div className="flex justify-center">
             <SearchAudienceToggle value={audience} onChange={setAudience} />
+          </div>
+        ) : null}
+
+        {!compact ? (
+          <div className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2">
+            <SearchGlobe
+              targetLat={focusLat}
+              targetLng={focusLng}
+              isLoading={globeLoading}
+            />
           </div>
         ) : null}
 

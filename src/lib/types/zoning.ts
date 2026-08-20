@@ -23,8 +23,15 @@ export interface Parcel {
   lng: number;
   zoning: string;
   overlays: Overlays;
+  /** Lot area in square feet when resolved from GIS or mock facts. */
+  lotSizeSqFt?: number | null;
   /** SF assessor block/lot when resolved from a local parcel index. */
   mapblklot?: string | null;
+}
+
+export interface UnitCapacity {
+  maxAllowableUnits: number;
+  note: CitedClaim;
 }
 
 /** How the report was produced — lot GIS vs jurisdiction corpus fallback. */
@@ -43,4 +50,8 @@ export interface ZoningReport {
   mapblklot?: string | null;
   /** Defaults to lot_zoning when omitted (legacy responses). */
   analysisScope?: ZoningAnalysisScope;
+  /** Derived unit-capacity bounds when lot size is known. */
+  unitCapacity?: UnitCapacity | null;
+  /** Lot area when known at evaluation time. */
+  lotSizeSqFt?: number | null;
 }

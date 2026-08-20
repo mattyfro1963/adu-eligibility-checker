@@ -8,6 +8,7 @@
 import { getOpenDataParcel } from "@/lib/adapters/open-data-zoning";
 import { getRegridParcel } from "@/lib/adapters/regrid-zoning";
 import { getSfDatasfParcel } from "@/lib/adapters/sf-datasf-zoning";
+import { getSynthesizedParcelAt } from "@/lib/adapters/mock-geocoder";
 import { lookupOverlays } from "@/lib/adapters/zoning-overlays";
 import type { Parcel } from "@/lib/types/zoning";
 
@@ -29,6 +30,15 @@ export async function lookupParcel(
   lng: number,
   formattedAddress = "",
 ): Promise<ZoningLookupResult> {
+  const synthesized = getSynthesizedParcelAt(lat, lng);
+  if (synthesized) {
+    return {
+      parcel: synthesized,
+      coverage: "lot",
+      provider: "open-data",
+    };
+  }
+
   const sf = await getSfDatasfParcel(lat, lng, formattedAddress);
   if (sf) {
     const overlays = await lookupOverlays(lat, lng);

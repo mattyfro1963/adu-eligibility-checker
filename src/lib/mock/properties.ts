@@ -12,6 +12,7 @@ export const mockProperties: Record<string, Parcel> = {
     lat: 37.74373286174355,
     lng: -122.45874441336278,
     zoning: "R-1",
+    lotSizeSqFt: 6850,
     overlays: {
       tinyHomeFriendly: false,
       fireHazard: false,
@@ -26,6 +27,7 @@ export const mockProperties: Record<string, Parcel> = {
     lat: 37.775,
     lng: -122.42,
     zoning: "R-1",
+    lotSizeSqFt: 6850,
     overlays: {
       tinyHomeFriendly: true,
       fireHazard: false,
@@ -40,6 +42,7 @@ export const mockProperties: Record<string, Parcel> = {
     lat: 37.776,
     lng: -122.421,
     zoning: "R-1",
+    lotSizeSqFt: 6850,
     overlays: {
       tinyHomeFriendly: false,
       fireHazard: true,
@@ -54,6 +57,7 @@ export const mockProperties: Record<string, Parcel> = {
     lat: 37.777,
     lng: -122.422,
     zoning: "R-1",
+    lotSizeSqFt: 6850,
     overlays: {
       tinyHomeFriendly: false,
       fireHazard: false,
@@ -68,6 +72,7 @@ export const mockProperties: Record<string, Parcel> = {
     lat: 37.778,
     lng: -122.423,
     zoning: "C-2",
+    lotSizeSqFt: 4200,
     overlays: {
       tinyHomeFriendly: false,
       fireHazard: false,
@@ -82,6 +87,7 @@ export const mockProperties: Record<string, Parcel> = {
     lat: 37.779,
     lng: -122.424,
     zoning: "R-1",
+    lotSizeSqFt: 6850,
     overlays: {
       tinyHomeFriendly: false,
       fireHazard: false,

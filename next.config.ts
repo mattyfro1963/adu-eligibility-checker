@@ -3,6 +3,7 @@ import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  transpilePackages: ["react-globe.gl"],
 };
 
 export default withSentryConfig(nextConfig, {

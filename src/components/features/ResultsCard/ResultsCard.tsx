@@ -17,13 +17,15 @@ import { JurisdictionRequirements } from "@/components/features/ResultsCard/Juri
 import { RegulationsAuthorByline } from "@/components/features/ResultsCard/RegulationsAuthorByline";
 import { ResultsBriefingSection } from "@/components/features/ResultsCard/ResultsBriefing";
 import { RuleDetail } from "@/components/features/ResultsCard/RuleDetail";
+import { StatutoryComplianceChecklist } from "@/components/features/ResultsCard/StatutoryComplianceChecklist";
 import { SearchReceiptCard } from "@/components/features/ResultsCard/SearchReceipt";
 import { Button } from "@/components/ui/button";
 import { EligibilityBadge } from "@/components/ui/eligibility-badge";
 import { composeResultsBriefing } from "@/lib/regulations/compose-briefing";
+import { buildStatutoryEvaluations } from "@/lib/rules/statutory-evaluations";
 import { cn } from "@/lib/utils";
 import type { GeocodeResult } from "@/lib/types/gis";
-import type { ZoningReport } from "@/lib/types/zoning";
+import type { Parcel, ZoningReport } from "@/lib/types/zoning";
 
 type ProgramTab = "adu" | "sb9";
 
@@ -140,18 +142,35 @@ export function ResultsCard({
     });
   }, [geocodeResult, report, zoningError]);
 
+  const statutoryEvaluations = useMemo(() => {
+    if (!report || !geocodeResult) return [];
+    const parcel: Parcel = {
+      addressId: geocodeResult.addressId,
+      formattedAddress: report.formattedAddress,
+      lat: geocodeResult.lat,
+      lng: geocodeResult.lng,
+      zoning: report.zoning,
+      overlays: report.overlays,
+      lotSizeSqFt: report.lotSizeSqFt ?? null,
+      mapblklot: report.mapblklot ?? null,
+    };
+    return buildStatutoryEvaluations(parcel, report);
+  }, [geocodeResult, report]);
+
+  const mapCalloutSublabel = useMemo(() => {
+    if (mapblklot) return `APN / mapblklot ${mapblklot}`;
+    const parts = [
+      geocodeResult?.place,
+      geocodeResult?.county,
+      geocodeResult?.region,
+    ].filter(Boolean);
+    return parts.length > 0 ? parts.join(", ") : null;
+  }, [geocodeResult, mapblklot]);
+
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 space-y-6 duration-700 fill-mode-both sm:space-y-8">
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:items-stretch lg:gap-8">
-        <div className="overflow-hidden rounded-card shadow-editorial lg:col-span-3 lg:h-[min(720px,calc(100vh-8rem))]">
-          <AddressMapPreview
-            lat={lat}
-            lng={lng}
-            className="min-h-[280px] sm:min-h-[360px] lg:min-h-full"
-          />
-        </div>
-
-        <div className="relative flex flex-col overflow-hidden rounded-card border border-border bg-card shadow-editorial lg:col-span-2 lg:max-h-[min(720px,calc(100vh-8rem))]">
+      <div className="grid grid-cols-1 gap-0 lg:grid-cols-5 lg:items-stretch">
+        <div className="relative flex flex-col overflow-hidden border border-neutral-200 bg-white lg:col-span-2 lg:max-h-[min(720px,calc(100vh-8rem))] lg:border-r-0">
           <div className="flex-1 space-y-6 overflow-y-auto p-8">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
@@ -263,31 +282,48 @@ export function ResultsCard({
                     />
                   </div>
                 )}
+                {statutoryEvaluations.length > 0 ? (
+                  <StatutoryComplianceChecklist
+                    report={report}
+                    evaluations={statutoryEvaluations}
+                    program={program}
+                  />
+                ) : null}
                 <RegulationsAuthorByline className="text-xs text-muted-foreground" />
               </div>
             ) : null}
           </div>
 
           {geocodeResult ? (
-            <div className="sticky bottom-0 z-10 flex flex-col gap-2 border-t border-border bg-card p-6 sm:flex-row sm:items-center">
+            <div className="sticky bottom-0 z-10 flex flex-col gap-2 border-t border-neutral-200 bg-white p-6 sm:flex-row sm:items-center">
               {onGetQuotes ? (
                 <Button
                   type="button"
                   onClick={onGetQuotes}
-                  className="h-11 min-h-[44px] flex-1"
+                  className="h-11 min-h-[44px] flex-1 rounded-none bg-black text-white hover:bg-black/90"
                 >
                   Get Quotes
                 </Button>
               ) : null}
               <Link
                 href={connectHref}
-                className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-button border border-border bg-background px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-none border border-neutral-300 bg-white px-4 text-sm font-medium text-black transition-colors hover:bg-neutral-50"
               >
                 Open Connect
                 <ArrowRight size={16} aria-hidden="true" />
               </Link>
             </div>
           ) : null}
+        </div>
+
+        <div className="overflow-hidden lg:col-span-3 lg:h-[min(720px,calc(100vh-8rem))]">
+          <AddressMapPreview
+            lat={lat}
+            lng={lng}
+            label={address !== "—" ? address : null}
+            sublabel={mapCalloutSublabel}
+            className="min-h-[280px] rounded-none border-0 sm:min-h-[360px] lg:min-h-full"
+          />
         </div>
       </div>
 

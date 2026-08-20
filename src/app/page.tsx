@@ -4,6 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import { AddressSearch } from "@/components/features/AddressSearch/AddressSearch";
 import { AnalysisInterstitial } from "@/components/features/AnalysisInterstitial/AnalysisInterstitial";
 import { ResultsCard } from "@/components/features/ResultsCard/ResultsCard";
+import { cn } from "@/lib/utils";
 import type { GeocodeResult } from "@/lib/types/gis";
 import type { ZoningReport } from "@/lib/types/zoning";
 
@@ -133,13 +134,16 @@ export default function HomePage() {
     geocodeResult != null
       ? buildConnectHref(geocodeResult, report?.overall ?? null)
       : "/connect";
-  const compact = Boolean(geocodeResult);
+  const compact = showDashboard;
 
   return (
     <main
       id="main-content"
       tabIndex={-1}
-      className="mx-auto w-full max-w-layout flex-1 px-4 py-10 sm:px-6 sm:py-14"
+      className={cn(
+        "mx-auto w-full max-w-layout flex-1 px-4 py-10 sm:px-6 sm:py-14",
+        !showDashboard && "bg-brand-cream",
+      )}
     >
       <div className="search-enter space-y-6 sm:space-y-8">
         <AddressSearch
@@ -147,6 +151,9 @@ export default function HomePage() {
           onError={handleSearchError}
           error={error}
           compact={compact}
+          focusLat={geocodeResult?.lat}
+          focusLng={geocodeResult?.lng}
+          globeLoading={Boolean(geocodeResult) && isZoningLoading}
           showDemoScenarios={false}
         />
 

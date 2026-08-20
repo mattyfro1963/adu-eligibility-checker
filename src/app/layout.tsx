@@ -1,26 +1,43 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Inter, Source_Serif_4 } from "next/font/google";
+import localFont from "next/font/local";
+import { IBM_Plex_Mono } from "next/font/google";
 import { isMapboxConfigured } from "@/lib/env";
 import { SkipToContent } from "@/components/features/PageShell/PageShell";
 import { SiteChrome } from "@/components/features/SiteChrome/SiteChrome";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+// Licensed Söhn files: src/app/fonts/sohn/*.woff2 — see README in that folder.
+const sohn = localFont({
+  src: [
+    {
+      path: "./fonts/sohn/Sohn-Regular.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "./fonts/sohn/Sohn-Medium.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "./fonts/sohn/Sohn-SemiBold.woff2",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "./fonts/sohn/Sohn-Bold.woff2",
+      weight: "700",
+      style: "normal",
+    },
+  ],
+  variable: "--font-sohn",
+  display: "swap",
 });
 
 const ibmPlexMono = IBM_Plex_Mono({
   variable: "--font-ibm-plex-mono",
   subsets: ["latin"],
   weight: ["600"],
-});
-
-const sourceSerif = Source_Serif_4({
-  variable: "--font-source-serif",
-  subsets: ["latin"],
-  weight: ["400"],
 });
 
 export const metadata: Metadata = {
@@ -35,7 +52,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${ibmPlexMono.variable} ${sourceSerif.variable} h-full antialiased`}
+      className={`${sohn.variable} ${ibmPlexMono.variable} h-full antialiased`}
     >
       <body
         className="flex min-h-full flex-col bg-background text-foreground selection:bg-muted selection:text-foreground"

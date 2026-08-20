@@ -1,0 +1,55 @@
+---
+description: Brand voice, features, pain points, and copy patterns for doihave.space
+globs: brand-guidelines/**,src/lib/content/**,README.md,src/components/features/ConnectPage/**,src/components/features/PartnersDirectory/**,src/components/features/LeadFallbackForm/**,src/components/features/PartnerOffers/**,src/components/features/AddressSearch/**
+alwaysApply: false
+---
+
+# Brand guidelines — doihave.space
+
+Read `brand-guidelines/` before writing or editing marketing, editorial, or UI copy on matched paths.
+
+## Canonical docs
+
+| File | Purpose |
+|------|---------|
+| `brand-guidelines/tone-of-voice.md` | Voice, adjectives, disclaimer tiers, naming, visual voice |
+| `brand-guidelines/product-features.md` | Feature headlines, coverage matrix, out-of-scope claims |
+| `brand-guidelines/customer-pain-points.md` | Persona × pain × message × CTA |
+| `brand-guidelines/style-references.md` | Annotated in-app copy seeds |
+| `brand-guidelines/copy-prompts.md` | Prompt skeletons — use when user asks for marketing copy |
+
+Manual `@brand-guidelines` works outside these globs.
+
+## Hard boundaries
+
+- **Statute / regulations:** `src/lib/regulations/` — cited claims, disclaimers, briefing prose (Regulations Expert agent). Components render only.
+- **Commercial / editorial:** `src/lib/content/` — affiliates, guides corpus, premium catalog.
+- **Never mix** affiliate marketing into statute data or invent eligibility in copy.
+
+## Voice essentials
+
+- Institutional, precise, architectural — not hype.
+- Fixed status vocabulary: **Eligible** / **Warning** / **Restricted** (never "approved" or "denied").
+- Coverage honesty: lot GIS only where providers cover the coordinate; jurisdiction fallback is normal, not an error.
+- Reframe "loopholes" as lawful pathways, not permit dodges.
+
+## Disclaimer tiers
+
+| Tier | When |
+|------|------|
+| Full | Guides, regulations, receipts |
+| Short | Footer, compact UI |
+| Commercial | Affiliates (`AFFILIATE_DISCLOSURE`) |
+| Matching | Connect / builder match |
+
+## Outcome CTAs (with product-role.mdc)
+
+| `overall` | Primary | Avoid |
+|-----------|---------|-------|
+| eligible | Outfit the build / partners | Rose "Request Review" |
+| warning | Amber specialist review | Full shop grid above form |
+| restricted | Rose expert compliance review | Shop grid above lead form |
+
+## When user requests copy
+
+Use the skeleton in `brand-guidelines/copy-prompts.md`: Goal, Format, Audience, Tone, Constraints, Context, Do not.

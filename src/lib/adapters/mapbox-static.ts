@@ -1,8 +1,10 @@
 import { env } from "@/lib/env";
 import { mapboxRequestHeaders } from "@/lib/adapters/mapbox-headers";
 
-/** Light basemap — client may apply greyscale/contrast CSS on the PNG. */
+/** Light basemap — client applies grayscale/contrast for store-locator monochrome look. */
 const MAPBOX_STYLE = "mapbox/light-v11";
+/** Large black teardrop pin (Mapbox Static Images overlay syntax). */
+const MAPBOX_PIN = "pin-l+000000";
 
 export const STATIC_MAP_DEFAULTS = {
   width: 640,
@@ -29,8 +31,7 @@ export function buildMapboxStaticUrl(params: StaticMapParams): string {
   const zoom = params.zoom ?? STATIC_MAP_DEFAULTS.zoom;
   const { lat, lng, accessToken } = params;
 
-  // Soft dark pin; UI greyscale treatment still applies on the client.
-  const overlay = `pin-s+333333(${lng},${lat})`;
+  const overlay = `${MAPBOX_PIN}(${lng},${lat})`;
   const path = `https://api.mapbox.com/styles/v1/${MAPBOX_STYLE}/static/${overlay}/${lng},${lat},${zoom},0/${width}x${height}@2x`;
 
   const url = new URL(path);
