@@ -38,6 +38,7 @@ describe("evaluateEligibility", () => {
     expect(report.adu.status).toBe("eligible");
     expect(report.sb9.status).toBe("eligible");
     expect(report.overall).toBe("eligible");
+    expect(report.overlays).toEqual(parcel("addr-r1-clean").overlays);
   });
 
   it("R-1 + tinyHomeFriendly → ADU eligible with tiny-home reason", () => {

@@ -12,6 +12,7 @@ const SF_PROXIMITY: [number, number] = [-122.4194, 37.7749];
 
 interface MapboxContextItem {
   id: string;
+  text?: string;
   short_code?: string;
 }
 
@@ -19,6 +20,10 @@ interface MapboxAddressFeature {
   /** Mapbox feature id (e.g. `address.123…`); unique per suggestion. */
   id?: string;
   place_name: string;
+  /** House number when `place_type` includes address. */
+  address?: string;
+  /** Street / place name text. */
+  text?: string;
   center: number[];
   context?: MapboxContextItem[];
 }
@@ -33,6 +38,50 @@ export function addressIdFromMapboxFeature(
     return feature.id;
   }
   return `${feature.place_name}|${lat},${lng}`;
+}
+
+function contextText(
+  context: MapboxContextItem[] | undefined,
+  prefix: string,
+): string {
+  const item = (context ?? []).find((c) => c.id.startsWith(prefix));
+  return item?.text?.trim() ?? "";
+}
+
+function contextRegion(context: MapboxContextItem[] | undefined): string {
+  const item = (context ?? []).find((c) => c.id.startsWith("region"));
+  if (!item) return "";
+  // Prefer US-CA → CA for compact two-line secondary text.
+  const code = item.short_code?.trim();
+  if (code?.startsWith("US-") && code.length > 3) {
+    return code.slice(3);
+  }
+  return item.text?.trim() ?? "";
+}
+
+/**
+ * Split Mapbox address feature into two-line suggestion fields.
+ * Exported for unit tests.
+ */
+export function addressPartsFromMapboxFeature(
+  feature: Pick<
+    MapboxAddressFeature,
+    "address" | "text" | "place_name" | "context"
+  >,
+): Pick<GeocodeResult, "streetLine" | "place" | "region" | "postcode"> {
+  const house = feature.address?.trim() ?? "";
+  const street = feature.text?.trim() ?? "";
+  const streetLine =
+    house && street
+      ? `${house} ${street}`
+      : street || house || feature.place_name.split(",")[0]?.trim() || "";
+
+  return {
+    streetLine,
+    place: contextText(feature.context, "place"),
+    region: contextRegion(feature.context),
+    postcode: contextText(feature.context, "postcode"),
+  };
 }
 
 export class MapboxConfigError extends Error {
@@ -78,9 +127,11 @@ function toGeocodeResult(feature: MapboxAddressFeature): GeocodeResult | null {
   if (typeof lng !== "number" || typeof lat !== "number") {
     return null;
   }
+  const parts = addressPartsFromMapboxFeature(feature);
   return {
     addressId: addressIdFromMapboxFeature(feature, lat, lng),
     formattedAddress: feature.place_name,
+    ...parts,
     lat,
     lng,
   };

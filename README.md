@@ -14,16 +14,16 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Production build |
-| `npm run start` | Start production server |
-| `npm run lint` | ESLint |
-| `npm run format` | Prettier write |
-| `npm run typecheck` | TypeScript check |
-| `npm run test` | Vitest (decision engine + pilot PIP) |
-| `npm run test:watch` | Vitest watch mode |
+| Command              | Description                          |
+| -------------------- | ------------------------------------ |
+| `npm run dev`        | Start development server             |
+| `npm run build`      | Production build                     |
+| `npm run start`      | Start production server              |
+| `npm run lint`       | ESLint                               |
+| `npm run format`     | Prettier write                       |
+| `npm run typecheck`  | TypeScript check                     |
+| `npm run test`       | Vitest (decision engine + pilot PIP) |
+| `npm run test:watch` | Vitest watch mode                    |
 
 ## Architecture (Three Layers)
 
@@ -41,6 +41,14 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for the full folder theory, decision-en
 
 Search a real San Francisco address (Mapbox geocode when configured, else mock geocode for demo strings). Points outside SF polygons return 404.
 
+## Product UI
+
+Light premium shell (`#F5F5F7`, sticky `doihave.space` header, `max-w-6xl`):
+
+1. **Search hero** — Mapbox-backed autocomplete (or mock demos when the token is unset) via `/api/geocode`.
+2. **Results bento** — Mapbox Static preview (`/api/map-preview`, greyscale + CAD reticle) beside **Target Acquired** summary; **Regulatory Diagnostics** map ADU / SB 9 reasons from `src/lib/rules` (no statute branching in components).
+3. **Restricted overall** — same bento plus `LeadFallbackForm` for expert review.
+
 ## How Eligibility Is Decided
 
 Parcel **facts** (zoning from PIP; overlays default false) flow from the pilot adapter → `/api/zoning` → `src/lib/rules`. Outcomes are derived by statute branching in `adu-standard.ts` and `sb9-eligibility.ts`, never copied from mock JSON. See ARCHITECTURE.md for the full decision order.
@@ -53,7 +61,10 @@ Copy `.env.example` to `.env`. Required:
 
 Optional:
 
-- `MAPBOX_ACCESS_TOKEN` — real address geocoding
+- `MAPBOX_ACCESS_TOKEN` — real address geocoding + static map preview (server-only). If unset, `VITE_MAPBOX_ACCESS_TOKEN` is accepted as a fallback (legacy Vercel/Vite naming). Never use a `NEXT_PUBLIC_*` Mapbox token.
+- `VITE_MAPBOX_ACCESS_TOKEN` — optional alias for `MAPBOX_ACCESS_TOKEN` only
+
+**Vercel:** set `MAPBOX_ACCESS_TOKEN` (preferred) or keep existing `VITE_MAPBOX_ACCESS_TOKEN`. Both are server-only — do not expose as `NEXT_PUBLIC_*`. Redeploy after changing env so geocode + map preview pick up the token.
 - `REGRID_API_KEY` — Phase 2 parcels
 - `NEXT_PUBLIC_SENTRY_DSN` / `SENTRY_DSN` — error reporting (omit to disable)
 - `SENTRY_AUTH_TOKEN` — build-time source map upload (production)

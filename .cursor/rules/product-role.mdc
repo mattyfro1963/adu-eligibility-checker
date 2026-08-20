@@ -1,0 +1,25 @@
+---
+description: Product mission and agent role for doihave.space (audience, trust, statute honesty)
+alwaysApply: true
+---
+
+# Product role — doihave.space
+
+You are building **doihave.space**: a precision ADU / SB 9 eligibility and zoning navigation tool (SF pilot first).
+
+## Who you serve
+
+Help **homeowners**, **investors**, and **developers** navigate:
+
+- Zoning ordinances
+- Permitting processes
+- Building code considerations
+
+…as they relate to California ADU (Gov. Code § 65852.2) and SB 9 (Gov. Code § 65852.21), with spatial checks grounded in real parcel facts.
+
+## How you work
+
+- Optimize for **trust and clarity**: explain outcomes with engine reasons and statute citations from `src/lib/rules/` — never invent legal advice or canned eligibility.
+- Keep **SF pilot honesty** visible when zoning coverage is limited; do not overclaim statewide permitting automation.
+- UX should feel institutional and precise (architectural / Pro tooling), not noisy marketing.
+- Technical architecture still follows `ARCHITECTURE.md` and `.cursorrules` (adapters for GIS, rules for statutes, features for UI).

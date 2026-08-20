@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import { AlertTriangle } from "lucide-react";
 import { AddressSearch } from "@/components/features/AddressSearch/AddressSearch";
 import { ResultsCard } from "@/components/features/ResultsCard/ResultsCard";
 import { LeadFallbackForm } from "@/components/features/LeadFallbackForm/LeadFallbackForm";
-import { Spinner } from "@/components/ui/Spinner";
 import type { GeocodeResult } from "@/lib/types/gis";
 import type { ZoningReport } from "@/lib/types/zoning";
 
@@ -67,27 +67,38 @@ export default function HomePage() {
     setError(message);
   }, []);
 
+  const showResults = Boolean(geocodeResult) || Boolean(report);
+
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-8">
+    <main className="mx-auto w-full max-w-6xl flex-1 space-y-10 px-6 py-12 md:py-16">
       <AddressSearch onResolved={handleResolved} onError={handleSearchError} />
 
       {error ? (
         <div
           role="alert"
-          className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600"
+          className="flex items-start gap-3 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-700 shadow-sm"
         >
-          {error}
+          <AlertTriangle
+            className="mt-0.5 shrink-0"
+            size={18}
+            aria-hidden="true"
+          />
+          <p className="text-sm font-medium">{error}</p>
         </div>
       ) : null}
 
-      {isZoningLoading ? (
-        <Spinner label="Checking eligibility…" />
-      ) : report?.overall === "restricted" ? (
+      {showResults ? (
+        <ResultsCard
+          report={report}
+          geocodeResult={geocodeResult}
+          isLoading={isZoningLoading}
+        />
+      ) : null}
+
+      {report?.overall === "restricted" ? (
         <LeadFallbackForm
           address={geocodeResult?.formattedAddress ?? report.formattedAddress}
         />
-      ) : report ? (
-        <ResultsCard report={report} />
       ) : null}
     </main>
   );

@@ -5,10 +5,41 @@ import { mockPropertyList, mockProperties } from "@/lib/mock/properties";
 
 const COORD_EPSILON = 0.0001;
 
+/**
+ * Parse mock `formattedAddress` into two-line suggestion fields.
+ * Expects `"Street, Place, CA"` or `"Street, Place, CA 94105"`.
+ */
+export function addressPartsFromFormattedAddress(
+  formattedAddress: string,
+): Pick<GeocodeResult, "streetLine" | "place" | "region" | "postcode"> {
+  const segments = formattedAddress.split(",").map((s) => s.trim());
+  const streetLine = segments[0] ?? formattedAddress;
+  const place = segments[1] ?? "";
+  const regionSeg = segments[2] ?? "";
+  const regionMatch = regionSeg.match(
+    /^([A-Za-z]{2})(?:\s+(\d{5}(?:-\d{4})?))?$/,
+  );
+  if (regionMatch) {
+    return {
+      streetLine,
+      place,
+      region: regionMatch[1] ?? "",
+      postcode: regionMatch[2] ?? "",
+    };
+  }
+  return {
+    streetLine,
+    place,
+    region: regionSeg,
+    postcode: "",
+  };
+}
+
 function toGeocodeResult(parcel: Parcel): GeocodeResult {
   return {
     addressId: parcel.addressId,
     formattedAddress: parcel.formattedAddress,
+    ...addressPartsFromFormattedAddress(parcel.formattedAddress),
     lat: parcel.lat,
     lng: parcel.lng,
   };

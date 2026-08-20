@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { isMapboxConfigured } from "@/lib/env";
+import { SiteHeader } from "@/components/features/SiteHeader/SiteHeader";
+import { SiteFooter } from "@/components/features/SiteFooter/SiteFooter";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,30 +16,26 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ADU Eligibility Checker",
+  title: "doihave.space — ADU & SB 9 Eligibility",
   description:
-    "Check California ADU and SB 9 eligibility for San Francisco properties",
+    "Institutional-grade California ADU and SB 9 spatial analysis for San Francisco parcels.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
+  const mapboxConfigured = isMapboxConfigured();
+
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-background text-foreground">
-        <header className="border-b border-slate-200 bg-white px-4 py-6 shadow-sm">
-          <div className="mx-auto max-w-3xl">
-            <h1 className="text-2xl font-bold text-slate-800">
-              ADU Eligibility Checker
-            </h1>
-            <p className="mt-1 text-sm text-slate-600">
-              Check California ADU and SB 9 eligibility for San Francisco
-              properties
-            </p>
-          </div>
-        </header>
+      <body
+        className="flex min-h-full flex-col bg-[#F5F5F7] text-slate-900 selection:bg-slate-200 selection:text-black"
+        data-mapbox-configured={mapboxConfigured ? "1" : "0"}
+      >
+        <SiteHeader />
         {children}
+        <SiteFooter />
       </body>
     </html>
   );

@@ -121,42 +121,50 @@ export function useAddressSearch({
     [onResolved],
   );
 
+  const resolveQuery = useCallback(
+    async (raw: string) => {
+      const trimmed = raw.trim();
+      if (!trimmed) return;
+
+      setQuery(trimmed);
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
+      setIsSearching(true);
+
+      try {
+        const res = await fetch(geocodeUrl(trimmed), {
+          signal: controller.signal,
+        });
+        if (!res.ok) {
+          const body: unknown = await res.json().catch(() => null);
+          onError?.(readErrorMessage(body, "Address not found"));
+          return;
+        }
+        const data: unknown = await res.json();
+        const result = parseResults(data)[0];
+        if (!result) {
+          onError?.("Address not found");
+          return;
+        }
+        selectAddress(result);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") {
+          return;
+        }
+        onError?.("Failed to geocode address");
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsSearching(false);
+        }
+      }
+    },
+    [onError, selectAddress],
+  );
+
   const handleSubmit = useCallback(async () => {
-    const trimmed = query.trim();
-    if (!trimmed) return;
-
-    abortRef.current?.abort();
-    const controller = new AbortController();
-    abortRef.current = controller;
-    setIsSearching(true);
-
-    try {
-      const res = await fetch(geocodeUrl(trimmed), {
-        signal: controller.signal,
-      });
-      if (!res.ok) {
-        const body: unknown = await res.json().catch(() => null);
-        onError?.(readErrorMessage(body, "Address not found"));
-        return;
-      }
-      const data: unknown = await res.json();
-      const result = parseResults(data)[0];
-      if (!result) {
-        onError?.("Address not found");
-        return;
-      }
-      selectAddress(result);
-    } catch (err) {
-      if (err instanceof DOMException && err.name === "AbortError") {
-        return;
-      }
-      onError?.("Failed to geocode address");
-    } finally {
-      if (!controller.signal.aborted) {
-        setIsSearching(false);
-      }
-    }
-  }, [query, onError, selectAddress]);
+    await resolveQuery(query);
+  }, [query, resolveQuery]);
 
   return {
     query,
@@ -167,5 +175,6 @@ export function useAddressSearch({
     handleQueryChange,
     selectAddress,
     handleSubmit,
+    resolveQuery,
   };
 }

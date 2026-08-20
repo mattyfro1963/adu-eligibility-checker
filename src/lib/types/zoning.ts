@@ -27,6 +27,8 @@ export interface ZoningReport {
   addressId: string;
   formattedAddress: string;
   zoning: string;
+  /** Parcel overlay facts for Target Acquired summary (not eligibility). */
+  overlays: Overlays;
   adu: EligibilityResult;
   sb9: EligibilityResult;
   overall: EligibilityStatus;

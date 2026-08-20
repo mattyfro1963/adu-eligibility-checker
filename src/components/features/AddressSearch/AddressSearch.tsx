@@ -1,16 +1,50 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 import { MapPin, Search } from "lucide-react";
 import { useAddressSearch } from "@/components/features/AddressSearch/useAddressSearch";
+import { Button } from "@/components/ui/button";
 import type { GeocodeResult } from "@/lib/types/gis";
 
 interface AddressSearchProps {
   onResolved: (result: GeocodeResult) => void;
   onError?: (message: string) => void;
+  /** When false (Mapbox live), omit mock demo chips. */
+  showDemoScenarios?: boolean;
 }
 
-export function AddressSearch({ onResolved, onError }: AddressSearchProps) {
+const DEMO_SCENARIOS = [
+  { label: "123 Main St", query: "123 Main St" },
+  { label: "100 Market St", query: "100 Market St" },
+  { label: "555 Beach", query: "555 Beach" },
+  { label: "789 Pine", query: "789 Pine" },
+] as const;
+
+function secondaryLine(suggestion: GeocodeResult): string {
+  const parts = [
+    suggestion.place,
+    [suggestion.region, suggestion.postcode].filter(Boolean).join(" "),
+  ].filter(Boolean);
+  return parts.join(", ");
+}
+
+function subscribeMapboxFlag() {
+  return () => {};
+}
+
+function getMapboxDemoSnapshot(): boolean {
+  return document.body.dataset.mapboxConfigured !== "1";
+}
+
+function getMapboxDemoServerSnapshot(): boolean {
+  return false;
+}
+
+export function AddressSearch({
+  onResolved,
+  onError,
+  showDemoScenarios,
+}: AddressSearchProps) {
   const {
     query,
     suggestions,
@@ -20,11 +54,20 @@ export function AddressSearch({ onResolved, onError }: AddressSearchProps) {
     handleQueryChange,
     selectAddress,
     handleSubmit,
+    resolveQuery,
   } = useAddressSearch({ onResolved, onError });
 
   const containerRef = useRef<HTMLDivElement>(null);
   const listboxId = "address-suggestions";
   const showList = isOpen && suggestions.length > 0;
+
+  const demosFromDom = useSyncExternalStore(
+    subscribeMapboxFlag,
+    getMapboxDemoSnapshot,
+    getMapboxDemoServerSnapshot,
+  );
+  const demosEnabled =
+    typeof showDemoScenarios === "boolean" ? showDemoScenarios : demosFromDom;
 
   useEffect(() => {
     function handlePointerDown(event: MouseEvent) {
@@ -43,77 +86,150 @@ export function AddressSearch({ onResolved, onError }: AddressSearchProps) {
   }, [setIsOpen]);
 
   return (
-    <div ref={containerRef} className="relative w-full max-w-xl">
-      <label htmlFor="address-search" className="sr-only">
-        Search property address
-      </label>
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Search
-            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
-            aria-hidden="true"
-          />
-          <input
-            id="address-search"
-            type="text"
-            role="combobox"
-            value={query}
-            onChange={(e) => handleQueryChange(e.target.value)}
-            onFocus={() => setIsOpen(true)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                handleSubmit();
-              }
-              if (e.key === "Escape") {
-                setIsOpen(false);
-              }
-            }}
-            placeholder="Enter a San Francisco address…"
-            className="w-full rounded-lg border border-slate-300 py-2.5 pl-10 pr-4 text-slate-800 shadow-sm focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
-            aria-label="Property address search"
-            aria-autocomplete="list"
-            aria-expanded={showList}
-            aria-controls={listboxId}
-            aria-haspopup="listbox"
-            autoComplete="off"
-          />
+    <section className="relative overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+      <div className="relative z-10 flex flex-col items-center space-y-10 px-6 py-16 text-center md:py-24">
+        <div className="max-w-3xl space-y-4">
+          <h2 className="text-4xl leading-[1.1] font-medium tracking-tight text-slate-900 md:text-6xl">
+            Unlock your parcel&apos;s <br className="hidden md:block" />
+            <span className="text-slate-400">hidden potential.</span>
+          </h2>
+          <p className="mt-4 text-lg font-light tracking-wide text-slate-500 md:text-xl">
+            Institutional-grade ADU &amp; SB 9 spatial analysis in milliseconds.
+          </p>
         </div>
-        <button
-          type="button"
-          onClick={handleSubmit}
-          disabled={isSearching || !query.trim()}
-          className="rounded-lg bg-slate-800 px-4 py-2.5 text-sm font-medium text-white shadow-md transition-colors hover:bg-slate-700 disabled:opacity-50"
-          aria-label="Search address"
-        >
-          {isSearching ? "Searching…" : "Search"}
-        </button>
-      </div>
 
-      {showList ? (
-        <ul
-          id={listboxId}
-          role="listbox"
-          className="absolute z-10 mt-1 w-full rounded-lg border border-slate-200 bg-white shadow-lg"
-        >
-          {suggestions.map((suggestion) => (
-            <li key={suggestion.addressId} role="option" aria-selected="false">
-              <button
-                type="button"
-                onClick={() => selectAddress(suggestion)}
-                className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-slate-800 hover:bg-slate-50"
-                aria-label={`Select ${suggestion.formattedAddress}`}
+        <div ref={containerRef} className="relative mt-6 w-full max-w-2xl">
+          <label htmlFor="address-search" className="sr-only">
+            Search property address
+          </label>
+          <form
+            id="search-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void handleSubmit();
+            }}
+            className="relative"
+          >
+            <div className="relative flex items-center rounded-2xl border border-slate-200 bg-[#FBFBFD] p-1.5 shadow-sm transition-all duration-300 focus-within:border-slate-300 focus-within:bg-white focus-within:ring-4 focus-within:ring-slate-100">
+              <MapPin
+                className="absolute left-5 text-slate-400"
+                size={20}
+                aria-hidden="true"
+              />
+              <input
+                id="address-search"
+                type="text"
+                role="combobox"
+                value={query}
+                onChange={(e) => handleQueryChange(e.target.value)}
+                onFocus={() => setIsOpen(true)}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") {
+                    setIsOpen(false);
+                  }
+                }}
+                placeholder="Query San Francisco address…"
+                className="w-full bg-transparent py-4 pr-36 pl-14 text-lg font-light text-slate-900 placeholder:text-slate-400 focus:outline-none"
+                aria-label="Property address search"
+                aria-autocomplete="list"
+                aria-expanded={showList}
+                aria-controls={listboxId}
+                aria-haspopup="listbox"
+                autoComplete="off"
+                disabled={isSearching}
+              />
+              <Button
+                type="submit"
+                disabled={isSearching || !query.trim()}
+                className="absolute top-2 right-2 bottom-2 h-auto rounded-xl bg-black px-6 text-sm font-medium tracking-wide text-white shadow-md hover:bg-slate-800 disabled:opacity-50"
+                aria-label="Analyze address"
               >
-                <MapPin
-                  className="h-4 w-4 shrink-0 text-slate-400"
-                  aria-hidden="true"
-                />
-                {suggestion.formattedAddress}
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : null}
-    </div>
+                {isSearching ? (
+                  <span
+                    className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <>
+                    Analyze <Search size={14} aria-hidden="true" />
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+
+          {showList ? (
+            <ul
+              id={listboxId}
+              role="listbox"
+              className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-slate-200/80 bg-white/95 shadow-[0_8px_30px_rgb(0,0,0,0.06)] backdrop-blur-md"
+            >
+              {suggestions.map((suggestion) => {
+                const secondary = secondaryLine(suggestion);
+                return (
+                  <li
+                    key={suggestion.addressId}
+                    role="option"
+                    aria-selected="false"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => selectAddress(suggestion)}
+                      className="flex w-full items-start gap-3 border-b border-slate-100 px-4 py-3 text-left last:border-b-0 hover:bg-slate-50"
+                      aria-label={`Select ${suggestion.formattedAddress}`}
+                    >
+                      <MapPin
+                        className="mt-0.5 h-4 w-4 shrink-0 text-slate-400"
+                        aria-hidden="true"
+                      />
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-medium text-slate-900">
+                          {suggestion.streetLine || suggestion.formattedAddress}
+                        </span>
+                        {secondary ? (
+                          <span className="mt-0.5 block truncate text-xs text-slate-500">
+                            {secondary}
+                          </span>
+                        ) : null}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : null}
+
+          <p className="mt-3 text-center text-[11px] tracking-wide text-slate-400">
+            SF pilot zoning via local DataSF GeoJSON — points outside San
+            Francisco return no match.
+          </p>
+        </div>
+
+        {demosEnabled ? (
+          <div className="flex w-full max-w-2xl flex-col items-center gap-3 pt-2">
+            <span className="text-[10px] font-semibold tracking-widest text-slate-400 uppercase">
+              Simulate Scenarios
+            </span>
+            <div className="flex flex-wrap justify-center gap-2">
+              {DEMO_SCENARIOS.map((demo) => (
+                <button
+                  key={demo.label}
+                  type="button"
+                  onClick={() => {
+                    void resolveQuery(demo.query);
+                  }}
+                  className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-600 shadow-sm transition-all hover:bg-[#F5F5F7] hover:text-slate-900"
+                >
+                  {demo.label}
+                </button>
+              ))}
+            </div>
+            <p className="text-[10px] text-slate-400">
+              Demo strings use the mock geocoder (Mapbox token unset).
+            </p>
+          </div>
+        ) : null}
+      </div>
+    </section>
   );
 }

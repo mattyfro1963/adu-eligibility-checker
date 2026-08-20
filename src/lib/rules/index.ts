@@ -38,6 +38,7 @@ export function evaluateEligibility(parcel: Parcel): ZoningReport {
     addressId: parcel.addressId,
     formattedAddress: parcel.formattedAddress,
     zoning: parcel.zoning,
+    overlays: parcel.overlays,
     adu,
     sb9,
     overall: computeOverall(adu.status, sb9.status),
