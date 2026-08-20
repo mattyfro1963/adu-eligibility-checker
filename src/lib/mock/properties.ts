@@ -8,8 +8,9 @@ export const mockProperties: Record<string, Parcel> = {
   "addr-r1-clean": {
     addressId: "addr-r1-clean",
     formattedAddress: "123 Main St, San Francisco, CA",
-    lat: 37.7749,
-    lng: -122.4194,
+    // Point inside DataSF RH-1(D) so mock geocode → pilot PIP succeeds.
+    lat: 37.74373286174355,
+    lng: -122.45874441336278,
     zoning: "R-1",
     overlays: {
       tinyHomeFriendly: false,
