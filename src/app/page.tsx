@@ -5,7 +5,6 @@ import { AddressSearch } from "@/components/features/AddressSearch/AddressSearch
 import { ResultsCard } from "@/components/features/ResultsCard/ResultsCard";
 import { LeadFallbackForm } from "@/components/features/LeadFallbackForm/LeadFallbackForm";
 import { Spinner } from "@/components/ui/Spinner";
-import { env } from "@/lib/env";
 import type { GeocodeResult } from "@/lib/types/gis";
 import type { ZoningReport } from "@/lib/types/zoning";
 
@@ -29,7 +28,8 @@ export default function HomePage() {
     setReport(null);
 
     try {
-      const url = new URL("/api/zoning", env.NEXT_PUBLIC_API_URL);
+      // Same-origin relative URL — avoids apex↔www redirect breaking fetch.
+      const url = new URL("/api/zoning", window.location.origin);
       url.searchParams.set("lat", String(result.lat));
       url.searchParams.set("lng", String(result.lng));
       const res = await fetch(url.toString(), { signal: controller.signal });

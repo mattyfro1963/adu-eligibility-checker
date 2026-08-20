@@ -5,6 +5,7 @@ import {
   MapboxUpstreamError,
   mapboxGeocoder,
 } from "@/lib/adapters/mapbox-geocoder";
+import { mockGeocoder } from "@/lib/adapters/mock-geocoder";
 import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import { geocodeQuerySchema } from "@/lib/validations/api-schemas";
@@ -40,20 +41,21 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // CA-only Mapbox geocode; zoning uses local DataSF GeoJSON + Turf PIP.
+  // Mapbox when configured; otherwise mock demo parcels (README contract).
+  // Zoning still uses local DataSF GeoJSON + Turf PIP after geocode.
+  const geocoder = env.MAPBOX_ACCESS_TOKEN?.trim()
+    ? mapboxGeocoder
+    : mockGeocoder;
+
   if (!env.MAPBOX_ACCESS_TOKEN?.trim()) {
-    log.error({ status: 500 }, "Missing Mapbox access token");
-    return NextResponse.json(
-      { error: "Geocoding is not configured" },
-      { status: 500 },
-    );
+    log.warn({ status: 200 }, "Mapbox unset — using mock geocoder");
   }
 
   try {
-    const results = await mapboxGeocoder.searchSuggestions(parsed.data.q);
+    const results = await geocoder.searchSuggestions(parsed.data.q);
 
     if (results.length === 0) {
-      const exact = await mapboxGeocoder.geocode(parsed.data.q);
+      const exact = await geocoder.geocode(parsed.data.q);
       if (!exact) {
         log.warn({ q: parsed.data.q, status: 404 }, "Address not found");
         return NextResponse.json(

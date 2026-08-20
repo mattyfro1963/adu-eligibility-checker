@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { GeocodeResult } from "@/lib/types/gis";
-import { env } from "@/lib/env";
 
 interface UseAddressSearchOptions {
   onResolved: (result: GeocodeResult) => void;
@@ -9,6 +8,13 @@ interface UseAddressSearchOptions {
 
 const DEBOUNCE_MS = 300;
 const MIN_QUERY_LENGTH = 2;
+
+/** Same-origin relative URL — avoids apex↔www redirect breaking fetch. */
+function geocodeUrl(query: string): string {
+  const url = new URL("/api/geocode", window.location.origin);
+  url.searchParams.set("q", query);
+  return url.toString();
+}
 
 function readErrorMessage(body: unknown, fallback: string): string {
   if (
@@ -52,11 +58,15 @@ export function useAddressSearch({
       setIsSearching(true);
 
       try {
-        const url = new URL("/api/geocode", env.NEXT_PUBLIC_API_URL);
-        url.searchParams.set("q", value);
-        const res = await fetch(url.toString(), { signal: controller.signal });
+        const res = await fetch(geocodeUrl(value), {
+          signal: controller.signal,
+        });
         if (!res.ok) {
+          const body: unknown = await res.json().catch(() => null);
           setSuggestions([]);
+          onError?.(
+            readErrorMessage(body, "Failed to fetch address suggestions"),
+          );
           return;
         }
         const data: unknown = await res.json();
@@ -121,9 +131,9 @@ export function useAddressSearch({
     setIsSearching(true);
 
     try {
-      const url = new URL("/api/geocode", env.NEXT_PUBLIC_API_URL);
-      url.searchParams.set("q", trimmed);
-      const res = await fetch(url.toString(), { signal: controller.signal });
+      const res = await fetch(geocodeUrl(trimmed), {
+        signal: controller.signal,
+      });
       if (!res.ok) {
         const body: unknown = await res.json().catch(() => null);
         onError?.(readErrorMessage(body, "Address not found"));
