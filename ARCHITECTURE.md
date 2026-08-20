@@ -26,7 +26,7 @@ Visual representation and client interaction. Split generic `ui/` from domain `f
 Heart of the app. **Zero React.** Portable to a Node CLI or worker.
 
 - **Engine (`lib/rules/`):** Split ADU (§ 65852.2) from SB 9 (§ 65852.21). Real `if`/`else` on parcel **facts**. Do not store Eligible/Warning/Restricted on mock parcels. `lib/rules/index.ts` orchestrates unified `ZoningReport`.
-- **Mocks and adapters (`lib/mock/` + `lib/adapters/`):** Routes call a `Geocoder` adapter. `mock-geocoder.ts` implements `Geocoder`. Phase 2 adds `regrid-geocoder.ts` with zero changes to rules or UI.
+- **Mocks and adapters (`lib/mock/` + `lib/adapters/`):** Routes call a `Geocoder` adapter for addresses. SF pilot zoning uses `pilot-zoning.ts` (server-side Turf + `public/data/pilot-zoning.geojson`). **Turf/GeoJSON only in adapters** — never in `lib/rules/` or UI. Phase 2 may add `regrid-geocoder.ts` with zero changes to rules or UI.
 
 ## Decision Engine Logic
 
@@ -64,7 +64,7 @@ Monitor `src/lib/rules/*.ts`. The engine must contain **actual branching**, not 
 
 Import features explicitly (no barrels). State: `geocodeResult`, `report`, `isZoningLoading`, `error`.
 
-Flow: `AddressSearch` → `onResolved` → page fetches `/api/zoning` → `Spinner` while loading → `LeadFallbackForm` when `overall === "restricted"` → `ResultsCard` otherwise.
+Flow: `AddressSearch` → `onResolved` → page fetches `/api/zoning?lat=&lng=` → pilot PIP adapter → rules → `Spinner` while loading → `LeadFallbackForm` when `overall === "restricted"` → `ResultsCard` otherwise.
 
 Forbidden: pasted AddressSearch markup, rule engine branches, `evaluateEligibility` on client.
 

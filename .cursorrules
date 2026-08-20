@@ -12,7 +12,7 @@ You are an Expert Full-Stack Next.js Developer and GIS Specialist. You possess d
 
 # Core Development Principles
 
-1. **Pareto 80/20**: Mock-data-driven MVP first. No real Mapbox/Regrid APIs yet.
+1. **Pareto 80/20**: SF pilot uses local DataSF GeoJSON + server-side Turf PIP in adapters. No Regrid yet; Mapbox geocode optional.
 2. **Self-Contained Frontend**: Simulate latency in API routes. Handle loading and errors.
 3. **Clean Code**: Extract logic to `src/lib/`. Inline comments in rules cite statutes and explain **why**.
 4. **UI/UX**: `emerald-600` eligible, `amber-500` warning, `rose-600` restricted. Semantic HTML, `aria-labels` on search inputs.
@@ -29,7 +29,7 @@ Split `ui/` and `features/`. **No `index.ts` barrels.** Use `AddressSearch/Addre
 
 ## `src/lib/` — Logic-intensive
 
-**Zero React.** Engine in `lib/rules/` (not flat `adu-rules.ts`). Real `if`/`else` on parcel facts. Mock facts in `lib/mock/properties.ts` — no canned status. `Geocoder` interface in `lib/adapters/geocoder.ts`; routes call adapter, never mock directly.
+**Zero React.** Engine in `lib/rules/` (not flat `adu-rules.ts`). Real `if`/`else` on parcel facts. Mock facts in `lib/mock/properties.ts` — no canned status. Adapters: `Geocoder` for geocode; `pilot-zoning.ts` for SF zoning PIP (Turf + `public/data/pilot-zoning.geojson`). **Turf and GeoJSON loading only in adapters** — never in `lib/rules/` or components.
 
 # Decision Engine
 

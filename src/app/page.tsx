@@ -30,7 +30,8 @@ export default function HomePage() {
 
     try {
       const url = new URL("/api/zoning", env.NEXT_PUBLIC_API_URL);
-      url.searchParams.set("addressId", result.addressId);
+      url.searchParams.set("lat", String(result.lat));
+      url.searchParams.set("lng", String(result.lng));
       const res = await fetch(url.toString(), { signal: controller.signal });
       if (!res.ok) {
         const body: unknown = await res.json().catch(() => null);

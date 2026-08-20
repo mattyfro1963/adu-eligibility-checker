@@ -1,6 +1,5 @@
 import mbxGeocoding from "@mapbox/mapbox-sdk/services/geocoding";
 import { env } from "@/lib/env";
-import { mockParcelIdFromCoordinates } from "@/lib/mock/properties";
 import type { GeocodeResult } from "@/lib/types/gis";
 
 /** California bounding box: minLng, minLat, maxLng, maxLat. */
@@ -17,9 +16,23 @@ interface MapboxContextItem {
 }
 
 interface MapboxAddressFeature {
+  /** Mapbox feature id (e.g. `address.123…`); unique per suggestion. */
+  id?: string;
   place_name: string;
   center: number[];
   context?: MapboxContextItem[];
+}
+
+/** Stable unique id for list keys — never the six-item mock parcel catalog. */
+export function addressIdFromMapboxFeature(
+  feature: Pick<MapboxAddressFeature, "id" | "place_name">,
+  lat: number,
+  lng: number,
+): string {
+  if (typeof feature.id === "string" && feature.id.length > 0) {
+    return feature.id;
+  }
+  return `${feature.place_name}|${lat},${lng}`;
 }
 
 export class MapboxConfigError extends Error {
@@ -66,7 +79,7 @@ function toGeocodeResult(feature: MapboxAddressFeature): GeocodeResult | null {
     return null;
   }
   return {
-    addressId: mockParcelIdFromCoordinates(lat, lng),
+    addressId: addressIdFromMapboxFeature(feature, lat, lng),
     formattedAddress: feature.place_name,
     lat,
     lng,

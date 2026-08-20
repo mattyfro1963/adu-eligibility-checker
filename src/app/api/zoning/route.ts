@@ -1,20 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { mockGeocoder } from "@/lib/adapters/mock-geocoder";
+import { getPilotParcel } from "@/lib/adapters/pilot-zoning";
 import { evaluateEligibility } from "@/lib/rules";
 import { zoningQuerySchema } from "@/lib/validations/api-schemas";
-import type { Parcel } from "@/lib/types/zoning";
 
 export const dynamic = "force-dynamic";
 
-const MOCK_LATENCY_MS = 600;
-const MOCK_ERROR_RATE = 0.08;
+const LOOKUP_LATENCY_MS = 400;
 
 export async function GET(request: NextRequest) {
-  const addressId = request.nextUrl.searchParams.get("addressId");
   const lat = request.nextUrl.searchParams.get("lat");
   const lng = request.nextUrl.searchParams.get("lng");
   const parsed = zoningQuerySchema.safeParse({
-    ...(addressId ? { addressId } : {}),
     ...(lat ? { lat } : {}),
     ...(lng ? { lng } : {}),
   });
@@ -26,27 +22,19 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  await new Promise((resolve) => setTimeout(resolve, MOCK_LATENCY_MS));
+  await new Promise((resolve) => setTimeout(resolve, LOOKUP_LATENCY_MS));
 
-  if (Math.random() < MOCK_ERROR_RATE) {
-    return NextResponse.json(
-      { error: "Simulated zoning lookup timeout. Please try again." },
-      { status: 503 },
-    );
-  }
-
-  let parcel: Parcel | null = null;
-  if (parsed.data.addressId) {
-    parcel = await mockGeocoder.getParcel(parsed.data.addressId);
-  } else if (parsed.data.lat !== undefined && parsed.data.lng !== undefined) {
-    parcel = await mockGeocoder.getParcelByCoordinates(
-      parsed.data.lat,
-      parsed.data.lng,
-    );
-  }
+  const { lat: latitude, lng: longitude } = parsed.data;
+  const parcel = await getPilotParcel(latitude, longitude);
 
   if (!parcel) {
-    return NextResponse.json({ error: "Parcel not found" }, { status: 404 });
+    return NextResponse.json(
+      {
+        error:
+          "Location is outside San Francisco pilot zoning coverage. Try an SF address.",
+      },
+      { status: 404 },
+    );
   }
 
   const report = evaluateEligibility(parcel);
