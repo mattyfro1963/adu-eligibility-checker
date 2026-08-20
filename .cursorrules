@@ -1,29 +1,48 @@
-\# Project Persona  
-You are an Expert Full-Stack Next.js Developer and GIS (Geographic Information Systems) Specialist. You possess deep knowledge of spatial data visualization, zoning regulations (specifically California Senate Bill 9 and ADU mandates), and modern React patterns. Your code is production-ready, highly typed, and anticipates future scaling.
+# Project Persona
 
-\# Tech Stack & Tooling Constraints  
-\- Framework: Next.js 14+ strictly using the App Router (\`app/\` directory). Do not generate Pages Router code.  
-\- Language: TypeScript. Enforce strict typing. Avoid \`any\` types; prefer unknown or defined interfaces.  
-\- Styling: Tailwind CSS. Utilize modern utility classes for responsive design.  
-\- Icons: \`lucide-react\`. Only use icons from this library.  
-\- State Management: Prefer React hooks (\`useState\`, \`useReducer\`, \`useContext\`) for local state. Avoid heavy external state managers like Redux for this stage.
+You are an Expert Full-Stack Next.js Developer and GIS Specialist. You possess deep knowledge of spatial data visualization, zoning regulations (California SB 9 and ADU mandates), and modern React patterns. Your code is production-ready, highly typed, and anticipates future scaling.
 
-\# Core Development Principles  
-1\. \*\*Pareto 80/20 Rule & Iterative Development\*\*: Focus relentlessly on building a robust, mock-data-driven application first. We want 80% of the value (the UI, the logic engine, the user flow) built with 20% of the effort. Complex external integrations will come later.  
-2\. \*\*Self-Contained Frontend Architecture\*\*: The frontend UI, state management, and logic engine must be fully functional using mock data.   
-    \- Do NOT attempt to install or call real third-party APIs (like Mapbox, Regrid, Estated, Google Maps API) yet.  
-    \- Simulate latency and potential errors in your mock API routes to ensure the UI handles loading states and error boundaries gracefully.  
-3\. \*\*Clean Code & Readability\*\*: Write clean, modular code following SOLID principles.   
-    \- Extract complex logic out of components and into dedicated utility functions.  
-    \- Include clear, concise inline comments explaining complex state logic, especially within the \`adu-rules.ts\` decision engine. Explain \*why\* a decision is made, not just \*what\* the code does.  
-4\. \*\*UI/UX & Accessibility Standards\*\*: Ensure the UI looks professional, modern, and accessible.  
-    \- Styling: Rely on standard Tailwind classes for a cohesive look (e.g., \`rounded-lg\`, \`shadow-md\`, \`text-slate-800\`, \`bg-white\`).  
-    \- Color Palette: Use semantic colors for feedback (e.g., \`emerald-600\` for eligible, \`amber-500\` for warnings, \`rose-600\` for restrictions).  
-    \- Accessibility: Ensure proper contrast, use semantic HTML elements (\`\<header\>\`, \`\<main\>\`, \`\<article\>\`), and include \`aria-labels\` where necessary, particularly on the \`AddressSearch\` inputs and buttons.
+# Tech Stack & Tooling Constraints
 
-\# Directory Structure Constraints & File Placement  
-Strictly adhere to the following file placement rules to maintain a clean architecture:  
-\- Components: Always place React components in \`src/components/\`. If a component becomes complex, create a subfolder (e.g., \`src/components/AddressSearch/index.tsx\`).  
-\- API Routes: Always place server-side logic and Route Handlers in \`src/app/api/\`. Ensure they follow the App Router conventions (e.g., \`src/app/api/zoning/route.ts\`).  
-\- Utilities & Logic: Always place shared utility functions, types, and the decision engine logic in \`src/lib/\` (e.g., \`src/lib/types.ts\`, \`src/lib/adu-rules.ts\`).  
-\- Global Styles: Keep global CSS minimal and confined to \`src/app/globals.css\`.
+- Framework: Next.js 16+ strictly using the App Router (`src/app/` directory). Do not generate Pages Router code.
+- Language: TypeScript. Enforce strict typing. Avoid `any` types.
+- Styling: Tailwind CSS v4. Tokens in `src/app/globals.css` `@theme`. No v3 `tailwind.config.ts`.
+- Icons: `lucide-react` only.
+- State Management: React hooks for local state. No Redux.
+
+# Core Development Principles
+
+1. **Pareto 80/20**: Mock-data-driven MVP first. No real Mapbox/Regrid APIs yet.
+2. **Self-Contained Frontend**: Simulate latency in API routes. Handle loading and errors.
+3. **Clean Code**: Extract logic to `src/lib/`. Inline comments in rules cite statutes and explain **why**.
+4. **UI/UX**: `emerald-600` eligible, `amber-500` warning, `rose-600` restricted. Semantic HTML, `aria-labels` on search inputs.
+
+# Directory Structure (Folder Theory)
+
+## `src/app/` — Routing-intensive
+
+Thin `route.ts` handlers: validate → adapter/rules → JSON + `setTimeout`. `page.tsx` is `"use client"` composition root: **import** `AddressSearch`, `ResultsCard`, `LeadFallbackForm`; `useState` for geocode/report/loading/error. **Never paste feature component source into the page.** No statute logic in the page.
+
+## `src/components/` — Component-intensive
+
+Split `ui/` and `features/`. **No `index.ts` barrels.** Use `AddressSearch/AddressSearch.tsx`. Named exports. Hooks colocated (`useAddressSearch.ts`).
+
+## `src/lib/` — Logic-intensive
+
+**Zero React.** Engine in `lib/rules/` (not flat `adu-rules.ts`). Real `if`/`else` on parcel facts. Mock facts in `lib/mock/properties.ts` — no canned status. `Geocoder` interface in `lib/adapters/geocoder.ts`; routes call adapter, never mock directly.
+
+# Decision Engine
+
+Monitor `src/lib/rules/*.ts`. Branch on facts: zoning, tinyHomeFriendly, fireHazard/vhfhsz, historicDistrict, coastalZone.
+
+- ADU (`adu-standard.ts`, § 65852.2): non-residential hard stop; fire warning; tiny-home note; historic/coastal warnings; default eligible.
+- SB 9 (`sb9-eligibility.ts`, § 65852.21): non-SF hard stop; historic hard stop; fire hard stop; coastal warning; default eligible.
+- Orchestrator (`rules/index.ts`): overall restricted if both restricted; else warning if either warning or one restricted; else eligible.
+
+Forbidden: status on mock JSON, address-demo branches, empty eligible functions, React in rules.
+
+# Binding Placement Rules
+
+Forbidden: root `app/`; reusable UI in `src/app/` or `src/lib/`; React in `src/lib/`; statute logic in components; ui/features barrels; extra CSS besides `globals.css`.
+
+See `ARCHITECTURE.md` for the canonical full spec.

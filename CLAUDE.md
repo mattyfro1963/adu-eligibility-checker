@@ -1,1 +1,2 @@
+@ARCHITECTURE.md
 @AGENTS.md

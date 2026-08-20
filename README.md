@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ADU Eligibility Checker
 
-## Getting Started
+Check California ADU (Gov. Code § 65852.2) and SB 9 (Gov. Code § 65852.21) eligibility for San Francisco properties using a mock-data MVP.
 
-First, run the development server:
+## Quick Start
 
 ```bash
+cp .env.example .env
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server |
+| `npm run build` | Production build |
+| `npm run start` | Start production server |
+| `npm run lint` | ESLint |
+| `npm run format` | Prettier write |
+| `npm run typecheck` | TypeScript check |
+| `npm run test` | Vitest (decision engine) |
+| `npm run test:watch` | Vitest watch mode |
 
-## Learn More
+## Architecture (Three Layers)
 
-To learn more about Next.js, take a look at the following resources:
+1. **`src/app/`** — Routing-intensive: thin API routes, client `page.tsx` composition root.
+2. **`src/components/`** — Component-intensive: `ui/` primitives and `features/` domain components (no barrels).
+3. **`src/lib/`** — Logic-intensive: zero React. Rules engine, adapters, mocks, validations.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for the full folder theory, decision-engine if/else spec, page wiring, and security hygiene.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## How Eligibility Is Decided
 
-## Deploy on Vercel
+Parcel **facts** (zoning, overlays) flow from mock geocoder → `/api/zoning` → `src/lib/rules`. Outcomes are derived by statute branching in `adu-standard.ts` and `sb9-eligibility.ts`, never copied from mock JSON. See ARCHITECTURE.md for the full decision order.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Mock Addresses
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Try these in the search box:
+
+- `123 Main St` — R-1, no overlays (eligible)
+- `456 Oak Ave` — R-1 + Tiny Home overlay
+- `789 Pine Rd` — R-1 + fire/VHFHSZ (ADU warning, SB 9 restricted)
+- `100 Market St` — C-2 commercial (restricted)
+- `555 Beach Blvd` — R-1 + coastal zone
+
+## Environment Variables
+
+Copy `.env.example` to `.env`. Required:
+
+- `NEXT_PUBLIC_API_URL` — API base URL (default `http://localhost:3000`)
+
+Optional (Phase 2):
+
+- `MAPBOX_ACCESS_TOKEN`
+- `REGRID_API_KEY`
+
+## Tech Stack
+
+Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Zod, Vitest, lucide-react.

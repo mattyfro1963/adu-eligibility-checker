@@ -1,0 +1,30 @@
+---
+description: Folder Theory, decision engine spec, and placement rules for ADU Eligibility Checker
+alwaysApply: true
+---
+
+# Architecture Rules
+
+Read `ARCHITECTURE.md` for the full canonical spec. Key constraints:
+
+## Three Layers
+
+1. **`src/app/`** — Thin routes, client `page.tsx` imports features + `useState` glue. No pasted UI, no rules.
+2. **`src/components/`** — `ui/` + `features/`, no barrels, named exports, lucide-react only.
+3. **`src/lib/`** — Zero React. Rules in `lib/rules/`, facts in `lib/mock/`, adapters implement `Geocoder`.
+
+## Decision Engine (`src/lib/rules/`)
+
+Real `if`/`else` on parcel facts. Never canned status on mock data.
+
+- **ADU** (`adu-standard.ts`, § 65852.2): residential check → fire warning → tiny-home note → historic warning → coastal warning → default eligible.
+- **SB 9** (`sb9-eligibility.ts`, § 65852.21): SF-only → historic stop → fire stop → coastal warning → default eligible.
+- **Overall**: both restricted → restricted; else any warning or one restricted → warning; else eligible.
+
+## Page Wiring
+
+`page.tsx` must import `AddressSearch`, `ResultsCard`, `LeadFallbackForm`, `Spinner`. State: geocodeResult, report, isZoningLoading, error. No `evaluateEligibility` on client.
+
+## Forbidden
+
+Root `app/`, React in `src/lib/`, component barrels, Mapbox/Turf/Pino/Sentry in MVP, statute logic in components.
