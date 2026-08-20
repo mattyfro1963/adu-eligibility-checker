@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BookOpen, ChevronRight } from "lucide-react";
+import { RegulationsAuthorByline } from "@/components/features/ResultsCard/RegulationsAuthorByline";
 import { GUIDE_LINKS } from "@/lib/content/guides/catalog";
 
 /** Index of San Francisco technical buyer guides. */
@@ -25,6 +26,7 @@ export function GuidesIndex() {
           </Link>
           .
         </p>
+        <RegulationsAuthorByline />
       </header>
 
       <ul className="space-y-4">

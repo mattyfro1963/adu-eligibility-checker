@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ExternalLink, MapPinned, Scale, ShieldAlert } from "lucide-react";
+import { RegulationsAuthorByline } from "@/components/features/ResultsCard/RegulationsAuthorByline";
 import {
   CBC_BASELINE,
   CITY_DIRECTORY,
@@ -114,6 +115,7 @@ export function RegulationsGuide() {
         <p className="max-w-3xl text-sm leading-relaxed text-slate-600">
           {GUIDE_INTRO.lead}
         </p>
+        <RegulationsAuthorByline />
         <div className="flex flex-wrap gap-3 pt-2">
           <Link
             href="/"

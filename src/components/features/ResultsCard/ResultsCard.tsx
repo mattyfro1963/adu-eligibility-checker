@@ -15,6 +15,7 @@ import { EligibleNextSteps } from "@/components/features/EligibleNextSteps/Eligi
 import { ApplicationChecklist } from "@/components/features/ResultsCard/ApplicationChecklist";
 import { BuyerGuideLinks } from "@/components/features/ResultsCard/BuyerGuideLinks";
 import { CaliforniaOutline } from "@/components/features/ResultsCard/CaliforniaOutline";
+import { RegulationsAuthorByline } from "@/components/features/ResultsCard/RegulationsAuthorByline";
 import { ResultsBriefingSection } from "@/components/features/ResultsCard/ResultsBriefing";
 import { RuleDetail } from "@/components/features/ResultsCard/RuleDetail";
 import { SearchReceiptCard } from "@/components/features/ResultsCard/SearchReceipt";
@@ -185,9 +186,12 @@ export function ResultsCard({
           <div className="rounded-lg border border-slate-200 bg-slate-100 p-2">
             <Info size={18} className="text-slate-700" aria-hidden="true" />
           </div>
-          <h3 className="text-lg font-semibold tracking-tight text-slate-900">
-            Regulatory Diagnostics
-          </h3>
+          <div>
+            <h3 className="text-lg font-semibold tracking-tight text-slate-900">
+              Regulatory Diagnostics
+            </h3>
+            <RegulationsAuthorByline className="mt-1 text-xs text-slate-400" />
+          </div>
         </div>
 
         {isLoading && !report ? (

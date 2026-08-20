@@ -1,5 +1,6 @@
 import { BookOpen } from "lucide-react";
 import { CitedText } from "@/components/features/ResultsCard/CitedText";
+import { RegulationsAuthorByline } from "@/components/features/ResultsCard/RegulationsAuthorByline";
 import type { CitedClaim } from "@/lib/regulations/types";
 
 /** Use-first why-this-lot summary from compose-briefing. */
@@ -24,6 +25,7 @@ export function ResultsBriefingSection({ summary }: { summary: CitedClaim[] }) {
             Why this address may or may not legally house a tiny home for your
             intended use
           </p>
+          <RegulationsAuthorByline className="mt-1 text-xs text-slate-400" />
         </div>
       </div>
       <ul className="space-y-4">

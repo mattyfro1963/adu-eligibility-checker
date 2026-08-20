@@ -1,9 +1,11 @@
 /**
- * Owns all visitor-facing search result copy. Selects pre-written CitedClaims
- * from the CA profile — never generates statute prose and never fetches gov hosts.
+ * Owns all visitor-facing search result copy for the regulations expert agent.
+ * Selects pre-written CitedClaims from the CA profile — never generates statute
+ * prose and never fetches gov hosts.
  */
 
 import { GUIDE_LINKS } from "@/lib/content/guides/catalog";
+import { REGULATIONS_AGENT } from "@/lib/regulations/agent";
 import {
   CORPUS_VERSION,
   LAST_REVIEWED,
@@ -146,6 +148,7 @@ export function composeResultsBriefing(
     analysisScope,
     corpusVersion: CORPUS_VERSION,
     lastReviewed: LAST_REVIEWED,
+    author: REGULATIONS_AGENT,
     sourcesUsed,
     disclaimer: RECEIPT_DISCLAIMER,
   };
@@ -153,6 +156,7 @@ export function composeResultsBriefing(
   return {
     region: receipt.region,
     isCalifornia,
+    author: REGULATIONS_AGENT,
     summary,
     checklist,
     outline,

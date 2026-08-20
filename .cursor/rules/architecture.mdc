@@ -11,7 +11,7 @@ Read `ARCHITECTURE.md` for the full canonical spec. Key constraints:
 
 1. **`src/app/`** — Thin routes, client `page.tsx` imports features + `useState` glue. No pasted UI, no rules.
 2. **`src/components/`** — `ui/` + `features/`, no barrels, named exports, lucide-react only.
-3. **`src/lib/`** — Zero React. Rules in `lib/rules/`, facts in `lib/mock/`, adapters for geocode + SF pilot zoning. **Server-side Turf + local GeoJSON only in `lib/adapters/`** (never rules or UI).
+3. **`src/lib/`** — Zero React. Rules in `lib/rules/`, facts in `lib/mock/`, adapters for geocode + SF pilot zoning. **Server-side Turf + local GeoJSON only in `lib/adapters/`** (never rules or UI). Law/regulation copy lives in `lib/regulations/`, `lib/content/guides/`, and `ca-tiny-home-regulations.ts` — authored by `REGULATIONS_AGENT` (`lib/regulations/agent.ts`); components render only.
 
 ## Decision Engine (`src/lib/rules/`)
 

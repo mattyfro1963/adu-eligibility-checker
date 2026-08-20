@@ -1,5 +1,6 @@
 import { Scale } from "lucide-react";
 import { CitedText } from "@/components/features/ResultsCard/CitedText";
+import { RegulationsAuthorByline } from "@/components/features/ResultsCard/RegulationsAuthorByline";
 import type { OutlineSection } from "@/lib/regulations/types";
 
 /** California building-path outline (use, ADU, park model, cabin, modular). */
@@ -29,6 +30,7 @@ export function CaliforniaOutline({
           <p className="text-xs text-slate-500">
             Statewide context — state floor first, then local code
           </p>
+          <RegulationsAuthorByline className="mt-1 text-xs text-slate-400" />
         </div>
       </div>
       <div className="space-y-3">

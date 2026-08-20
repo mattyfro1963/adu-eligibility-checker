@@ -4,6 +4,7 @@
  */
 
 import { SRC } from "@/lib/regulations/sources";
+import { formatRegulationsDisclaimer } from "@/lib/regulations/agent";
 import type { GuideMeta, GuideSection } from "@/lib/content/guides/types";
 
 const hcdClass = [SRC.hcdTinyHomesIb] as const;
@@ -27,8 +28,9 @@ export const SF_THOW_META: GuideMeta = {
 
 export const SF_THOW_INTRO = {
   lead: "In San Francisco, a tiny home on wheels is not a free-floating occupancy class. Lawfulness turns on use (dwelling vs recreation), HCD classification, local zoning, and whether State ADU Law’s ministerial path applies to a foundation-mounted ADU — or a locally authorized moveable tiny house. “Loopholes” here means lawful pathways and hard stops, not workarounds that dodge permits.",
-  disclaimer:
-    "Informational only — not legal advice. Confirm with SF Planning and the Department of Building Inspection before purchase, delivery, or occupancy.",
+  disclaimer: formatRegulationsDisclaimer(
+    "Confirm with SF Planning and the Department of Building Inspection before purchase, delivery, or occupancy.",
+  ),
 } as const;
 
 export const SF_THOW_SECTIONS: GuideSection[] = [

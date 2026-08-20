@@ -28,6 +28,7 @@ Heart of the app. **Zero React.** Portable to a Node CLI or worker.
 - **Engine (`lib/rules/`):** Split ADU (Gov. Code Chapter 13 / § 66314) from SB 9 (§ 65852.21). Real `if`/`else` on parcel **facts**. Do not store Eligible/Warning/Restricted on mock parcels. `lib/rules/index.ts` orchestrates unified `ZoningReport`. Reasons are `CitedClaim[]` with official source URLs.
 - **Mocks and adapters (`lib/mock/` + `lib/adapters/`):** Routes call a `Geocoder` adapter for addresses. SF pilot zoning uses `pilot-zoning.ts` (server-side Turf + `public/data/pilot-zoning.geojson`). **Turf/GeoJSON only in adapters** — never in `lib/rules/` or UI. Phase 2 may add `regrid-geocoder.ts` with zero changes to rules or UI.
 - **Leads (`lib/leads/` + `lib/mock/contractors.ts`):** Haversine contractor matching and webhook dispatch for `/api/lead` and `/api/builder-signup`. Zero React; no database in v1.
+- **Regulations expert (`lib/regulations/` + `lib/content/guides/` + `ca-tiny-home-regulations.ts`):** All law/regulation visitor copy is authored by `REGULATIONS_AGENT` in `lib/regulations/agent.ts`. Components render only; never invent statute prose in UI.
 
 ## Decision Engine Logic
 

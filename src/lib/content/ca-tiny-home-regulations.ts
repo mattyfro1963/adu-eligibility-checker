@@ -4,6 +4,8 @@
  * CBC size rules cite Appendix AQ / California Residential Code habitable-room standards.
  */
 
+import { formatRegulationsDisclaimer } from "@/lib/regulations/agent";
+
 export type ResourceLink = {
   label: string;
   href: string;
@@ -1135,5 +1137,6 @@ export const FAQS: FaqItem[] = [
   },
 ];
 
-export const GUIDE_DISCLAIMER =
-  "This page summarizes publicly available planning and building guidance for orientation only. It is not legal advice. Ordinances change; always verify with the jurisdiction that will issue your permit.";
+export const GUIDE_DISCLAIMER = formatRegulationsDisclaimer(
+  "Ordinances change; always verify with the jurisdiction that will issue your permit.",
+);

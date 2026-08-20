@@ -3,6 +3,8 @@
  * Zero React. Every visitor-facing claim carries at least one official source.
  */
 
+import type { RegulationsAuthor } from "@/lib/regulations/agent";
+
 export type SourceRef = {
   label: string;
   href: string;
@@ -40,6 +42,7 @@ export type SearchReceipt = {
   analysisScope: "sf_pilot_lot" | "statewide_context_only";
   corpusVersion: string;
   lastReviewed: string;
+  author: RegulationsAuthor;
   sourcesUsed: SourceRef[];
   disclaimer: string;
 };
@@ -53,6 +56,7 @@ export type GuideLinkRef = {
 export type ResultsBriefing = {
   region: string;
   isCalifornia: boolean;
+  author: RegulationsAuthor;
   /** Use-first summary sentences for this search. */
   summary: CitedClaim[];
   checklist: ChecklistItem[];

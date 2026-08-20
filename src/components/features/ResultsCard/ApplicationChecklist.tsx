@@ -1,5 +1,6 @@
 import { ListChecks } from "lucide-react";
 import { CitedText } from "@/components/features/ResultsCard/CitedText";
+import { RegulationsAuthorByline } from "@/components/features/ResultsCard/RegulationsAuthorByline";
 import type { ChecklistItem } from "@/lib/regulations/types";
 
 /** California application checklist from compose-briefing. */
@@ -31,6 +32,7 @@ export function ApplicationChecklist({
           <p className="text-xs text-slate-500">
             Brief steps before you apply — start with primary use, then zoning
           </p>
+          <RegulationsAuthorByline className="mt-1 text-xs text-slate-400" />
         </div>
       </div>
       <ol className="space-y-5">

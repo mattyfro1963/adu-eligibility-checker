@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { composeResultsBriefing } from "@/lib/regulations/compose-briefing";
+import { REGULATIONS_AGENT } from "@/lib/regulations/agent";
 import { CA_PROFILE } from "@/lib/regulations/states/ca";
 import {
   getStateProfile,
@@ -79,6 +80,11 @@ describe("composeResultsBriefing", () => {
     });
 
     expect(briefing.isCalifornia).toBe(true);
+    expect(briefing.author).toEqual(REGULATIONS_AGENT);
+    expect(briefing.receipt.author).toEqual(REGULATIONS_AGENT);
+    expect(briefing.receipt.disclaimer).toMatch(
+      /Authored by the doihave\.space Regulations Expert/,
+    );
     expect(briefing.receipt.analysisScope).toBe("sf_pilot_lot");
     expect(briefing.receipt.mapblklot).toBeNull();
     expect(briefing.checklist.length).toBeGreaterThan(0);
@@ -199,6 +205,7 @@ describe("ADU topic coverage and legal sources", () => {
   it("has zero references to nolo or nolo.com across regulation files", () => {
     const root = path.join(process.cwd(), "src/lib/regulations");
     const files = [
+      "agent.ts",
       "compose-briefing.ts",
       "corpus.ts",
       "sources.ts",
@@ -283,6 +290,13 @@ describe("California visitor-facing branding", () => {
     );
     expect(receipt).toMatch(/California lot analysis \(local zoning data\)/);
     expect(receipt).toMatch(/Statewide context only/);
+    expect(receipt).toMatch(/Author/);
+
+    const briefingSection = readFileSync(
+      path.join(componentsRoot, "ResultsCard/ResultsBriefing.tsx"),
+      "utf8",
+    );
+    expect(briefingSection).toMatch(/RegulationsAuthorByline/);
   });
 
   it("uses responsive padding, heights, and 44px touch targets on key surfaces", () => {

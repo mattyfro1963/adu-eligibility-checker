@@ -4,6 +4,7 @@
  * Zero React.
  */
 
+import { formatRegulationsDisclaimer } from "@/lib/regulations/agent";
 import type {
   CostColumnId,
   CostLineItem,
@@ -128,5 +129,6 @@ export const COST_LINE_ITEMS: CostLineItem[] = [
   },
 ];
 
-export const COST_METHODOLOGY_DISCLAIMER =
-  "Ranges are orientation estimates for San Francisco / Bay Area planning conversations as of the guide’s last-reviewed date. They are not quotes, appraisals, or live municipal fee lookups. Always verify permit fees with SF Planning / DBI and obtain contractor bids before committing capital.";
+export const COST_METHODOLOGY_DISCLAIMER = formatRegulationsDisclaimer(
+  "Ranges are orientation estimates for San Francisco / Bay Area planning conversations as of the guide’s last-reviewed date. They are not quotes, appraisals, or live municipal fee lookups. Always verify permit fees with SF Planning / DBI and obtain contractor bids before committing capital.",
+);

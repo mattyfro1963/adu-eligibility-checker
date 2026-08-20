@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { ArrowLeft } from "lucide-react";
+import { RegulationsAuthorByline } from "@/components/features/ResultsCard/RegulationsAuthorByline";
 import type { GuideMeta } from "@/lib/content/guides/types";
 
 interface GuideLayoutProps {
@@ -45,6 +46,7 @@ export function GuideLayout({
         <p className="text-xs text-slate-400">
           Last reviewed {meta.lastReviewed}
         </p>
+        <RegulationsAuthorByline />
       </header>
 
       <div className="space-y-10 sm:space-y-12">{children}</div>

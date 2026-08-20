@@ -83,6 +83,12 @@ export function SearchReceiptCard({ receipt }: { receipt: SearchReceipt }) {
         </div>
         <div>
           <dt className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+            Author
+          </dt>
+          <dd className="text-slate-800">{receipt.author.name}</dd>
+        </div>
+        <div>
+          <dt className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
             Corpus
           </dt>
           <dd className="font-mono text-xs break-all text-slate-800">
