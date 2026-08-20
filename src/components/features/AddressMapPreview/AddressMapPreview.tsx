@@ -108,7 +108,7 @@ export function AddressMapPreview({
 
   return (
     <div
-      className={`group relative h-full min-h-[350px] overflow-hidden rounded-[1.5rem] border border-slate-200/60 bg-[#EAECEF] shadow-inner ${className}`}
+      className={`group relative h-full min-h-[240px] overflow-hidden rounded-[1.25rem] border border-slate-200/60 bg-[#EAECEF] shadow-inner sm:min-h-[320px] sm:rounded-[1.5rem] lg:min-h-[350px] ${className}`}
     >
       {objectUrl && !showAwaiting ? (
         // eslint-disable-next-line @next/next/no-img-element -- blob URL from proxied Mapbox PNG

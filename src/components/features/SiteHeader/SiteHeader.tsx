@@ -22,10 +22,10 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/60 bg-white/80 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-6">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
         <Link
           href="/"
-          className="flex items-center gap-3 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+          className="flex min-h-[40px] items-center gap-3 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           aria-label="doihave.space home"
         >
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-black shadow-md">
@@ -51,7 +51,7 @@ export function SiteHeader() {
                 href={item.href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+                  "inline-flex min-h-[40px] items-center rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
                   active
                     ? "bg-slate-900 text-white"
                     : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
@@ -68,7 +68,7 @@ export function SiteHeader() {
             className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.5)]"
             aria-hidden="true"
           />
-          SF SYSTEM ACTIVE
+          CA SYSTEM ACTIVE
         </div>
       </div>
     </header>

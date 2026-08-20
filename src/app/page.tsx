@@ -70,7 +70,7 @@ export default function HomePage() {
   const showResults = Boolean(geocodeResult) || Boolean(report);
 
   return (
-    <main className="mx-auto w-full max-w-6xl flex-1 space-y-10 px-6 py-12 md:py-16">
+    <main className="mx-auto w-full max-w-6xl flex-1 space-y-8 px-4 py-8 sm:space-y-10 sm:px-6 sm:py-12 md:py-16">
       <AddressSearch onResolved={handleResolved} onError={handleSearchError} />
 
       {error ? (
@@ -83,7 +83,7 @@ export default function HomePage() {
             size={18}
             aria-hidden="true"
           />
-          <p className="text-sm font-medium">{error}</p>
+          <p className="min-w-0 text-sm font-medium break-words">{error}</p>
         </div>
       ) : null}
 
@@ -92,6 +92,7 @@ export default function HomePage() {
           report={report}
           geocodeResult={geocodeResult}
           isLoading={isZoningLoading}
+          zoningError={error}
         />
       ) : null}
 

@@ -45,12 +45,12 @@ export async function GET(request: NextRequest) {
     if (!parcel) {
       log.warn(
         { lat: latitude, lng: longitude, status: 404 },
-        "Parcel outside SF pilot coverage",
+        "Parcel outside California pilot coverage",
       );
       return NextResponse.json(
         {
           error:
-            "Location is outside San Francisco pilot zoning coverage. Try an SF address.",
+            "Location is outside current California pilot zoning coverage. Try an address within pilot coverage (e.g., San Francisco).",
         },
         { status: 404 },
       );

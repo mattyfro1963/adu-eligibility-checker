@@ -11,7 +11,8 @@ import type { Parcel } from "@/lib/types/zoning";
 
 /**
  * SF Zoning Districts (DataSF 3i4a-hu95).
- * Source: https://data.sfgov.org/api/v3/views/3i4a-hu95/query.geojson?accessType=DOWNLOAD
+ * Catalog: https://data.sfgov.org/d/3i4a-hu95 (PDDL).
+ * Served only from the committed local snapshot — never fetch DataSF at runtime.
  * License: PDDL. File is large (~tens of MB) — committed for the SF pilot demo.
  */
 const PILOT_ZONING_PATH = path.join(
@@ -131,6 +132,7 @@ export function buildPilotParcel(
     lng,
     zoning,
     overlays: { ...EMPTY_OVERLAYS },
+    mapblklot: null,
   };
 }
 

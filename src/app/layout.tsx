@@ -16,9 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "doihave.space — ADU & SB 9 Eligibility",
+  title: "doihave.space — California ADU & SB 9 Eligibility",
   description:
-    "Institutional-grade California ADU and SB 9 spatial analysis for San Francisco parcels.",
+    "Institutional-grade California ADU and SB 9 spatial analysis (with pilot parcel coverage).",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

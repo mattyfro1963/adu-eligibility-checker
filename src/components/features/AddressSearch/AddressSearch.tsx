@@ -87,18 +87,22 @@ export function AddressSearch({
 
   return (
     <section className="relative overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-      <div className="relative z-10 flex flex-col items-center space-y-10 px-6 py-16 text-center md:py-24">
-        <div className="max-w-3xl space-y-4">
-          <h2 className="text-4xl leading-[1.1] font-medium tracking-tight text-slate-900 md:text-6xl">
+      <div className="relative z-10 flex flex-col items-center space-y-8 px-4 py-12 text-center sm:space-y-10 sm:px-6 sm:py-16 md:py-24">
+        <div className="max-w-3xl space-y-3 sm:space-y-4">
+          <h2 className="text-3xl leading-[1.1] font-medium tracking-tight text-slate-900 sm:text-4xl md:text-5xl lg:text-6xl">
             Unlock your parcel&apos;s <br className="hidden md:block" />
             <span className="text-slate-400">hidden potential.</span>
           </h2>
-          <p className="mt-4 text-lg font-light tracking-wide text-slate-500 md:text-xl">
-            Institutional-grade ADU &amp; SB 9 spatial analysis in milliseconds.
+          <p className="mt-3 text-base font-light tracking-wide text-slate-500 sm:mt-4 sm:text-lg md:text-xl">
+            Institutional-grade California ADU &amp; SB 9 spatial analysis in
+            milliseconds.
           </p>
         </div>
 
-        <div ref={containerRef} className="relative mt-6 w-full max-w-2xl">
+        <div
+          ref={containerRef}
+          className="relative mt-4 w-full max-w-2xl sm:mt-6"
+        >
           <label htmlFor="address-search" className="sr-only">
             Search property address
           </label>
@@ -110,9 +114,9 @@ export function AddressSearch({
             }}
             className="relative"
           >
-            <div className="relative flex items-center rounded-2xl border border-slate-200 bg-[#FBFBFD] p-1.5 shadow-sm transition-all duration-300 focus-within:border-slate-300 focus-within:bg-white focus-within:ring-4 focus-within:ring-slate-100">
+            <div className="relative flex h-12 items-center rounded-2xl border border-slate-200 bg-[#FBFBFD] p-1.5 shadow-sm transition-all duration-300 focus-within:border-slate-300 focus-within:bg-white focus-within:ring-4 focus-within:ring-slate-100 sm:h-14">
               <MapPin
-                className="absolute left-5 text-slate-400"
+                className="absolute left-4 text-slate-400 sm:left-5"
                 size={20}
                 aria-hidden="true"
               />
@@ -128,8 +132,8 @@ export function AddressSearch({
                     setIsOpen(false);
                   }
                 }}
-                placeholder="Query San Francisco address…"
-                className="w-full bg-transparent py-4 pr-36 pl-14 text-lg font-light text-slate-900 placeholder:text-slate-400 focus:outline-none"
+                placeholder="Query California address…"
+                className="h-full w-full bg-transparent pr-28 pl-12 text-base font-light text-slate-900 placeholder:text-slate-400 focus:outline-none sm:pr-36 sm:pl-14 sm:text-lg"
                 aria-label="Property address search"
                 aria-autocomplete="list"
                 aria-expanded={showList}
@@ -141,7 +145,7 @@ export function AddressSearch({
               <Button
                 type="submit"
                 disabled={isSearching || !query.trim()}
-                className="absolute top-2 right-2 bottom-2 h-auto rounded-xl bg-black px-6 text-sm font-medium tracking-wide text-white shadow-md hover:bg-slate-800 disabled:opacity-50"
+                className="absolute top-1/2 right-1.5 h-10 -translate-y-1/2 rounded-xl bg-black px-4 text-xs font-medium tracking-wide text-white shadow-md hover:bg-slate-800 disabled:opacity-50 sm:right-2 sm:px-6 sm:text-sm"
                 aria-label="Analyze address"
               >
                 {isSearching ? (
@@ -175,7 +179,7 @@ export function AddressSearch({
                     <button
                       type="button"
                       onClick={() => selectAddress(suggestion)}
-                      className="flex w-full items-start gap-3 border-b border-slate-100 px-4 py-3 text-left last:border-b-0 hover:bg-slate-50"
+                      className="flex min-h-[44px] w-full items-start gap-3 border-b border-slate-100 px-3.5 py-3 text-left last:border-b-0 hover:bg-slate-50 sm:px-4"
                       aria-label={`Select ${suggestion.formattedAddress}`}
                     >
                       <MapPin
@@ -200,8 +204,8 @@ export function AddressSearch({
           ) : null}
 
           <p className="mt-3 text-center text-[11px] tracking-wide text-slate-400">
-            SF pilot zoning via local DataSF GeoJSON — points outside San
-            Francisco return no match.
+            California statewide analysis — parcel-level zoning is currently in
+            pilot coverage (DataSF-backed for San Francisco lots).
           </p>
         </div>
 
@@ -210,7 +214,7 @@ export function AddressSearch({
             <span className="text-[10px] font-semibold tracking-widest text-slate-400 uppercase">
               Simulate Scenarios
             </span>
-            <div className="flex flex-wrap justify-center gap-2">
+            <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2">
               {DEMO_SCENARIOS.map((demo) => (
                 <button
                   key={demo.label}
@@ -218,7 +222,7 @@ export function AddressSearch({
                   onClick={() => {
                     void resolveQuery(demo.query);
                   }}
-                  className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-600 shadow-sm transition-all hover:bg-[#F5F5F7] hover:text-slate-900"
+                  className="min-h-[44px] rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-medium text-slate-600 shadow-sm transition-all hover:bg-[#F5F5F7] hover:text-slate-900 sm:px-4 sm:py-2"
                 >
                   {demo.label}
                 </button>

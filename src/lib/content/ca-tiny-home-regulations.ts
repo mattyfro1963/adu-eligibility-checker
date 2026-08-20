@@ -29,7 +29,7 @@ export type FaqItem = {
 };
 
 export const CBC_BASELINE = {
-  codeYear: "2022",
+  codeYear: "2025",
   ceilingHeight: "7 ft 6 in",
   primaryRoomSqFt: 120,
   additionalRoomSqFt: 70,
@@ -40,7 +40,7 @@ export const GUIDE_INTRO = {
   title: "Tiny Home Regulations in California",
   subtitle: "County guide for park models, THOWs, and ADU pathways",
   lead: "California is broadly friendly to tiny living, but permission almost always turns on local zoning, building codes, and whether the unit is site-built, foundation-mounted, or a park model / tiny home on wheels (THOW). Use this guide to orient, then confirm with your city or county before you buy or place a unit.",
-  buildingCodeNote: `Many jurisdictions follow the ${CBC_BASELINE.codeYear} California Building / Residential Code (${CBC_BASELINE.appendix}). Typical permanent-dwelling minima include a ceiling height of ${CBC_BASELINE.ceilingHeight}, one habitable room of at least ${CBC_BASELINE.primaryRoomSqFt} sq ft, and at least ${CBC_BASELINE.additionalRoomSqFt} sq ft net floor area for each additional habitable room. Local amendments and ADU ordinances can be stricter or more specific.`,
+  buildingCodeNote: `Many jurisdictions follow the ${CBC_BASELINE.codeYear} California Building / Residential Code (effective statewide January 1, 2026; ${CBC_BASELINE.appendix} where adopted). Typical permanent-dwelling minima include a ceiling height of ${CBC_BASELINE.ceilingHeight}, one habitable room of at least ${CBC_BASELINE.primaryRoomSqFt} sq ft, and at least ${CBC_BASELINE.additionalRoomSqFt} sq ft net floor area for each additional habitable room. Local amendments and ADU ordinances can be stricter or more specific.`,
 } as const;
 
 export const PARK_MODEL_OVERVIEW = {
@@ -1131,7 +1131,7 @@ export const FAQS: FaqItem[] = [
   {
     question: "How does this relate to ADU / SB 9 checks?",
     answer:
-      "State ADU law (Gov. Code § 65852.2) and SB 9 (§ 65852.21) create residential pathways that many cities implement locally. A parcel may be ADU-eligible while still restricting wheeled units unless a THOW ordinance exists. Use the doihave.space checker for SF pilot zoning overlays, then read this guide for statewide tiny-home context.",
+      "State ADU law (Gov. Code Chapter 13, §§ 66310–66342) and SB 9 (§§ 65852.21 and 66411.7) create residential pathways that many cities implement locally. A parcel may be ADU-eligible while still restricting wheeled units unless a THOW ordinance exists. Use the doihave.space checker for SF pilot zoning overlays, then read this guide for statewide tiny-home context.",
   },
 ];
 

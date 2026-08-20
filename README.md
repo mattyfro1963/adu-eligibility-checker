@@ -1,6 +1,6 @@
 # ADU Eligibility Checker
 
-Check California ADU (Gov. Code § 65852.2) and SB 9 (Gov. Code § 65852.21) eligibility for San Francisco properties. Zoning comes from a local DataSF GeoJSON pilot (point-in-polygon), not a canned mock status map.
+Check California ADU (Gov. Code Chapter 13, §§ 66310–66342) and SB 9 (Gov. Code §§ 65852.21 / 66411.7) eligibility for San Francisco properties. Zoning comes from a local DataSF GeoJSON pilot (point-in-polygon), not a canned mock status map.
 
 ## Quick Start
 
@@ -35,7 +35,7 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for the full folder theory, decision-en
 
 ## SF Pilot Zoning
 
-- **Data:** [`public/data/pilot-zoning.geojson`](./public/data/pilot-zoning.geojson) — SF Zoning Districts from [DataSF 3i4a-hu95](https://data.sfgov.org/api/v3/views/3i4a-hu95/query.geojson?accessType=DOWNLOAD) (PDDL). Large (~33MB); SF coverage only.
+- **Data:** [`public/data/pilot-zoning.geojson`](./public/data/pilot-zoning.geojson) — SF Zoning Districts from [DataSF 3i4a-hu95](https://data.sfgov.org/d/3i4a-hu95) (PDDL). Large (~33MB); SF coverage only. Runtime reads the local file only — no live DataSF fetches.
 - **Lookup:** `/api/zoning?lat=&lng=` → `src/lib/adapters/pilot-zoning.ts` (Turf `booleanPointInPolygon`) → `evaluateEligibility`. Overlays default to `false` in this pilot.
 - **Turf** stays in adapters only — not in rules or UI.
 

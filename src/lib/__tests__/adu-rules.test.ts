@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { evaluateEligibility } from "@/lib/rules";
 import { mockProperties } from "@/lib/mock/properties";
+import type { CitedClaim } from "@/lib/regulations/types";
 import type { Parcel } from "@/lib/types/zoning";
 
 function parcel(id: keyof typeof mockProperties): Parcel {
@@ -9,6 +10,22 @@ function parcel(id: keyof typeof mockProperties): Parcel {
     throw new Error(`Missing mock parcel: ${String(id)}`);
   }
   return value;
+}
+
+function reasonTexts(reasons: CitedClaim[]): string[] {
+  return reasons.map((r) => r.text);
+}
+
+function expectCited(reasons: CitedClaim[]): void {
+  expect(reasons.length).toBeGreaterThan(0);
+  for (const reason of reasons) {
+    expect(reason.text.length).toBeGreaterThan(0);
+    expect(reason.sources.length).toBeGreaterThanOrEqual(1);
+    for (const source of reason.sources) {
+      expect(source.href).toMatch(/^https:\/\//);
+      expect(source.label.length).toBeGreaterThan(0);
+    }
+  }
 }
 
 describe("evaluateEligibility", () => {
@@ -39,15 +56,22 @@ describe("evaluateEligibility", () => {
     expect(report.sb9.status).toBe("eligible");
     expect(report.overall).toBe("eligible");
     expect(report.overlays).toEqual(parcel("addr-r1-clean").overlays);
+    expectCited(report.adu.reasons);
+    expectCited(report.sb9.reasons);
   });
 
   it("R-1 + tinyHomeFriendly → ADU eligible with tiny-home reason", () => {
     const report = evaluateEligibility(parcel("addr-r1-tiny"));
     expect(report.adu.status).toBe("eligible");
-    expect(report.adu.reasons.some((r) => /tiny home/i.test(r))).toBe(true);
+    expect(
+      reasonTexts(report.adu.reasons).some((r) => /tiny home/i.test(r)),
+    ).toBe(true);
     expect(report.sb9.status).toBe("eligible");
-    expect(report.sb9.reasons.some((r) => /tiny home/i.test(r))).toBe(false);
+    expect(
+      reasonTexts(report.sb9.reasons).some((r) => /tiny home/i.test(r)),
+    ).toBe(false);
     expect(report.overall).toBe("eligible");
+    expectCited(report.adu.reasons);
   });
 
   it("R-1 + VHFHSZ/fire → ADU warning, SB 9 restricted, overall warning", () => {
@@ -55,7 +79,11 @@ describe("evaluateEligibility", () => {
     expect(report.adu.status).toBe("warning");
     expect(report.sb9.status).toBe("restricted");
     expect(report.overall).toBe("warning");
-    expect(report.adu.reasons.some((r) => /65852\.2/.test(r))).toBe(true);
+    expect(
+      reasonTexts(report.adu.reasons).some((r) => /Chapter 13|66314/i.test(r)),
+    ).toBe(true);
+    expectCited(report.adu.reasons);
+    expectCited(report.sb9.reasons);
   });
 
   it("R-1 + historic → ADU warning, SB 9 restricted", () => {
@@ -63,7 +91,9 @@ describe("evaluateEligibility", () => {
     expect(report.adu.status).toBe("warning");
     expect(report.sb9.status).toBe("restricted");
     expect(report.overall).toBe("warning");
-    expect(report.sb9.reasons.some((r) => /historic/i.test(r))).toBe(true);
+    expect(
+      reasonTexts(report.sb9.reasons).some((r) => /historic/i.test(r)),
+    ).toBe(true);
   });
 
   it("C-2 non-residential → both restricted, overall restricted", () => {
@@ -71,6 +101,7 @@ describe("evaluateEligibility", () => {
     expect(report.adu.status).toBe("restricted");
     expect(report.sb9.status).toBe("restricted");
     expect(report.overall).toBe("restricted");
+    expectCited(report.adu.reasons);
   });
 
   it("R-1 + coastal → warnings, not a commercial-style hard ban", () => {

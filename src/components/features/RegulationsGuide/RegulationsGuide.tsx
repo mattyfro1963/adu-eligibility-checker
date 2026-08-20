@@ -49,7 +49,7 @@ function ResourceList({ links }: { links: ResourceLink[] }) {
 function CountyCard({ county }: { county: JurisdictionNote }) {
   return (
     <details className="group rounded-xl border border-slate-200/80 bg-white open:shadow-sm">
-      <summary className="cursor-pointer list-none px-4 py-3 font-medium text-slate-900 marker:content-none [&::-webkit-details-marker]:hidden">
+      <summary className="min-h-[44px] cursor-pointer list-none px-4 py-3 font-medium text-slate-900 marker:content-none [&::-webkit-details-marker]:hidden">
         <span className="flex items-center justify-between gap-3">
           <span>{county.name}</span>
           <span className="text-xs font-normal tracking-wide text-slate-400 uppercase group-open:hidden">
@@ -100,15 +100,15 @@ const TOC = [
 
 export function RegulationsGuide() {
   return (
-    <article className="mx-auto w-full max-w-6xl flex-1 space-y-12 px-6 py-12 md:py-16">
-      <header className="space-y-4 border-b border-slate-200/80 pb-10">
+    <article className="mx-auto w-full max-w-6xl flex-1 space-y-10 px-4 py-8 sm:space-y-12 sm:px-6 sm:py-12 md:py-16">
+      <header className="space-y-4 border-b border-slate-200/80 pb-8 sm:pb-10">
         <p className="text-xs font-semibold tracking-[0.2em] text-slate-400 uppercase">
           California · {CBC_BASELINE.codeYear} CBC context
         </p>
-        <h1 className="max-w-3xl text-3xl font-semibold tracking-tight text-slate-900 md:text-4xl">
+        <h1 className="max-w-3xl text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl md:text-4xl">
           {GUIDE_INTRO.title}
         </h1>
-        <p className="max-w-2xl text-lg text-slate-600">
+        <p className="max-w-2xl text-base text-slate-600 sm:text-lg">
           {GUIDE_INTRO.subtitle}
         </p>
         <p className="max-w-3xl text-sm leading-relaxed text-slate-600">
@@ -117,13 +117,13 @@ export function RegulationsGuide() {
         <div className="flex flex-wrap gap-3 pt-2">
           <Link
             href="/"
-            className="inline-flex h-9 items-center rounded-lg bg-slate-900 px-3 text-sm font-medium text-white transition-colors hover:bg-slate-800"
+            className="inline-flex min-h-[44px] items-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-800"
           >
-            Check a San Francisco address
+            Check a California address
           </Link>
           <a
             href="#county-guides"
-            className="inline-flex h-9 items-center rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+            className="inline-flex min-h-[44px] items-center rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
           >
             Jump to county guides
           </a>
@@ -311,7 +311,7 @@ export function RegulationsGuide() {
               key={faq.question}
               className="rounded-xl border border-slate-200/80 bg-white open:shadow-sm"
             >
-              <summary className="cursor-pointer list-none px-4 py-3 font-medium text-slate-900 marker:content-none [&::-webkit-details-marker]:hidden">
+              <summary className="min-h-[44px] cursor-pointer list-none px-4 py-3 font-medium text-slate-900 marker:content-none [&::-webkit-details-marker]:hidden">
                 {faq.question}
               </summary>
               <p className="border-t border-slate-100 px-4 py-4 text-sm leading-relaxed text-slate-600">
@@ -328,7 +328,7 @@ export function RegulationsGuide() {
       >
         <p>{GUIDE_DISCLAIMER}</p>
         <p className="mt-3">
-          Ready to evaluate a San Francisco parcel for ADU or SB 9 overlays?{" "}
+          Ready to evaluate a California address for ADU or SB 9 overlays?{" "}
           <Link
             href="/"
             className="font-medium text-slate-900 underline-offset-2 hover:underline"

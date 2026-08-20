@@ -22,8 +22,8 @@ export function LeadFallbackForm({ address }: LeadFallbackFormProps) {
 
   if (submitted) {
     return (
-      <section className="rounded-[2rem] border border-slate-200/80 bg-white p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-        <p className="text-slate-800">
+      <section className="rounded-[1.5rem] border border-slate-200/80 bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] sm:rounded-[2rem] sm:p-8">
+        <p className="break-words text-slate-800">
           Thank you{name ? `, ${name}` : ""}! We&apos;ll review {address} and
           contact you at {email}.
         </p>
@@ -32,16 +32,16 @@ export function LeadFallbackForm({ address }: LeadFallbackFormProps) {
   }
 
   return (
-    <section className="rounded-[2rem] border border-rose-200/60 bg-white p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+    <section className="rounded-[1.5rem] border border-rose-200/60 bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] sm:rounded-[2rem] sm:p-8">
       <div className="mb-6 flex items-start gap-3">
         <div className="rounded-lg border border-rose-100 bg-rose-50 p-2">
           <Mail className="h-5 w-5 text-rose-600" aria-hidden="true" />
         </div>
-        <div>
+        <div className="min-w-0">
           <h2 className="text-lg font-semibold tracking-tight text-slate-900">
             Restricted — Expert Review Needed
           </h2>
-          <p className="mt-1 text-sm font-light text-slate-600">
+          <p className="mt-1 text-sm font-light break-words text-slate-600">
             {address} has significant restrictions under current zoning rules.
             Leave your details and we&apos;ll connect you with a specialist.
           </p>
@@ -83,7 +83,7 @@ export function LeadFallbackForm({ address }: LeadFallbackFormProps) {
         </div>
         <Button
           type="submit"
-          className="rounded-xl bg-rose-600 text-white shadow-md hover:bg-rose-700 sm:self-end"
+          className="h-11 min-h-[44px] w-full sm:w-auto rounded-xl bg-rose-600 text-white shadow-md hover:bg-rose-700 sm:self-end"
         >
           Request Review
         </Button>

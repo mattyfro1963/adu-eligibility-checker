@@ -25,7 +25,7 @@ Visual representation and client interaction. Split generic `ui/` from domain `f
 
 Heart of the app. **Zero React.** Portable to a Node CLI or worker.
 
-- **Engine (`lib/rules/`):** Split ADU (§ 65852.2) from SB 9 (§ 65852.21). Real `if`/`else` on parcel **facts**. Do not store Eligible/Warning/Restricted on mock parcels. `lib/rules/index.ts` orchestrates unified `ZoningReport`.
+- **Engine (`lib/rules/`):** Split ADU (Gov. Code Chapter 13 / § 66314) from SB 9 (§ 65852.21). Real `if`/`else` on parcel **facts**. Do not store Eligible/Warning/Restricted on mock parcels. `lib/rules/index.ts` orchestrates unified `ZoningReport`. Reasons are `CitedClaim[]` with official source URLs.
 - **Mocks and adapters (`lib/mock/` + `lib/adapters/`):** Routes call a `Geocoder` adapter for addresses. SF pilot zoning uses `pilot-zoning.ts` (server-side Turf + `public/data/pilot-zoning.geojson`). **Turf/GeoJSON only in adapters** — never in `lib/rules/` or UI. Phase 2 may add `regrid-geocoder.ts` with zero changes to rules or UI.
 
 ## Decision Engine Logic
@@ -36,12 +36,12 @@ Monitor `src/lib/rules/*.ts`. The engine must contain **actual branching**, not 
 
 **Outputs:** per-program `EligibilityResult` plus `reasons[]` (statute-cited). Overall badge: `restricted` if both programs restricted; else `warning` if either is warning or one restricted; else `eligible`.
 
-### ADU — `adu-standard.ts` (Gov. Code § 65852.2)
+### ADU — `adu-standard.ts` (Gov. Code Chapter 13 / § 66314)
 
 1. **Single-family / residential zoning (hard stop).** Not residential → `restricted`.
 2. **Fire hazard overlay (warning).** `vhfhsz` or `fireHazard` → `warning`.
 3. **Tiny Home friendly overlay.** `tinyHomeFriendly` → eligible + note.
-4. **Historic district (warning).** Objective design standards under § 65852.2.
+4. **Historic district (warning).** Objective design standards under Chapter 13.
 5. **Coastal zone (warning).** Coastal Act / CDP may apply.
 6. **Default.** Qualifying residential → `eligible`.
 

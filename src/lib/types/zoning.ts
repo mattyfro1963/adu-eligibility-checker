@@ -1,8 +1,10 @@
+import type { CitedClaim } from "@/lib/regulations/types";
+
 export type EligibilityStatus = "eligible" | "warning" | "restricted";
 
 export interface EligibilityResult {
   status: EligibilityStatus;
-  reasons: string[];
+  reasons: CitedClaim[];
 }
 
 export interface Overlays {
@@ -21,6 +23,8 @@ export interface Parcel {
   lng: number;
   zoning: string;
   overlays: Overlays;
+  /** SF assessor block/lot when resolved from a local parcel index. */
+  mapblklot?: string | null;
 }
 
 export interface ZoningReport {
@@ -32,4 +36,6 @@ export interface ZoningReport {
   adu: EligibilityResult;
   sb9: EligibilityResult;
   overall: EligibilityStatus;
+  /** SF assessor block/lot when known. */
+  mapblklot?: string | null;
 }
