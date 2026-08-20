@@ -27,6 +27,9 @@ export interface Parcel {
   mapblklot?: string | null;
 }
 
+/** How the report was produced — lot GIS vs jurisdiction corpus fallback. */
+export type ZoningAnalysisScope = "lot_zoning" | "jurisdiction_context";
+
 export interface ZoningReport {
   addressId: string;
   formattedAddress: string;
@@ -38,4 +41,6 @@ export interface ZoningReport {
   overall: EligibilityStatus;
   /** SF assessor block/lot when known. */
   mapblklot?: string | null;
+  /** Defaults to lot_zoning when omitted (legacy responses). */
+  analysisScope?: ZoningAnalysisScope;
 }

@@ -99,10 +99,7 @@ export function AddressSearch({
 
   return (
     <section
-      className={cn(
-        "flex flex-col",
-        compact ? "space-y-6" : "space-y-8",
-      )}
+      className={cn("flex flex-col", compact ? "space-y-6" : "space-y-8")}
     >
       {!compact ? (
         <header className="space-y-4 text-center">
@@ -113,8 +110,9 @@ export function AddressSearch({
             Check your lot.
           </h1>
           <p className="mx-auto max-w-md text-base font-normal leading-relaxed tracking-body text-muted-foreground">
-            California ADU and SB 9 eligibility with county requirements — lot
-            zoning where coverage exists, not statewide permitting automation.
+            California ADU and SB 9 eligibility with county requirements for
+            every address — lot GIS in SF; jurisdiction guidance elsewhere (no
+            paid data required).
           </p>
         </header>
       ) : null}
@@ -250,15 +248,17 @@ export function AddressSearch({
 
         {!compact ? (
           <p className="border-t border-border px-8 py-4 text-center text-caption leading-relaxed text-muted-foreground">
-            All CA counties — lot GIS where coverage exists; county requirements
-            always.
+            All CA counties — free county requirements; SF lot GIS when
+            available.
           </p>
         ) : null}
 
         {demosEnabled && !compact ? (
           <div className="border-t border-border px-8 py-6">
             <div className="flex flex-col items-center gap-3">
-              <span className="font-label text-muted-foreground">Simulate scenarios</span>
+              <span className="font-label text-muted-foreground">
+                Simulate scenarios
+              </span>
               <div className="flex flex-wrap justify-center gap-2">
                 {DEMO_SCENARIOS.map((demo) => (
                   <button

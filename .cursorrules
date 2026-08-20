@@ -22,7 +22,7 @@ When designing UX, copy, diagnostics, and rules explanations:
 # Core Development Principles
 
 1. **Pareto 80/20**: Zoning via multi-provider `ZoningLookup` (SF DataSF GeoJSON first; Regrid when keyed; optional open-data packs). Mapbox geocode optional (statewide CA).
-2. **Self-Contained Frontend**: Simulate latency in API routes. Handle loading and errors. Uncovered counties are expected (`coverage: "none"`), not rose errors.
+2. **Self-Contained Frontend**: Simulate latency in API routes. Handle loading and errors. Jurisdiction fallback (`coverage: "jurisdiction"`) is the default free path for most CA addresses — not rose errors.
 3. **Clean Code**: Extract logic to `src/lib/`. Inline comments in rules cite statutes and explain **why**.
 4. **UI/UX**: `emerald-600` eligible, `amber-500` warning, `rose-600` restricted. Semantic HTML, `aria-labels` on search inputs.
 

@@ -73,14 +73,15 @@ Forbidden: pasted AddressSearch markup, rule engine branches, `evaluateEligibili
 
 ## California zoning providers
 
-| Jurisdiction / scope | Provider | Data | Notes |
-|----------------------|----------|------|-------|
-| San Francisco | `sf-datasf-zoning` | `public/data/pilot-zoning.geojson` (DataSF 3i4a-hu95, PDDL) | Local Turf PIP; never live DataSF fetch |
-| Optional county/city packs | `open-data-zoning` | `public/data/zoning/{jurisdiction}.geojson` | Progressive; empty until packs added |
-| Statewide parcels | `regrid-zoning` | Regrid API | Requires `REGRID_API_KEY`; skipped when unset |
-| Overlays (fire/coastal/historic) | `zoning-overlays` | Stub → local snapshots later | Defaults false until layers ship |
+| Jurisdiction / scope | Provider | Data | Cost |
+|----------------------|----------|------|------|
+| **All CA counties (default)** | Mapbox geocode + `evaluateJurisdictionContext` | `COUNTY_GUIDES` corpus | Free |
+| San Francisco lot GIS | `sf-datasf-zoning` | `public/data/pilot-zoning.geojson` (DataSF, PDDL) | Free |
+| Optional county/city packs | `open-data-zoning` | `public/data/zoning/{jurisdiction}.geojson` | Free where licensed |
+| Statewide lot GIS (optional) | `regrid-zoning` | Regrid API | Paid — `REGRID_ENABLED=true` |
+| Overlays (fire/coastal/historic) | `zoning-overlays` | Stub → local snapshots later | — |
 
-`/api/zoning` returns `{ report, coverage: "lot" \| "none", provider }` with **200** when uncovered (not 404). Clients must not treat `coverage: "none"` as an error — county requirements still compose.
+`/api/zoning` returns `{ report, coverage: "lot" | "jurisdiction", provider }` with **200** always for valid CA coordinates. `coverage: "jurisdiction"` is the expected free path for most addresses — not an error.
 
 ## SF Buyer Guides (`src/lib/content/guides/` + `/guides`)
 
@@ -102,7 +103,7 @@ Catalog + `AFFILIATE_DISCLOSURE` in `src/lib/content/affiliates.ts`; href assemb
 
 - `.cursorignore`: `.env*`, `.next/`, `node_modules/`, `*.pem`, `*.key`, `coverage/`, `*.log`.
 - `.env.example` defines `NEXT_PUBLIC_API_URL`, optional Mapbox/Sentry, `LEAD_WEBHOOK_URL` / `BUILDER_WEBHOOK_URL`, and `NEXT_PUBLIC_AFFILIATE_*` placeholders. Never commit `.env`.
-- `src/lib/env.ts` Zod-validates at build/start. Mock-required: `NEXT_PUBLIC_API_URL`. Mapbox optional; Regrid optional for statewide lot coverage.
+- `src/lib/env.ts` Zod-validates at build/start. Mock-required: `NEXT_PUBLIC_API_URL`. Mapbox optional for geocode. Regrid optional and off by default (`REGRID_ENABLED`).
 
 ## Binding Placement Rules
 

@@ -9,7 +9,7 @@ import type { ZoningReport } from "@/lib/types/zoning";
 
 type ZoningApiSuccess = {
   report: ZoningReport | null;
-  coverage: "lot" | "none";
+  coverage: "lot" | "jurisdiction";
   provider?: string | null;
 };
 
@@ -35,7 +35,7 @@ function parseZoningPayload(data: unknown): ZoningApiSuccess | null {
   // Phase 2 envelope: { report, coverage }
   if ("coverage" in data) {
     const coverage = (data as { coverage?: unknown }).coverage;
-    if (coverage !== "lot" && coverage !== "none") return null;
+    if (coverage !== "lot" && coverage !== "jurisdiction") return null;
     const report = (data as { report?: unknown }).report;
     if (report === null) {
       return { report: null, coverage };
@@ -78,9 +78,13 @@ export default function HomePage() {
       url.searchParams.set("lat", String(result.lat));
       url.searchParams.set("lng", String(result.lng));
       url.searchParams.set("address", result.formattedAddress);
+      url.searchParams.set("addressId", result.addressId);
+      if (result.place) url.searchParams.set("place", result.place);
+      if (result.county) url.searchParams.set("county", result.county);
+      if (result.region) url.searchParams.set("region", result.region);
       const res = await fetch(url.toString(), { signal: controller.signal });
       if (!res.ok) {
-        // Uncovered counties return 200 + coverage:none; only transport/5xx here.
+        // Jurisdiction fallback returns 200 + coverage:jurisdiction; only transport/5xx here.
         const body: unknown = await res.json().catch(() => null);
         const message =
           body &&
@@ -96,7 +100,7 @@ export default function HomePage() {
       if (!parsed) {
         throw new Error("Invalid zoning response");
       }
-      // coverage:none is expected for most CA — keep report null, no rose error.
+      // coverage:jurisdiction still returns a full jurisdiction-context report.
       if (parsed.report) {
         setReport({
           ...parsed.report,

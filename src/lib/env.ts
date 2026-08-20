@@ -31,6 +31,8 @@ const envSchema = z.object({
     z.string().min(1).optional(),
   ),
   REGRID_API_KEY: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
+  /** Paid Regrid parcel API — off by default; set to `true` with `REGRID_API_KEY`. */
+  REGRID_ENABLED: z.preprocess(emptyToUndefined, z.string().optional()),
   /** Optional — Sentry no-ops when unset (local/CI without secrets). */
   NEXT_PUBLIC_SENTRY_DSN: z.preprocess(
     emptyToUndefined,
@@ -46,6 +48,7 @@ const parsed = envSchema.safeParse({
     VITE_MAPBOX_ACCESS_TOKEN: process.env.VITE_MAPBOX_ACCESS_TOKEN,
   }),
   REGRID_API_KEY: process.env.REGRID_API_KEY,
+  REGRID_ENABLED: process.env.REGRID_ENABLED,
   NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
   SENTRY_DSN: process.env.SENTRY_DSN,
 });
@@ -63,4 +66,13 @@ export const env = parsed.data;
 /** True when a Mapbox token resolved (primary or VITE_ fallback). */
 export function isMapboxConfigured(): boolean {
   return Boolean(env.MAPBOX_ACCESS_TOKEN?.trim());
+}
+
+/** Regrid is opt-in paid parcel data — requires REGRID_ENABLED=true and a key. */
+export function isRegridEnabled(): boolean {
+  const flag = env.REGRID_ENABLED?.trim().toLowerCase();
+  if (flag !== "true" && flag !== "1") {
+    return false;
+  }
+  return Boolean(env.REGRID_API_KEY?.trim());
 }

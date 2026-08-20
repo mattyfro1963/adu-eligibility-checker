@@ -128,6 +128,8 @@ export function ResultsCard({
   const address =
     report?.formattedAddress ?? geocodeResult?.formattedAddress ?? "—";
   const mapblklot = report?.mapblklot ?? null;
+  const isJurisdictionContext =
+    report?.analysisScope === "jurisdiction_context";
 
   const briefing = useMemo(() => {
     if (!geocodeResult) return null;
@@ -153,7 +155,9 @@ export function ResultsCard({
           <div className="flex-1 space-y-6 overflow-y-auto p-8">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="font-label text-muted-foreground">Parcel evaluation</p>
+                <p className="font-label text-muted-foreground">
+                  Parcel evaluation
+                </p>
                 <h3 className="font-heading mt-2 text-heading-sm leading-tight break-words text-foreground">
                   {address}
                 </h3>
@@ -167,6 +171,15 @@ export function ResultsCard({
                 <EligibilityBadge status={report.overall} size="lg" />
               ) : null}
             </div>
+
+            {isJurisdictionContext ? (
+              <p className="rounded-input border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-900">
+                Lot zoning was not verified for this coordinate. Eligibility
+                below reflects published county/city guidance plus the statewide
+                ADU floor — confirm base district and overlays with local
+                Planning/Building.
+              </p>
+            ) : null}
 
             <div className="flex items-center justify-between border-b border-border py-3.5">
               <span className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
@@ -182,8 +195,21 @@ export function ResultsCard({
               </span>
             </div>
 
+            {isJurisdictionContext ? (
+              <div className="flex items-center justify-between border-b border-border py-3.5">
+                <span className="text-sm font-medium text-muted-foreground">
+                  Analysis scope
+                </span>
+                <span className="text-sm font-normal text-amber-700">
+                  Jurisdiction context
+                </span>
+              </div>
+            ) : null}
+
             <div>
-              <p className="font-label mb-2 text-muted-foreground">Overlay facts</p>
+              <p className="font-label mb-2 text-muted-foreground">
+                Overlay facts
+              </p>
               <OverlayRow
                 label="Coastal Zone"
                 icon={Trees}
@@ -209,7 +235,9 @@ export function ResultsCard({
             {report ? (
               <div className="space-y-4">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-label text-muted-foreground">Programs</span>
+                  <span className="font-label text-muted-foreground">
+                    Programs
+                  </span>
                   <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                     ADU <EligibilityBadge status={report.adu.status} />
                   </span>

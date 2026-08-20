@@ -3,7 +3,7 @@
  * is set. Server-only; never expose the key to the client.
  */
 
-import { env } from "@/lib/env";
+import { env, isRegridEnabled } from "@/lib/env";
 import { lookupOverlays } from "@/lib/adapters/zoning-overlays";
 import { normalizeVendorZoningCode } from "@/lib/adapters/zoning-normalize";
 import type { Parcel } from "@/lib/types/zoning";
@@ -66,6 +66,10 @@ export async function getRegridParcel(
   lng: number,
   formattedAddress = "",
 ): Promise<Parcel | null> {
+  if (!isRegridEnabled()) {
+    return null;
+  }
+
   const token = env.REGRID_API_KEY?.trim();
   if (!token) {
     return null;

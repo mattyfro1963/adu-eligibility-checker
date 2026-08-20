@@ -317,6 +317,7 @@ describe("ADU topic coverage and legal sources", () => {
       "states/registry.ts",
       "types.ts",
       "location-requirements.ts",
+      "../rules/jurisdiction-context.ts",
     ];
     for (const rel of files) {
       const src = readFileSync(path.join(root, rel), "utf8");
@@ -411,16 +412,16 @@ describe("California visitor-facing branding", () => {
       ["SiteHeader/SiteHeader.tsx", [/\bpx-4\b/, /sm:px-6/, /min-h-\[44px\]/]],
       [
         "AddressSearch/AddressSearch.tsx",
-        [/text-4xl/, /\bh-14\b/, /min-h-\[44px\]/],
+        [/text-heading|text-display/, /\bh-14\b/, /min-h-\[44px\]/],
       ],
       [
         "ResultsCard/ResultsCard.tsx",
         [
-          /h-\[280px\]/,
-          /sm:h-\[360px\]/,
+          /min-h-\[280px\]/,
+          /sm:min-h-\[360px\]/,
           /lg:grid-cols-5/,
-          /gap-4/,
-          /sm:gap-5/,
+          /gap-6/,
+          /lg:gap-8/,
         ],
       ],
       ["ResultsCard/ResultsBriefing.tsx", [/\bp-5\b/, /sm:p-6/, /md:p-8/]],

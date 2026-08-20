@@ -37,6 +37,30 @@ export function isSanFranciscoPlace(place: string): boolean {
 }
 
 function lotSummary(report: ZoningReport | null): CitedClaim {
+  if (report?.analysisScope === "jurisdiction_context") {
+    switch (report.overall) {
+      case "eligible":
+        return {
+          text: `For this California address (${report.formattedAddress.split(",").slice(-2).join(",").trim() || "jurisdiction context"}), lot zoning was not verified — the checker applied published county/city tiny-home guidance plus the statewide ADU floor. Local posture looks favorable for a residential ADU path, but confirm base zoning, THOW rules, and permits with Planning/Building before you place a unit.`,
+          sources: [SRC.hcdAdu, SRC.govChapter13, SRC.hcdTinyHomesIb],
+        };
+      case "warning":
+        return {
+          text: `For this California address, lot zoning was not verified. The checker applied county/city guidance and the statewide ADU floor — expect extra confirmation steps (THOW limits, unclear park-model rules, or unverified SB 9 single-family zoning) before treating the site as ready for a dwelling-use tiny home.`,
+          sources: [SRC.hcdAdu, SRC.hcdTinyHomesIb, SRC.govChapter13],
+        };
+      case "restricted":
+        return {
+          text: `For this California address, lot zoning was not verified. Published local guidance and the statewide floor did not surface a clear ministerial ADU or SB 9 path — treat this as a high-friction site until Planning/Building confirms use and district.`,
+          sources: [SRC.hcdAdu, SRC.hcdTinyHomesIb, SRC.gov66314],
+        };
+      default: {
+        const _exhaustive: never = report.overall;
+        return _exhaustive;
+      }
+    }
+  }
+
   if (report) {
     const zone = report.zoning;
     switch (report.overall) {
@@ -98,9 +122,10 @@ export function composeResultsBriefing(
   const isCalifornia = profile.code === "CA" && profile.published;
   const sfPlace = isSanFranciscoPlace(geocode.place);
   const analysisScope =
-    report !== null
+    report?.analysisScope ??
+    (report !== null
       ? ("lot_zoning" as const)
-      : ("jurisdiction_context" as const);
+      : ("jurisdiction_context" as const));
 
   const unpublishedSummary: CitedClaim = {
     text: "Regulations for this state are not published in this checker yet. Do not assume California ADU or THOW rules apply outside California.",

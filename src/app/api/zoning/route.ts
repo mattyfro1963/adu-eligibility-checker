@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 import { lookupParcel } from "@/lib/adapters/zoning-lookup";
 import { logger } from "@/lib/logger";
-import { evaluateEligibility } from "@/lib/rules";
+import { evaluateEligibility, evaluateJurisdictionContext } from "@/lib/rules";
 import { zoningQuerySchema } from "@/lib/validations/api-schemas";
 
 export const dynamic = "force-dynamic";
@@ -11,13 +11,27 @@ const LOOKUP_LATENCY_MS = 400;
 const log = logger.child({ route: "zoning" });
 
 export async function GET(request: NextRequest) {
-  const lat = request.nextUrl.searchParams.get("lat");
-  const lng = request.nextUrl.searchParams.get("lng");
+  const params = request.nextUrl.searchParams;
+  const lat = params.get("lat");
+  const lng = params.get("lng");
   log.info({ lat, lng }, "Incoming zoning request");
 
   const parsed = zoningQuerySchema.safeParse({
     ...(lat ? { lat } : {}),
     ...(lng ? { lng } : {}),
+    ...(params.get("address")
+      ? { address: params.get("address") ?? undefined }
+      : {}),
+    ...(params.get("addressId")
+      ? { addressId: params.get("addressId") ?? undefined }
+      : {}),
+    ...(params.get("place") ? { place: params.get("place") ?? undefined } : {}),
+    ...(params.get("county")
+      ? { county: params.get("county") ?? undefined }
+      : {}),
+    ...(params.get("region")
+      ? { region: params.get("region") ?? undefined }
+      : {}),
   });
 
   if (!parsed.success) {
@@ -38,7 +52,13 @@ export async function GET(request: NextRequest) {
   await new Promise((resolve) => setTimeout(resolve, LOOKUP_LATENCY_MS));
 
   const { lat: latitude, lng: longitude } = parsed.data;
-  const address = request.nextUrl.searchParams.get("address")?.trim() ?? "";
+  const address = parsed.data.address?.trim() ?? "";
+  const place = parsed.data.place?.trim() ?? "";
+  const county = parsed.data.county?.trim() ?? "";
+  const region = parsed.data.region?.trim() ?? "CA";
+  const addressId =
+    parsed.data.addressId?.trim() ||
+    `${latitude.toFixed(5)},${longitude.toFixed(5)}`;
 
   try {
     const { parcel, coverage, provider } = await lookupParcel(
@@ -47,35 +67,58 @@ export async function GET(request: NextRequest) {
       address,
     );
 
-    if (!parcel || coverage === "none") {
+    if (parcel && coverage === "lot") {
+      const report = evaluateEligibility(parcel);
       log.info(
-        { lat: latitude, lng: longitude, coverage: "none", status: 200 },
-        "No lot zoning provider matched — jurisdiction context only",
+        {
+          addressId: report.addressId,
+          zoning: report.zoning,
+          overall: report.overall,
+          aduStatus: report.adu.status,
+          sb9Status: report.sb9.status,
+          coverage: "lot",
+          provider,
+          analysisScope: report.analysisScope,
+        },
+        "Zoning lookup succeeded",
       );
       return NextResponse.json({
-        report: null,
-        coverage: "none" as const,
-        provider: null,
+        report,
+        coverage: "lot" as const,
+        provider,
       });
     }
 
-    const report = evaluateEligibility(parcel);
+    const report = evaluateJurisdictionContext({
+      addressId,
+      formattedAddress: address || `${latitude}, ${longitude}`,
+      place,
+      county,
+      region,
+      lat: latitude,
+      lng: longitude,
+    });
+
     log.info(
       {
-        addressId: report.addressId,
-        zoning: report.zoning,
+        lat: latitude,
+        lng: longitude,
+        place,
+        county,
+        coverage: "jurisdiction",
         overall: report.overall,
         aduStatus: report.adu.status,
         sb9Status: report.sb9.status,
-        coverage: "lot",
-        provider,
+        analysisScope: report.analysisScope,
+        status: 200,
       },
-      "Zoning lookup succeeded",
+      "No lot GIS — jurisdiction-context decision",
     );
+
     return NextResponse.json({
       report,
-      coverage: "lot" as const,
-      provider,
+      coverage: "jurisdiction" as const,
+      provider: null,
     });
   } catch (err) {
     Sentry.captureException(err, { tags: { route: "zoning" } });

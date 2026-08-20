@@ -1,9 +1,5 @@
 import type { Metadata } from "next";
-import {
-  IBM_Plex_Mono,
-  Inter,
-  Source_Serif_4,
-} from "next/font/google";
+import { IBM_Plex_Mono, Inter, Source_Serif_4 } from "next/font/google";
 import { isMapboxConfigured } from "@/lib/env";
 import { SkipToContent } from "@/components/features/PageShell/PageShell";
 import { SiteChrome } from "@/components/features/SiteChrome/SiteChrome";
@@ -30,7 +26,7 @@ const sourceSerif = Source_Serif_4({
 export const metadata: Metadata = {
   title: "ADU & SB 9 Eligibility Checker",
   description:
-    "Embeddable California ADU and SB 9 parcel eligibility search with SF pilot zoning coverage.",
+    "California ADU and SB 9 eligibility for every county — Mapbox geocode plus county requirements; SF lot GIS where available.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

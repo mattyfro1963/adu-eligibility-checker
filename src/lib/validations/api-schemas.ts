@@ -7,6 +7,11 @@ export const geocodeQuerySchema = z.object({
 export const zoningQuerySchema = z.object({
   lat: z.coerce.number({ required_error: "lat is required" }),
   lng: z.coerce.number({ required_error: "lng is required" }),
+  address: z.string().trim().max(300).optional(),
+  addressId: z.string().trim().max(120).optional(),
+  place: z.string().trim().max(120).optional(),
+  county: z.string().trim().max(120).optional(),
+  region: z.string().trim().max(40).optional(),
 });
 
 /** Mapbox Static Images proxy — dimensions capped to API limits. */

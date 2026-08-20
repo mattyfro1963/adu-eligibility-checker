@@ -112,6 +112,10 @@ export function ConnectPage() {
       url.searchParams.set("lat", String(result.lat));
       url.searchParams.set("lng", String(result.lng));
       url.searchParams.set("address", result.formattedAddress);
+      url.searchParams.set("addressId", result.addressId);
+      if (result.place) url.searchParams.set("place", result.place);
+      if (result.county) url.searchParams.set("county", result.county);
+      if (result.region) url.searchParams.set("region", result.region);
       const res = await fetch(url.toString());
       if (!res.ok) {
         return;
@@ -120,8 +124,6 @@ export function ConnectPage() {
       if (
         data &&
         typeof data === "object" &&
-        "coverage" in data &&
-        (data as { coverage: unknown }).coverage === "lot" &&
         "report" in data &&
         (data as { report: unknown }).report &&
         typeof (data as { report: unknown }).report === "object" &&

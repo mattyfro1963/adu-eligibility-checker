@@ -1,6 +1,7 @@
 /**
  * Multi-provider ZoningLookup facade.
- * Order: SF DataSF open data → optional open-data packs → Regrid (when keyed) → null.
+ * Order: SF DataSF open data → optional open-data packs → Regrid (opt-in paid) → null.
+ * Default statewide path: Mapbox geocode + evaluateJurisdictionContext (no Regrid).
  * Rules engine unchanged — consumes Parcel facts only.
  */
 
