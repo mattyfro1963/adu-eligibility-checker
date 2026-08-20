@@ -26,9 +26,10 @@ import type {
 import type { GeocodeResult } from "@/lib/types/gis";
 import type { ZoningReport } from "@/lib/types/zoning";
 
+/** City of San Francisco only — not South San Francisco or other substrings. */
 function isSanFranciscoPlace(place: string): boolean {
   const p = place.trim().toLowerCase();
-  return p === "san francisco" || p.includes("san francisco");
+  return p === "san francisco" || p === "city and county of san francisco";
 }
 
 function lotSummary(report: ZoningReport | null): CitedClaim {
@@ -97,24 +98,23 @@ export function composeResultsBriefing(
       ? ("sf_pilot_lot" as const)
       : ("statewide_context_only" as const);
 
-  const useClaims =
-    isCalifornia && profile.published
-      ? profile.useDoctrine.slice(0, 2)
-      : [
-          {
-            text: "Regulations for this state are not published in this checker yet. Do not assume California ADU or THOW rules apply outside California.",
-            sources: [SRC.hcdAdu],
-          },
-        ];
+  const unpublishedSummary: CitedClaim = {
+    text: "Regulations for this state are not published in this checker yet. Do not assume California ADU or THOW rules apply outside California.",
+    sources: [SRC.hcdAdu],
+  };
 
-  const summary: CitedClaim[] = [
-    ...useClaims,
-    lotSummary(report),
-    {
-      text: "Do not skip the land-use and building permit process. Unpermitted placement can lead to fines and code enforcement. For site-specific advice, consult local Planning / Building (SF Planning and DBI remain linked sources for covered pilot lots) or a California-licensed land-use attorney.",
-      sources: [SRC.sfPlanning, SRC.sfDbi, SRC.hcdAdu],
-    },
-  ];
+  // Unpublished states: only the not-published notice — never CA lot / SF agency claims.
+  const summary: CitedClaim[] =
+    isCalifornia && profile.published
+      ? [
+          ...profile.useDoctrine.slice(0, 2),
+          lotSummary(report),
+          {
+            text: "Do not skip the land-use and building permit process. Unpermitted placement can lead to fines and code enforcement. For site-specific advice, consult local Planning / Building (SF Planning and DBI remain linked sources for covered pilot lots) or a California-licensed land-use attorney.",
+            sources: [SRC.sfPlanning, SRC.sfDbi, SRC.hcdAdu],
+          },
+        ]
+      : [unpublishedSummary];
 
   const checklist =
     isCalifornia && profile.published

@@ -197,16 +197,24 @@ describe("affiliate catalog (eligible monetization data)", () => {
 describe("monetization gating in UI sources", () => {
   const featuresRoot = path.join(process.cwd(), "src/components/features");
 
-  it("EligibleNextSteps renders only when overall === eligible", () => {
-    const results = readFileSync(
-      path.join(featuresRoot, "ResultsCard/ResultsCard.tsx"),
+  it("page bifurcates PartnerOffers by overall and hides lead on eligible", () => {
+    const page = readFileSync(
+      path.join(process.cwd(), "src/app/page.tsx"),
       "utf8",
     );
-    expect(results).toMatch(/report\?\.overall === "eligible"/);
-    expect(results).toMatch(/EligibleNextSteps/);
-    expect(results).not.toMatch(
-      /overall === "restricted"[\s\S]{0,80}EligibleNextSteps/,
+    expect(page).toMatch(/PartnerOffers/);
+    expect(page).toMatch(/intent=\{report\.overall\}/);
+    expect(page).toMatch(/searchId/);
+    expect(page).toMatch(/crypto\.randomUUID/);
+    expect(page).not.toMatch(
+      /overall === "eligible"[\s\S]{0,80}LeadFallbackForm/,
     );
+    expect(
+      readFileSync(
+        path.join(featuresRoot, "ResultsCard/ResultsCard.tsx"),
+        "utf8",
+      ),
+    ).not.toMatch(/EligibleNextSteps/);
   });
 
   it("LeadFallbackForm includes budget + intent and restricted pivot copy", () => {
@@ -221,15 +229,17 @@ describe("monetization gating in UI sources", () => {
     expect(form).toMatch(/data-lead-form="restricted"/);
   });
 
-  it("page shows lead form only for restricted overall", () => {
+  it("page shows lead form for warning and restricted, not eligible", () => {
     const page = readFileSync(
       path.join(process.cwd(), "src/app/page.tsx"),
       "utf8",
     );
     expect(page).toMatch(/overall === "restricted"/);
+    expect(page).toMatch(/overall === "warning"/);
     expect(page).toMatch(/LeadFallbackForm/);
+    expect(page).toMatch(/variant="warning"/);
     expect(page).not.toMatch(
-      /overall === "eligible"[\s\S]{0,40}LeadFallbackForm/,
+      /overall === "eligible"[\s\S]{0,80}LeadFallbackForm/,
     );
   });
 

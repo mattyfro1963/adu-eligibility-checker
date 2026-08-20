@@ -43,40 +43,41 @@
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
   --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
+  --radius-md: var(--radius);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-2xl: calc(var(--radius) * 2);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --shadow-registry: 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
 /* Light-only zinc/slate surfaces — canvas matches doihave_space #F5F5F7 */
 :root {
   --background: #f5f5f7;
-  --foreground: #1e293b;
+  --foreground: #1d1d1f;
   --card: #ffffff;
-  --card-foreground: #1e293b;
+  --card-foreground: #1d1d1f;
   --popover: #ffffff;
-  --popover-foreground: #1e293b;
-  --primary: #18181b;
-  --primary-foreground: #fafafa;
+  --popover-foreground: #1d1d1f;
+  --primary: #0066cc;
+  --primary-foreground: #ffffff;
   --secondary: #f4f4f5;
-  --secondary-foreground: #27272a;
+  --secondary-foreground: #1d1d1f;
   --muted: #f4f4f5;
-  --muted-foreground: #71717a;
+  --muted-foreground: #86868b;
   --accent: #f4f4f5;
-  --accent-foreground: #27272a;
+  --accent-foreground: #1d1d1f;
   --destructive: #e11d48;
   --border: #e2e8f0;
   --input: #e2e8f0;
-  --ring: #94a3b8;
+  --ring: #0066cc;
   --chart-1: #a1a1aa;
   --chart-2: #71717a;
   --chart-3: #52525b;
   --chart-4: #3f3f46;
   --chart-5: #27272a;
-  --radius: 0.625rem;
+  --radius: 0.75rem;
   --sidebar: #ffffff;
   --sidebar-foreground: #1e293b;
   --sidebar-primary: #18181b;

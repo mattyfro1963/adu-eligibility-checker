@@ -4,11 +4,14 @@ import { useEffect, useRef, useSyncExternalStore } from "react";
 import { MapPin, Search } from "lucide-react";
 import { useAddressSearch } from "@/components/features/AddressSearch/useAddressSearch";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import type { GeocodeResult } from "@/lib/types/gis";
 
 interface AddressSearchProps {
   onResolved: (result: GeocodeResult) => void;
   onError?: (message: string) => void;
+  /** Search / zoning error shown on the bar (rose micro-border + 13px text). */
+  error?: string | null;
   /** When false (Mapbox live), omit mock demo chips. */
   showDemoScenarios?: boolean;
 }
@@ -43,12 +46,13 @@ function getMapboxDemoServerSnapshot(): boolean {
 export function AddressSearch({
   onResolved,
   onError,
+  error = null,
   showDemoScenarios,
 }: AddressSearchProps) {
   const {
     query,
     suggestions,
-    isSearching,
+    isResolving,
     isOpen,
     setIsOpen,
     handleQueryChange,
@@ -85,17 +89,18 @@ export function AddressSearch({
     };
   }, [setIsOpen]);
 
+  const hasError = Boolean(error);
+
   return (
-    <section className="relative overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-      <div className="relative z-10 flex flex-col items-center space-y-8 px-4 py-12 text-center sm:space-y-10 sm:px-6 sm:py-16 md:py-24">
+    <section className="relative overflow-hidden rounded-2xl border border-border bg-white shadow-registry">
+      <div className="relative z-10 flex flex-col items-center space-y-8 px-4 py-12 text-center sm:space-y-10 sm:px-6 sm:py-16 md:py-20">
         <div className="max-w-3xl space-y-3 sm:space-y-4">
-          <h2 className="text-3xl leading-[1.1] font-medium tracking-tight text-slate-900 sm:text-4xl md:text-5xl lg:text-6xl">
-            Unlock your parcel&apos;s <br className="hidden md:block" />
-            <span className="text-slate-400">hidden potential.</span>
+          <h2 className="text-3xl leading-[1.15] font-medium tracking-tight text-foreground sm:text-4xl md:text-5xl">
+            Discover your property&apos;s true potential.
           </h2>
-          <p className="mt-3 text-base font-light tracking-wide text-slate-500 sm:mt-4 sm:text-lg md:text-xl">
-            Institutional-grade California ADU &amp; SB 9 spatial analysis in
-            milliseconds.
+          <p className="mt-3 text-base font-light tracking-wide text-muted-foreground sm:mt-4 sm:text-lg">
+            California ADU and SB 9 checks from parcel facts — SF zoning is a
+            DataSF-backed pilot, not a statewide permit engine.
           </p>
         </div>
 
@@ -114,9 +119,16 @@ export function AddressSearch({
             }}
             className="relative"
           >
-            <div className="relative flex h-12 items-center rounded-2xl border border-slate-200 bg-[#FBFBFD] p-1.5 shadow-sm transition-all duration-300 focus-within:border-slate-300 focus-within:bg-white focus-within:ring-4 focus-within:ring-slate-100 sm:h-14">
+            <div
+              className={cn(
+                "relative flex h-16 items-center rounded-[24px] border bg-white p-1.5 shadow-registry transition-all duration-200",
+                hasError
+                  ? "border-rose-600"
+                  : "border-border focus-within:border-primary focus-within:shadow-[0_0_0_4px_rgba(0,102,204,0.15)]",
+              )}
+            >
               <MapPin
-                className="absolute left-4 text-slate-400 sm:left-5"
+                className="absolute left-4 text-muted-foreground sm:left-5"
                 size={20}
                 aria-hidden="true"
               />
@@ -132,35 +144,48 @@ export function AddressSearch({
                     setIsOpen(false);
                   }
                 }}
-                placeholder="Query California address…"
-                className="h-full w-full bg-transparent pr-28 pl-12 text-base font-light text-slate-900 placeholder:text-slate-400 focus:outline-none sm:pr-36 sm:pl-14 sm:text-lg"
+                placeholder="Enter a California address..."
+                className="h-full w-full bg-transparent pr-32 pl-12 text-base font-light text-foreground placeholder:text-muted-foreground focus:outline-none sm:pr-44 sm:pl-14 sm:text-lg"
                 aria-label="Property address search"
                 aria-autocomplete="list"
                 aria-expanded={showList}
                 aria-controls={listboxId}
                 aria-haspopup="listbox"
+                aria-invalid={hasError}
                 autoComplete="off"
-                disabled={isSearching}
+                disabled={isResolving}
               />
               <Button
                 type="submit"
-                disabled={isSearching || !query.trim()}
-                className="absolute top-1/2 right-1.5 h-10 -translate-y-1/2 rounded-xl bg-black px-4 text-xs font-medium tracking-wide text-white shadow-md hover:bg-slate-800 disabled:opacity-50 sm:right-2 sm:px-6 sm:text-sm"
-                aria-label="Analyze address"
+                disabled={isResolving || !query.trim()}
+                className="absolute top-1/2 right-1.5 h-11 -translate-y-1/2 gap-2 rounded-xl px-4 text-xs font-medium tracking-wide shadow-sm sm:right-2 sm:px-5 sm:text-sm"
+                aria-label="Evaluate lot"
               >
-                {isSearching ? (
-                  <span
-                    className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
-                    aria-hidden="true"
-                  />
+                {isResolving ? (
+                  <>
+                    <span
+                      className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
+                      aria-hidden="true"
+                    />
+                    Locating...
+                  </>
                 ) : (
                   <>
-                    Analyze <Search size={14} aria-hidden="true" />
+                    Evaluate Lot
+                    <Search size={14} aria-hidden="true" />
                   </>
                 )}
               </Button>
             </div>
           </form>
+          {hasError ? (
+            <p
+              role="alert"
+              className="mt-2 text-left text-[13px] text-rose-600"
+            >
+              {error}
+            </p>
+          ) : null}
 
           {showList ? (
             <ul

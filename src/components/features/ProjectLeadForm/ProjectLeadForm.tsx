@@ -26,6 +26,8 @@ interface ProjectLeadFormProps {
   overallStatus?: EligibilityStatus | null;
   isSubmitting?: boolean;
   onSubmit: (values: ProjectLeadFormValues) => void | Promise<void>;
+  /** Card chrome for Connect; plain for the Get Quotes modal. */
+  variant?: "card" | "plain";
 }
 
 const INTENT_OPTIONS: { value: PropertyIntent; label: string }[] = [
@@ -54,6 +56,7 @@ export function ProjectLeadForm({
   overallStatus = null,
   isSubmitting = false,
   onSubmit,
+  variant = "card",
 }: ProjectLeadFormProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -78,45 +81,55 @@ export function ProjectLeadForm({
     });
   }
 
+  const isPlain = variant === "plain";
+
   return (
-    <section className="rounded-[1.5rem] border border-slate-200/80 bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] sm:rounded-[2rem] sm:p-8">
-      <div className="mb-6 flex items-start gap-3">
-        <div
-          className={`rounded-lg border p-2 ${
-            isComplex
-              ? "border-amber-100 bg-amber-50"
-              : "border-slate-100 bg-slate-50"
-          }`}
-        >
-          <Hammer
-            className={`h-5 w-5 ${isComplex ? "text-amber-600" : "text-slate-700"}`}
-            aria-hidden="true"
-          />
+    <section
+      className={
+        isPlain
+          ? "space-y-5"
+          : "rounded-2xl border border-border bg-white p-6 shadow-registry sm:p-8"
+      }
+    >
+      {isPlain ? null : (
+        <div className="mb-6 flex items-start gap-3">
+          <div
+            className={`rounded-lg border p-2 ${
+              isComplex
+                ? "border-amber-100 bg-amber-50"
+                : "border-slate-100 bg-slate-50"
+            }`}
+          >
+            <Hammer
+              className={`h-5 w-5 ${isComplex ? "text-amber-600" : "text-slate-700"}`}
+              aria-hidden="true"
+            />
+          </div>
+          <div className="min-w-0">
+            <h2 className="text-lg font-semibold tracking-tight text-slate-900">
+              {isComplex
+                ? "Complex site — match with builders"
+                : "Project details for builder match"}
+            </h2>
+            <p className="mt-1 text-sm font-light break-words text-slate-600">
+              {isComplex ? (
+                <>
+                  {address} needs careful permitting. Share project parameters
+                  so we can route a high-intent lead to licensed ADU / tiny-home
+                  builders nearby.
+                </>
+              ) : (
+                <>
+                  Tell us about the project at{" "}
+                  <span className="font-medium text-slate-800">{address}</span>.
+                  We&apos;ll compile nearby contractors for quotes — not a
+                  permit or legal determination.
+                </>
+              )}
+            </p>
+          </div>
         </div>
-        <div className="min-w-0">
-          <h2 className="text-lg font-semibold tracking-tight text-slate-900">
-            {isComplex
-              ? "Complex site — match with builders"
-              : "Project details for builder match"}
-          </h2>
-          <p className="mt-1 text-sm font-light break-words text-slate-600">
-            {isComplex ? (
-              <>
-                {address} needs careful permitting. Share project parameters so
-                we can route a high-intent lead to licensed ADU / tiny-home
-                builders nearby.
-              </>
-            ) : (
-              <>
-                Tell us about the project at{" "}
-                <span className="font-medium text-slate-800">{address}</span>.
-                We&apos;ll compile nearby contractors for quotes — not a permit
-                or legal determination.
-              </>
-            )}
-          </p>
-        </div>
-      </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid gap-3 sm:grid-cols-2">
@@ -223,7 +236,7 @@ export function ProjectLeadForm({
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="h-11 w-full rounded-xl bg-slate-900 text-white shadow-md hover:bg-slate-800 sm:w-auto sm:self-end"
+          className="h-11 w-full rounded-xl shadow-sm sm:w-auto sm:self-end"
         >
           {isSubmitting ? (
             <>
@@ -231,7 +244,7 @@ export function ProjectLeadForm({
               Matching contractors…
             </>
           ) : (
-            "Find nearby contractors"
+            "Find contractors"
           )}
         </Button>
       </form>

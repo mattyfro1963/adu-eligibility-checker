@@ -47,6 +47,7 @@ export function useAddressSearch({
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<GeocodeResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [isResolving, setIsResolving] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -131,6 +132,7 @@ export function useAddressSearch({
       const controller = new AbortController();
       abortRef.current = controller;
       setIsSearching(true);
+      setIsResolving(true);
 
       try {
         const res = await fetch(geocodeUrl(trimmed), {
@@ -156,6 +158,7 @@ export function useAddressSearch({
       } finally {
         if (!controller.signal.aborted) {
           setIsSearching(false);
+          setIsResolving(false);
         }
       }
     },
@@ -170,6 +173,7 @@ export function useAddressSearch({
     query,
     suggestions,
     isSearching,
+    isResolving,
     isOpen,
     setIsOpen,
     handleQueryChange,

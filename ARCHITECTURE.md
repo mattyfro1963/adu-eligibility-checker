@@ -10,14 +10,14 @@ Next.js framework contract only — network, caching, SSR. Not a place for statu
 
 - `route.ts` stays thin (traffic cop): validate → adapter/rules → JSON, plus `setTimeout` for `loading.tsx` / `Spinner`.
 - `error.tsx` is `"use client"`.
-- `page.tsx` is the **client composition root** (`"use client"` required for `useState`). It must **import** `AddressSearch`, `ResultsCard`, and `LeadFallbackForm` — never paste those components' markup or fetch logic into the page. It owns only cross-component state and the zoning fetch that glues them together. No statute `if`/`else` in the page (that lives in `src/lib/rules`).
+- `page.tsx` is the **client composition root** (`"use client"` required for `useState`). It must **import** `AddressSearch`, `ValueProps`, `AnalysisInterstitial`, `ResultsCard`, `LeadFallbackForm`, `PartnerOffers`, and `GetQuotesModal` — never paste those components' markup or fetch logic into the page. It owns only cross-component state and the zoning fetch that glues them together. No statute `if`/`else` in the page (that lives in `src/lib/rules`).
 
 ### 2. Component-intensive (`src/components/`)
 
 Visual representation and client interaction. Split generic `ui/` from domain `features/`.
 
 - **No `index.ts` barrels in `ui/` or `features/`.** Use `AddressSearch/AddressSearch.tsx` (not `index.tsx`).
-- Named exports. Tailwind only: `emerald-600` Eligible, `amber-500` Warning, `rose-600` Restricted.
+- Named exports. Tailwind only: `emerald-600` Eligible, `amber-500` Warning, `rose-600` Restricted. Primary CTA token `#0066CC`.
 - Icons only from `lucide-react`.
 - Complex state in colocated hooks (`useAddressSearch.ts`).
 
@@ -29,6 +29,7 @@ Heart of the app. **Zero React.** Portable to a Node CLI or worker.
 - **Mocks and adapters (`lib/mock/` + `lib/adapters/`):** Routes call a `Geocoder` adapter for addresses. SF pilot zoning uses `pilot-zoning.ts` (server-side Turf + `public/data/pilot-zoning.geojson`). **Turf/GeoJSON only in adapters** — never in `lib/rules/` or UI. Phase 2 may add `regrid-geocoder.ts` with zero changes to rules or UI.
 - **Leads (`lib/leads/` + `lib/mock/contractors.ts`):** Haversine contractor matching and webhook dispatch for `/api/lead` and `/api/builder-signup`. Zero React; no database in v1.
 - **Regulations expert (`lib/regulations/` + `lib/content/guides/` + `ca-tiny-home-regulations.ts`):** All law/regulation visitor copy is authored by `REGULATIONS_AGENT` in `lib/regulations/agent.ts`. Components render only; never invent statute prose in UI.
+- **Affiliates (`lib/content/affiliates.ts` + `lib/affiliates/track.ts`):** Partner catalog and disclosure live under `lib/content/` (commercial/editorial — never in `lib/regulations/` or `CitedClaim`). Pure `buildAffiliateHref` in `lib/affiliates/track.ts` appends utm + `sid` (and optional `ref`) at search time. Zero React.
 
 ## Decision Engine Logic
 
@@ -64,9 +65,19 @@ Monitor `src/lib/rules/*.ts`. The engine must contain **actual branching**, not 
 
 ## Page Wiring (`src/app/page.tsx`)
 
-Import features explicitly (no barrels). State: `geocodeResult`, `report`, `isZoningLoading`, `error`.
+Import features explicitly (no barrels). State: `geocodeResult`, `report`, `isZoningLoading`, `error`, `searchId`.
 
-Flow: `AddressSearch` → `onResolved` → page fetches `/api/zoning?lat=&lng=` → pilot PIP adapter → rules → `Spinner` while loading → `ResultsCard` (diagnostics + parcel briefing + guide links; Connect CTA) → `EligibleNextSteps` affiliates **only** when `overall === "eligible"` → `LeadFallbackForm` **only** when `overall === "restricted"` (below diagnostics; posts `type: "restricted_review"` to `/api/lead`). Warning: ResultsCard + guides, no affiliates, no hard lead form.
+Flow: `AddressSearch` (**Evaluate Lot**) → `onResolved` → page fetches `/api/zoning?lat=&lng=` → `AnalysisInterstitial` while `geocodeResult && isZoningLoading` → on success mint `searchId` (`crypto.randomUUID()`) → `ResultsCard` 60/40 dashboard (static Mapbox preview + scrollable panel, ADU/SB 9 segmented detail, Connect CTA + **Get Quotes** modal) → **bifurcated CTAs by `overall`**:
+
+| `overall` | After ResultsCard |
+|-----------|-------------------|
+| `eligible` | `PartnerOffers` (`intent="eligible"`) — product build-out grid |
+| `warning` | Soft specialist lead (amber) + `PartnerOffers` (`intent="warning"`, narrow subset) |
+| `restricted` | `LeadFallbackForm` + compact `PartnerOffers` (`intent="restricted"`, alternate pathways) |
+
+**Get Quotes** reuses `ProjectLeadForm` + `POST /api/lead` (`type: "project"`) and shows `ContractorMatchGrid` in-modal. Same lead API as `/connect`. No `/exchange`, no payments DB, no Mapbox GL. Primary CTA token is `#0066CC`.
+
+Pass `searchId` into affiliate URL builders so every outbound partner href carries that submission’s tracking slots.
 
 `/connect` is a separate composition root: address → project lead form → `POST /api/lead` (`type: "project"`) → contractor grid; builder panel → `POST /api/builder-signup`.
 
@@ -76,15 +87,15 @@ Forbidden: pasted AddressSearch markup, rule engine branches, `evaluateEligibili
 
 Zero-React corpus: THOW zoning, cost matrix (crane, trenching `$1,000–$5,000+`, permits), wheels-vs-foundation, `GUIDE_LINKS`. Thin routes in `src/app/guides/`; UI in `src/components/features/Guides/`. CA briefings attach `guideLinks` via `composeResultsBriefing`. No live municipal fee APIs.
 
-## Outcome Monetization
+## Outcome Monetization (bifurcated CTAs)
 
-| `overall` | Show | Hide |
-|-----------|------|------|
-| `eligible` | ResultsCard, guide links, affiliate next-steps (`src/lib/content/affiliates/`) | Lead form |
-| `warning` | ResultsCard, guide links | Affiliates; hard lead gate |
-| `restricted` | ResultsCard diagnostics + restricted pivot + `LeadFallbackForm` → `/api/lead` | Product affiliates |
+| `overall` | Primary | Secondary | Hide |
+|-----------|---------|-----------|------|
+| `eligible` | `PartnerOffers` build-out grid | Link to `/partners` | Expert / rose lead form |
+| `warning` | Soft specialist lead (amber) | Narrow `PartnerOffers` (optional research) | Rose restricted CTA; full product shop above lead |
+| `restricted` | `LeadFallbackForm` → `/api/lead` | Compact alternate-pathway offers below form | Product shop grid above the expert form |
 
-Affiliate hrefs from `NEXT_PUBLIC_AFFILIATE_*`; FTC disclosure in catalog. Leads optionally forward via `LEAD_WEBHOOK_URL` (server-only). No visitor-facing commission or referral payout amounts.
+Catalog + `AFFILIATE_DISCLOSURE` in `src/lib/content/affiliates.ts`; href assembly in `src/lib/affiliates/track.ts` (`searchId` at submission). Outbound links: `rel="sponsored noopener noreferrer"`. Leads optionally forward via `LEAD_WEBHOOK_URL` (server-only). No visitor-facing commission amounts; partners labeled as curated resources, not endorsements.
 
 ## Security and Git Hygiene
 

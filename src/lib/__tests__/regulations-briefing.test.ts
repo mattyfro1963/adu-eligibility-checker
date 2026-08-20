@@ -122,7 +122,50 @@ describe("composeResultsBriefing", () => {
     );
   });
 
-  it("unpublished state → no invented CA checklist", () => {
+  it("South San Francisco (no report) → statewide checklist, not SF PIM path", () => {
+    const briefing = composeResultsBriefing({
+      geocode: {
+        ...sfGeocode,
+        place: "South San Francisco",
+        formattedAddress: "100 El Camino Real, South San Francisco, CA",
+      },
+      report: null,
+      zoningError: "Location is outside California pilot zoning coverage.",
+    });
+
+    // #region agent log
+    fetch("http://127.0.0.1:7651/ingest/cf59ba69-da0c-4d71-88d8-e7a564abec5e", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Debug-Session-Id": "082505",
+      },
+      body: JSON.stringify({
+        sessionId: "082505",
+        runId: "post-fix",
+        hypothesisId: "A",
+        location: "regulations-briefing.test.ts:South San Francisco",
+        message: "South SF checklist gate",
+        data: {
+          place: "South San Francisco",
+          checklistFirstId: briefing.checklist[0]?.id ?? null,
+          hasSfChecklistItems: briefing.checklist.some((item) =>
+            item.id.startsWith("sf-"),
+          ),
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+
+    expect(briefing.isCalifornia).toBe(true);
+    expect(briefing.checklist[0]?.id).toBe("ca-use");
+    expect(briefing.checklist.some((item) => item.id.startsWith("sf-"))).toBe(
+      false,
+    );
+  });
+
+  it("unpublished state → only not-published notice, no CA/SF summary claims", () => {
     const briefing = composeResultsBriefing({
       geocode: {
         ...sfGeocode,
@@ -133,10 +176,45 @@ describe("composeResultsBriefing", () => {
       report: null,
     });
 
+    // #region agent log
+    const summaryJoined = briefing.summary.map((c) => c.text).join(" | ");
+    fetch("http://127.0.0.1:7651/ingest/cf59ba69-da0c-4d71-88d8-e7a564abec5e", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Debug-Session-Id": "082505",
+      },
+      body: JSON.stringify({
+        sessionId: "082505",
+        runId: "post-fix",
+        hypothesisId: "C",
+        location: "regulations-briefing.test.ts:unpublished",
+        message: "unpublished summary gate",
+        data: {
+          place: "Austin",
+          region: "TX",
+          isCalifornia: briefing.isCalifornia,
+          summaryLen: briefing.summary.length,
+          summaryHasCaLot: /California (lot|pilot)/i.test(summaryJoined),
+          summaryHasSfAgencies: /SF Planning|DBI/i.test(summaryJoined),
+          summaryHasUnpublished: /not published/i.test(summaryJoined),
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+
     expect(briefing.isCalifornia).toBe(false);
     expect(briefing.checklist).toEqual([]);
     expect(briefing.outline).toEqual([]);
+    expect(briefing.summary).toHaveLength(1);
     expect(briefing.summary[0]?.text).toMatch(/not published/i);
+    expect(
+      briefing.summary.some((c) => /California (lot|pilot)/i.test(c.text)),
+    ).toBe(false);
+    expect(briefing.summary.some((c) => /SF Planning|DBI/i.test(c.text))).toBe(
+      false,
+    );
   });
 });
 
@@ -276,7 +354,7 @@ describe("California visitor-facing branding", () => {
       path.join(componentsRoot, "AddressSearch/AddressSearch.tsx"),
       "utf8",
     );
-    expect(search).toMatch(/Query California address/);
+    expect(search).toMatch(/Enter a California address/);
 
     const results = readFileSync(
       path.join(componentsRoot, "ResultsCard/ResultsCard.tsx"),
@@ -307,16 +385,16 @@ describe("California visitor-facing branding", () => {
       ],
       [
         "AddressSearch/AddressSearch.tsx",
-        [/text-3xl/, /sm:text-4xl/, /\bh-12\b/, /sm:h-14/, /min-h-\[44px\]/],
+        [/text-3xl/, /sm:text-4xl/, /\bh-16\b/, /min-h-\[44px\]/],
       ],
       [
         "ResultsCard/ResultsCard.tsx",
         [
           /h-\[280px\]/,
           /sm:h-\[360px\]/,
-          /lg:h-\[420px\]/,
+          /lg:grid-cols-5/,
           /gap-4/,
-          /sm:gap-6/,
+          /sm:gap-5/,
         ],
       ],
       ["ResultsCard/ResultsBriefing.tsx", [/\bp-5\b/, /sm:p-6/, /md:p-8/]],

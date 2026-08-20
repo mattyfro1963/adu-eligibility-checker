@@ -1,10 +1,13 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { AlertTriangle } from "lucide-react";
 import { AddressSearch } from "@/components/features/AddressSearch/AddressSearch";
-import { ResultsCard } from "@/components/features/ResultsCard/ResultsCard";
+import { AnalysisInterstitial } from "@/components/features/AnalysisInterstitial/AnalysisInterstitial";
+import { GetQuotesModal } from "@/components/features/GetQuotesModal/GetQuotesModal";
 import { LeadFallbackForm } from "@/components/features/LeadFallbackForm/LeadFallbackForm";
+import { PartnerOffers } from "@/components/features/PartnerOffers/PartnerOffers";
+import { ResultsCard } from "@/components/features/ResultsCard/ResultsCard";
+import { ValueProps } from "@/components/features/ValueProps/ValueProps";
 import type { GeocodeResult } from "@/lib/types/gis";
 import type { ZoningReport } from "@/lib/types/zoning";
 
@@ -30,10 +33,13 @@ export default function HomePage() {
   const [report, setReport] = useState<ZoningReport | null>(null);
   const [isZoningLoading, setIsZoningLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [quotesOpen, setQuotesOpen] = useState(false);
+  const [searchId, setSearchId] = useState<string | null>(null);
   const zoningAbortRef = useRef<AbortController | null>(null);
 
   const handleResolved = useCallback(async (result: GeocodeResult) => {
     setGeocodeResult(result);
+    setQuotesOpen(false);
     zoningAbortRef.current?.abort();
     const controller = new AbortController();
     zoningAbortRef.current = controller;
@@ -41,6 +47,7 @@ export default function HomePage() {
     setIsZoningLoading(true);
     setError(null);
     setReport(null);
+    setSearchId(null);
 
     try {
       // Same-origin relative URL — avoids apex↔www redirect breaking fetch.
@@ -64,6 +71,7 @@ export default function HomePage() {
         ...data,
         formattedAddress: result.formattedAddress,
       });
+      setSearchId(crypto.randomUUID());
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") {
         return;
@@ -82,7 +90,8 @@ export default function HomePage() {
     setError(message);
   }, []);
 
-  const showResults = Boolean(geocodeResult) || Boolean(report);
+  const showInterstitial = Boolean(geocodeResult) && isZoningLoading;
+  const showDashboard = Boolean(geocodeResult) && !isZoningLoading;
   const connectHref =
     geocodeResult != null
       ? buildConnectHref(geocodeResult, report?.overall ?? null)
@@ -90,38 +99,66 @@ export default function HomePage() {
 
   return (
     <main className="mx-auto w-full max-w-6xl flex-1 space-y-8 px-4 py-8 sm:space-y-10 sm:px-6 sm:py-12 md:py-16">
-      <AddressSearch onResolved={handleResolved} onError={handleSearchError} />
+      <AddressSearch
+        onResolved={handleResolved}
+        onError={handleSearchError}
+        error={error}
+      />
 
-      {error ? (
-        <div
-          role="alert"
-          className="flex items-start gap-3 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-700 shadow-sm"
-        >
-          <AlertTriangle
-            className="mt-0.5 shrink-0"
-            size={18}
-            aria-hidden="true"
-          />
-          <p className="min-w-0 text-sm font-medium break-words">{error}</p>
-        </div>
-      ) : null}
+      {!geocodeResult ? <ValueProps /> : null}
 
-      {showResults ? (
-        <ResultsCard
-          report={report}
-          geocodeResult={geocodeResult}
-          isLoading={isZoningLoading}
-          zoningError={error}
-          connectHref={connectHref}
+      {showInterstitial && geocodeResult ? (
+        <AnalysisInterstitial
+          lat={geocodeResult.lat}
+          lng={geocodeResult.lng}
+          address={geocodeResult.formattedAddress}
         />
       ) : null}
 
-      {report?.overall === "restricted" && geocodeResult ? (
+      {showDashboard ? (
+        <ResultsCard
+          report={report}
+          geocodeResult={geocodeResult}
+          isLoading={false}
+          zoningError={error}
+          connectHref={connectHref}
+          onGetQuotes={() => setQuotesOpen(true)}
+        />
+      ) : null}
+
+      {report?.overall === "warning" && geocodeResult && !isZoningLoading ? (
+        <LeadFallbackForm
+          variant="warning"
+          address={geocodeResult.formattedAddress}
+          lat={geocodeResult.lat}
+          lng={geocodeResult.lng}
+          overallStatus="warning"
+        />
+      ) : null}
+
+      {report?.overall === "restricted" && geocodeResult && !isZoningLoading ? (
         <LeadFallbackForm
           address={geocodeResult.formattedAddress}
           lat={geocodeResult.lat}
           lng={geocodeResult.lng}
           overallStatus="restricted"
+        />
+      ) : null}
+
+      {report && searchId && !isZoningLoading ? (
+        <PartnerOffers
+          intent={report.overall}
+          searchId={searchId}
+          compact={report.overall !== "eligible"}
+        />
+      ) : null}
+
+      {geocodeResult ? (
+        <GetQuotesModal
+          open={quotesOpen}
+          onOpenChange={setQuotesOpen}
+          geocodeResult={geocodeResult}
+          overallStatus={report?.overall ?? null}
         />
       ) : null}
     </main>

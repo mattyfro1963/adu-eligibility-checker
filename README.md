@@ -43,14 +43,18 @@ Search a real San Francisco address (Mapbox geocode when configured, else mock g
 
 ## Product UI
 
-Light premium shell (`#F5F5F7`, sticky `doihave.space` header, `max-w-6xl`):
+Light premium shell (`#F5F5F7`, sticky `doihave.space` header, `max-w-6xl`). Primary CTA/active/link token is `#0066CC`.
 
-1. **Search hero** — Mapbox-backed autocomplete (or mock demos when the token is unset) via `/api/geocode`.
-2. **Results bento** — Mapbox Static preview (`/api/map-preview`, greyscale + CAD reticle) beside **Target Acquired** summary; **Parcel briefing** + Buyer guides strip; **Regulatory Diagnostics** map ADU / SB 9 reasons from `src/lib/rules` (no statute branching in components).
-3. **Eligible overall** — `EligibleNextSteps` affiliate blocks when affiliate env URLs are set. No lead form.
-4. **Warning overall** — ResultsCard + guide links only (no affiliates, no hard lead gate).
-5. **Restricted overall** — diagnostics stay visible; `LeadFallbackForm` CTA continues to `/connect` (prefilled address) for full project lead + contractor match.
-6. **Connect (`/connect`)** — homeowner project lead form + mock nearby ADU/tiny-home contractor matches; builder beta signup ($20–$100/lead). APIs: `POST /api/lead` (`project` | `quote_interest` | `restricted_review`), `POST /api/builder-signup` (console + optional webhooks).
+1. **Search hero** — “Discover your property's true potential.” Mapbox-backed autocomplete (or mock demos when the token is unset) via `/api/geocode`. **Evaluate Lot** submit; SF pilot honesty stays under the bar. Three value props (zoning / parcel facts / ADU & SB 9) sit below search.
+2. **Analysis interstitial** — full-screen overlay while geocode is resolved and zoning is loading. Checklist is honest to the pipeline (locate → DataSF PIP → ADU rules → SB 9 rules). No invented transit overlays.
+3. **Evaluation dashboard** — 60/40 static Mapbox preview (`/api/map-preview`, greyscale) + scrollable data panel (address, APN/`mapblklot`, zoning, overlay facts, ADU/SB 9 segmented `RuleDetail`). **Parcel briefing** + Buyer guides strip remain below. Engine reasons come from `src/lib/rules` (no statute branching in components).
+4. **Get Quotes** — modal reuses `ProjectLeadForm` + `POST /api/lead`; matched contractors render in-modal (`ContractorMatchGrid`). Copy is connect-with-licensed-builders, not a guaranteed marketplace.
+5. **Eligible overall** — `PartnerOffers` product partner grid (build-out / outfit) with disclosure; link to `/partners`. No expert lead form.
+6. **Warning overall** — soft specialist lead (amber) plus a narrow affiliate subset labeled as optional research. No rose restricted CTA.
+7. **Restricted overall** — diagnostics stay visible; `LeadFallbackForm` for expert review, then low-emphasis alternate-pathway offers below the form. Continues to `/connect` (prefilled address) for full project lead + contractor match. Get Quotes still works from the dashboard.
+8. **Connect (`/connect`)** — homeowner project lead form + mock nearby ADU/tiny-home contractor matches; builder beta signup ($20–$100/lead). APIs: `POST /api/lead` (`project` | `quote_interest` | `restricted_review`), `POST /api/builder-signup` (console + optional webhooks).
+
+CTAs bifurcate by `overall` after each search (mint `searchId` for affiliate tracking). Partner catalog lives in `src/lib/content/`; statute copy stays in `src/lib/regulations/`.
 
 ## SF Buyer Guides
 

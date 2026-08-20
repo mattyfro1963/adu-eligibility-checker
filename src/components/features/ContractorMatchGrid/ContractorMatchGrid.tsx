@@ -8,6 +8,7 @@ import type { ContractorMatch } from "@/lib/types/leads";
 interface ContractorMatchGridProps {
   matches: ContractorMatch[];
   onRequestQuote: (contractor: ContractorMatch) => Promise<void>;
+  layout?: "page" | "modal";
 }
 
 function specialtyLabel(specialty: string): string {
@@ -26,6 +27,7 @@ function specialtyLabel(specialty: string): string {
 export function ContractorMatchGrid({
   matches,
   onRequestQuote,
+  layout = "page",
 }: ContractorMatchGridProps) {
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [quotedIds, setQuotedIds] = useState<Set<string>>(new Set());
@@ -67,7 +69,13 @@ export function ContractorMatchGrid({
         </p>
       </div>
 
-      <ul className="grid gap-4 md:grid-cols-3">
+      <ul
+        className={
+          layout === "modal"
+            ? "grid gap-3 sm:grid-cols-2"
+            : "grid gap-4 md:grid-cols-3"
+        }
+      >
         {matches.map((contractor) => {
           const quoted = quotedIds.has(contractor.id);
           const pending = pendingId === contractor.id;
@@ -106,7 +114,7 @@ export function ContractorMatchGrid({
                   type="button"
                   disabled={pending || quoted}
                   onClick={() => void handleQuote(contractor)}
-                  className="h-10 w-full rounded-xl bg-slate-900 text-white hover:bg-slate-800"
+                  className="h-10 w-full rounded-xl"
                   aria-label={`Request direct quote from ${contractor.name}`}
                 >
                   {quoted ? (

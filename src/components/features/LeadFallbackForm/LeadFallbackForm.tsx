@@ -8,11 +8,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { EligibilityStatus } from "@/lib/types/zoning";
 
+type LeadVariant = "restricted" | "warning";
+
 interface LeadFallbackFormProps {
   address: string;
   lat: number;
   lng: number;
-  overallStatus?: Extract<EligibilityStatus, "restricted">;
+  /** Visual + copy tone. Defaults to restricted (rose expert review). */
+  variant?: LeadVariant;
+  overallStatus?: Extract<EligibilityStatus, "restricted" | "warning">;
 }
 
 const INTENT_OPTIONS = [
@@ -47,8 +51,12 @@ export function LeadFallbackForm({
   address,
   lat,
   lng,
-  overallStatus = "restricted",
+  variant = "restricted",
+  overallStatus,
 }: LeadFallbackFormProps) {
+  const status = overallStatus ?? variant;
+  const isWarning = status === "warning";
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [intent, setIntent] = useState<string>("");
@@ -60,10 +68,10 @@ export function LeadFallbackForm({
     address,
     lat,
     lng,
-    overallStatus,
+    overallStatus: status,
   });
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleRestrictedSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
@@ -81,7 +89,7 @@ export function LeadFallbackForm({
           lng,
           intent,
           budget,
-          overallStatus,
+          overallStatus: status,
         }),
       });
       if (!res.ok) {
@@ -105,6 +113,13 @@ export function LeadFallbackForm({
     }
   }
 
+  /** Warning soft-lead: name/email stub only — no backend yet. */
+  function handleWarningSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    setSubmitted(true);
+  }
+
   if (submitted) {
     return (
       <section className="rounded-[1.5rem] border border-slate-200/80 bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] sm:rounded-[2rem] sm:p-8">
@@ -122,6 +137,88 @@ export function LeadFallbackForm({
           </Link>
           .
         </p>
+      </section>
+    );
+  }
+
+  if (isWarning) {
+    return (
+      <section
+        data-lead-form="warning"
+        className="rounded-[1.5rem] border border-amber-200/70 bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] sm:rounded-[2rem] sm:p-8"
+      >
+        <div className="mb-6 flex items-start gap-3">
+          <div className="rounded-lg border border-amber-100 bg-amber-50 p-2">
+            <Mail className="h-5 w-5 text-amber-600" aria-hidden="true" />
+          </div>
+          <div className="min-w-0 space-y-2">
+            <h2 className="text-lg font-semibold tracking-tight text-slate-900">
+              Specialist review recommended
+            </h2>
+            <p className="text-sm font-medium break-words text-amber-900/80">
+              This parcel shows warnings in the diagnostics above. A specialist
+              can help interpret overlays and permitting pathways — this form
+              does not invent new statute.
+            </p>
+            <p className="text-sm font-light break-words text-slate-600">
+              Leave a name and email and we&apos;ll follow up. Optional product
+              research links may appear below.
+            </p>
+          </div>
+        </div>
+
+        <form onSubmit={handleWarningSubmit} className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="flex-1 space-y-1.5">
+              <Label htmlFor="lead-warning-name" className="sr-only">
+                Full name
+              </Label>
+              <Input
+                id="lead-warning-name"
+                type="text"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Your name"
+                className="h-11 rounded-xl border-slate-200 bg-[#FBFBFD]"
+                aria-label="Full name for specialist review"
+              />
+            </div>
+            <div className="flex-1 space-y-1.5">
+              <Label htmlFor="lead-warning-email" className="sr-only">
+                Email address
+              </Label>
+              <Input
+                id="lead-warning-email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                className="h-11 rounded-xl border-slate-200 bg-[#FBFBFD]"
+                aria-label="Email for specialist review"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-slate-500">
+              Or{" "}
+              <Link
+                href={connectHref}
+                className="font-medium text-slate-700 underline-offset-2 hover:underline"
+              >
+                continue to builder match on Connect
+              </Link>
+            </p>
+            <Button
+              type="submit"
+              className="h-11 min-h-[44px] w-full rounded-xl bg-amber-500 text-white shadow-md hover:bg-amber-600 sm:w-auto"
+            >
+              Request specialist review
+            </Button>
+          </div>
+        </form>
       </section>
     );
   }
@@ -167,7 +264,7 @@ export function LeadFallbackForm({
         </div>
       ) : null}
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+      <form onSubmit={handleRestrictedSubmit} className="flex flex-col gap-3">
         <div className="flex flex-col gap-3 sm:flex-row">
           <div className="flex-1 space-y-1.5">
             <Label htmlFor="lead-name" className="sr-only">

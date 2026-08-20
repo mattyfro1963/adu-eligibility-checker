@@ -23,3 +23,19 @@ Help **homeowners**, **investors**, and **developers** navigate:
 - Keep **SF pilot honesty** visible when zoning coverage is limited; do not overclaim statewide permitting automation.
 - UX should feel institutional and precise (architectural / Pro tooling), not noisy marketing.
 - Technical architecture still follows `ARCHITECTURE.md` and `.cursorrules` (adapters for GIS, rules for statutes, features for UI).
+
+## Lead generation & affiliates
+
+Agents must bifurcate post-search CTAs by `report.overall` — never one CTA for every outcome:
+
+| `overall` | Primary CTA | Secondary |
+|-----------|-------------|-----------|
+| `eligible` | Product partner offers (build-out / outfit) | Link to `/partners` |
+| `warning` | Soft specialist lead (amber, not rose) | Narrow affiliate subset as optional research |
+| `restricted` | Expert `LeadFallbackForm` | Low-emphasis alternate-pathway affiliates below the form |
+
+- Capture **expert-review leads** on `warning` and `restricted`; monetize **build-out intent** on `eligible` via disclosed affiliate links.
+- Do **not** reuse the restricted rose “Request Review” CTA on eligible lots; do **not** put a product shop grid above the expert form on restricted lots.
+- Partner copy is commercial/editorial in `src/lib/content/` (e.g. `affiliates.ts`) — never mixed into statute `CitedClaim` data or `lib/regulations/`.
+- Always disclose affiliate relationships; outbound partner links use `rel="sponsored noopener noreferrer"`.
+- Tracking IDs are filled at **search submission** time (mint `searchId`, pass into URL builders) — not hardcoded final affiliate click IDs in the catalog.

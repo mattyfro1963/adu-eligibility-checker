@@ -1,6 +1,19 @@
 import Link from "next/link";
-import { ExternalLink, MapPinned, Scale, ShieldAlert } from "lucide-react";
+import {
+  ExternalLink,
+  MapPinned,
+  Package,
+  Scale,
+  ShieldAlert,
+} from "lucide-react";
 import { RegulationsAuthorByline } from "@/components/features/ResultsCard/RegulationsAuthorByline";
+import { buildAffiliateHref } from "@/lib/affiliates/track";
+import {
+  AFFILIATE_CATEGORY_LABELS,
+  AFFILIATE_DISCLOSURE,
+  affiliatesByCategory,
+  type AffiliateCategory,
+} from "@/lib/content/affiliates";
 import {
   CBC_BASELINE,
   CITY_DIRECTORY,
@@ -16,6 +29,10 @@ import {
   type JurisdictionNote,
   type ResourceLink,
 } from "@/lib/content/ca-tiny-home-regulations";
+
+const PARTNER_TEASER_CATEGORIES = Object.keys(
+  AFFILIATE_CATEGORY_LABELS,
+) as AffiliateCategory[];
 
 function ExternalResource({ link }: { link: ResourceLink }) {
   return (
@@ -96,6 +113,7 @@ const TOC = [
   { id: "unclear", label: "Unclear counties" },
   { id: "permits", label: "Permits" },
   { id: "communities", label: "Communities" },
+  { id: "partners", label: "Partners" },
   { id: "faqs", label: "FAQs" },
 ] as const;
 
@@ -307,6 +325,72 @@ export function RegulationsGuide() {
             </li>
           ))}
         </ul>
+      </section>
+
+      <section id="partners" className="scroll-mt-24 space-y-4">
+        <div className="flex items-center gap-2">
+          <Package size={18} className="text-slate-500" aria-hidden="true" />
+          <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+            Partners &amp; build-out resources
+          </h2>
+        </div>
+        <p className="max-w-3xl text-sm leading-relaxed text-slate-600">
+          After you understand local rules, manufacturer product lines can help
+          you research solar, sanitation, chassis, and compact appliances. These
+          are curated featured resources — not endorsements or permit
+          substitutes.{" "}
+          <Link
+            href="/partners"
+            className="font-medium text-slate-900 underline-offset-2 hover:underline"
+          >
+            Browse the full partners directory
+          </Link>
+          .
+        </p>
+        <p className="max-w-3xl text-xs leading-relaxed text-slate-500">
+          {AFFILIATE_DISCLOSURE}
+        </p>
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {PARTNER_TEASER_CATEGORIES.map((category) => {
+            const partner = affiliatesByCategory(category)[0];
+            if (!partner) return null;
+            const href = buildAffiliateHref(partner, { intent: "eligible" });
+            return (
+              <li
+                key={category}
+                className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm"
+              >
+                <p className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
+                  {AFFILIATE_CATEGORY_LABELS[category]}
+                </p>
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="sponsored noopener noreferrer"
+                  className="mt-2 inline-flex min-h-[44px] items-center gap-1.5 text-sm font-semibold text-slate-900 underline-offset-2 hover:underline"
+                >
+                  {partner.name}
+                  <ExternalLink
+                    size={12}
+                    className="shrink-0 opacity-60"
+                    aria-hidden="true"
+                  />
+                </a>
+                <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                  {partner.blurb}
+                </p>
+              </li>
+            );
+          })}
+        </ul>
+        <p className="text-sm text-slate-600">
+          <Link
+            href="/partners"
+            className="font-medium text-slate-900 underline-offset-2 hover:underline"
+          >
+            See all partner categories
+          </Link>
+        </p>
       </section>
 
       <section id="faqs" className="scroll-mt-24 space-y-4">

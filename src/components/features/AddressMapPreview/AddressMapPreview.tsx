@@ -2,11 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MapPin } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface AddressMapPreviewProps {
   lat: number | null;
   lng: number | null;
   className?: string;
+  /** When false, hide CAD reticle / awaiting chrome (analysis backdrop). */
+  chrome?: boolean;
 }
 
 function mapPreviewSrc(lat: number, lng: number): string {
@@ -27,6 +30,7 @@ export function AddressMapPreview({
   lat,
   lng,
   className = "",
+  chrome = true,
 }: AddressMapPreviewProps) {
   const hasCoords =
     typeof lat === "number" &&
@@ -108,7 +112,10 @@ export function AddressMapPreview({
 
   return (
     <div
-      className={`group relative h-full min-h-[240px] overflow-hidden rounded-[1.25rem] border border-slate-200/60 bg-[#EAECEF] shadow-inner sm:min-h-[320px] sm:rounded-[1.5rem] lg:min-h-[350px] ${className}`}
+      className={cn(
+        "group relative h-full min-h-[240px] overflow-hidden rounded-xl border border-slate-200/60 bg-[#EAECEF] shadow-inner sm:min-h-[320px] lg:min-h-[350px]",
+        className,
+      )}
     >
       {objectUrl && !showAwaiting ? (
         // eslint-disable-next-line @next/next/no-img-element -- blob URL from proxied Mapbox PNG
@@ -126,15 +133,17 @@ export function AddressMapPreview({
         />
       ) : null}
 
-      <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center opacity-70 transition-opacity duration-700">
-        <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-slate-400">
-          <div className="absolute h-px w-full bg-slate-400" />
-          <div className="absolute h-full w-px bg-slate-400" />
-          <div className="z-20 h-1.5 w-1.5 rounded-full bg-black shadow-[0_0_10px_rgba(0,0,0,0.3)] ring-4 ring-white/80" />
+      {chrome ? (
+        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center opacity-70 transition-opacity duration-700">
+          <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-slate-400">
+            <div className="absolute h-px w-full bg-slate-400" />
+            <div className="absolute h-full w-px bg-slate-400" />
+            <div className="z-20 h-1.5 w-1.5 rounded-full bg-black shadow-[0_0_10px_rgba(0,0,0,0.3)] ring-4 ring-white/80" />
+          </div>
         </div>
-      </div>
+      ) : null}
 
-      {showAwaiting ? (
+      {chrome && showAwaiting ? (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/40 backdrop-blur-md">
           <span className="flex items-center gap-2 rounded-full border border-slate-200/60 bg-white/95 px-5 py-2.5 text-[11px] font-semibold tracking-widest text-slate-600 uppercase shadow-xl">
             <MapPin

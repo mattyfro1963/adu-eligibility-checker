@@ -15,7 +15,7 @@ export function RuleDetail({
   const rationaleSources = primary?.sources ?? [];
 
   return (
-    <article className="group rounded-[1.25rem] border border-slate-200/80 bg-white p-5 shadow-sm transition-colors hover:border-slate-300 hover:shadow-md sm:rounded-[1.5rem] sm:p-6">
+    <article className="group rounded-xl border border-border bg-white p-5 shadow-registry transition-colors hover:border-slate-300 sm:p-6">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
         <span className="rounded border border-slate-200/80 bg-[#F5F5F7] px-2.5 py-1 font-mono text-[10px] font-semibold tracking-widest text-slate-500 uppercase shadow-inner">
           {category}
