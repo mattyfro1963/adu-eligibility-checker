@@ -32,7 +32,8 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 *.log
-.cursor/*.log
+.cursor/debug/
+.cursor/**/*.log
 .cursor/debug-*.log
 
 # env files (can opt-in for committing if needed)
