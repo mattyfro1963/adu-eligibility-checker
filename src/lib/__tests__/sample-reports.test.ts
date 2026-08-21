@@ -28,7 +28,27 @@ describe("SAMPLE_REPORTS catalog", () => {
       expect(sample.label.length).toBeGreaterThan(0);
       expect(sample.label).not.toMatch(SPOILER);
       expect(sample.query).not.toMatch(SPOILER);
+      if (sample.tone) {
+        expect(["tiny_home", "restricted"]).toContain(sample.tone);
+      }
     }
+  });
+
+  it("includes tiny-home-friendly CA chips and at least one restricted chip", () => {
+    const tinyHome = SAMPLE_REPORTS.filter((s) => s.tone === "tiny_home");
+    const restricted = SAMPLE_REPORTS.filter((s) => s.tone === "restricted");
+    expect(tinyHome.length).toBeGreaterThanOrEqual(2);
+    expect(restricted.length).toBeGreaterThanOrEqual(1);
+    const tinyQueries = tinyHome.map((s) => s.query).join(" ");
+    expect(tinyQueries).toMatch(/Oakland/i);
+    expect(tinyQueries).toMatch(/Eureka/i);
+    expect(tinyQueries).toMatch(/Auburn/i);
+    expect(tinyQueries).toMatch(/Santa Ana/i);
+    expect(tinyQueries).toMatch(/Irvine/i);
+    expect(tinyQueries).toMatch(/Los Angeles/i);
+    expect(tinyQueries).toMatch(/San Diego/i);
+    expect(tinyQueries).toMatch(/San Jose/i);
+    expect(tinyQueries).toMatch(/Sacramento/i);
   });
 
   it("does not reuse mock catalog streets (would pin demo-fact parcels)", () => {

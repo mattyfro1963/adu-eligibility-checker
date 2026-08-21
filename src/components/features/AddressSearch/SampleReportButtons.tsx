@@ -1,5 +1,15 @@
-import { SAMPLE_REPORTS } from "@/lib/content/sample-reports";
+import {
+  SAMPLE_REPORTS,
+  type SampleReportTone,
+} from "@/lib/content/sample-reports";
 import { cn } from "@/lib/utils";
+
+const TONE_CLASS: Record<SampleReportTone, string> = {
+  tiny_home:
+    "border-emerald-200 bg-emerald-50 text-emerald-900 hover:border-emerald-400 hover:bg-emerald-100",
+  restricted:
+    "border-rose-200 bg-rose-50 text-rose-900 hover:border-rose-400 hover:bg-rose-100",
+};
 
 interface SampleReportButtonsProps {
   onSelectQuery: (query: string) => void;
@@ -31,7 +41,10 @@ export function SampleReportButtons({
             type="button"
             disabled={disabled}
             onClick={() => onSelectQuery(sample.query)}
-            className="min-h-[44px] rounded-[10px] border border-border bg-card px-4 py-2 font-label text-[11px] tracking-[0.08em] text-foreground uppercase transition-colors hover:border-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 disabled:cursor-not-allowed disabled:opacity-40"
+            className={cn(
+              "min-h-[44px] rounded-[10px] border border-border bg-card px-4 py-2 font-label text-[11px] tracking-[0.08em] text-foreground uppercase transition-colors hover:border-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 disabled:cursor-not-allowed disabled:opacity-40",
+              sample.tone && TONE_CLASS[sample.tone],
+            )}
             aria-label={`Search ${sample.label}: ${sample.query}`}
           >
             {sample.label}

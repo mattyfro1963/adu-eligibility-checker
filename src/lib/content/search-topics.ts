@@ -35,11 +35,11 @@ export const SEARCH_TOPIC_CARDS: SearchTopicCard[] = [
     viewAllLabel: "View all regulations",
   },
   {
-    id: "sf-guides",
-    title: "San Francisco guides",
+    id: "location-guides",
+    title: "Location-Based Guides",
     links: [
       {
-        label: "THOW legality in San Francisco",
+        label: "THOW legality",
         href: "/guides/tiny-home-on-wheels-san-francisco",
       },
       {
