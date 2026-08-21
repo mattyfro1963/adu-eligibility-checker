@@ -18,7 +18,7 @@ export function CostMatrixGuide() {
       <section aria-labelledby="cost-columns-heading" className="space-y-4">
         <h2
           id="cost-columns-heading"
-          className="text-lg font-normal tracking-tight text-foreground sm:text-xl"
+          className="text-xl font-normal tracking-tight text-foreground"
         >
           Build paths compared
         </h2>
@@ -45,56 +45,56 @@ export function CostMatrixGuide() {
           defaultOpen={false}
         >
           <div className="overflow-x-auto rounded-[10px] border border-border bg-card shadow-editorial">
-          <table className="w-full min-w-[40rem] border-collapse text-left text-sm">
-            <thead>
-              <tr className="border-b border-border bg-muted">
-                <th
-                  scope="col"
-                  className="px-4 py-3 font-normal text-foreground"
-                >
-                  Line item
-                </th>
-                {COST_COLUMNS.map((col) => (
+            <table className="w-full min-w-[40rem] border-collapse text-left text-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted">
                   <th
-                    key={col.id}
                     scope="col"
                     className="px-4 py-3 font-normal text-foreground"
                   >
-                    {col.label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {COST_LINE_ITEMS.map((line) => (
-                <tr
-                  key={line.id}
-                  className="border-b border-border align-top last:border-b-0"
-                >
-                  <th
-                    scope="row"
-                    className="px-4 py-3 font-medium text-foreground"
-                  >
-                    <span>{line.label}</span>
-                    {line.note ? (
-                      <span className="mt-1 block text-xs font-normal leading-relaxed text-muted-foreground">
-                        {line.note}
-                      </span>
-                    ) : null}
+                    Line item
                   </th>
                   {COST_COLUMNS.map((col) => (
-                    <td
+                    <th
                       key={col.id}
-                      className="px-4 py-3 font-mono text-xs text-foreground sm:text-sm"
+                      scope="col"
+                      className="px-4 py-3 font-normal text-foreground"
                     >
-                      {line.amounts[col.id]}
-                    </td>
+                      {col.label}
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {COST_LINE_ITEMS.map((line) => (
+                  <tr
+                    key={line.id}
+                    className="border-b border-border align-top last:border-b-0"
+                  >
+                    <th
+                      scope="row"
+                      className="px-4 py-3 font-medium text-foreground"
+                    >
+                      <span>{line.label}</span>
+                      {line.note ? (
+                        <span className="mt-1 block text-xs font-normal leading-relaxed text-muted-foreground">
+                          {line.note}
+                        </span>
+                      ) : null}
+                    </th>
+                    {COST_COLUMNS.map((col) => (
+                      <td
+                        key={col.id}
+                        className="px-4 py-3 font-mono text-xs text-foreground sm:text-sm"
+                      >
+                        {line.amounts[col.id]}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </ExpandableSection>
       </section>
     </GuideLayout>

@@ -64,24 +64,14 @@ export const SEARCH_TOPIC_CARDS: SearchTopicCard[] = [
       },
       {
         label: "Connect with a specialist",
-        href: "/connect",
+        href: "/#connect",
       },
       {
         label: "Partner build-out resources",
         href: "/partners",
       },
     ],
-    viewAllHref: "/connect",
+    viewAllHref: "/#connect",
     viewAllLabel: "View connect",
   },
-];
-
-export type SearchAudience = "homeowner" | "developer";
-
-export const SEARCH_AUDIENCE_OPTIONS: {
-  id: SearchAudience;
-  label: string;
-}[] = [
-  { id: "homeowner", label: "Homeowner" },
-  { id: "developer", label: "Developer" },
 ];

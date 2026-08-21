@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { AlertTriangle, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { buildConnectHref as buildConnectDeepLink } from "@/lib/content/connect-url";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { EligibilityStatus } from "@/lib/types/zoning";
@@ -17,6 +18,8 @@ interface LeadFallbackFormProps {
   /** Visual + copy tone. Defaults to restricted (rose expert review). */
   variant?: LeadVariant;
   overallStatus?: Extract<EligibilityStatus, "restricted" | "warning">;
+  /** Hide pivot link when already rendered inside `/#connect`. */
+  embedded?: boolean;
 }
 
 const INTENT_OPTIONS = [
@@ -33,18 +36,26 @@ const BUDGET_OPTIONS = [
   { value: "unsure", label: "Not sure yet" },
 ] as const;
 
-function buildConnectHref(props: {
+function buildLeadConnectHref(props: {
   address: string;
   lat: number;
   lng: number;
   overallStatus: string;
 }): string {
-  const url = new URL("/connect", "http://local.invalid");
-  url.searchParams.set("address", props.address);
-  url.searchParams.set("lat", String(props.lat));
-  url.searchParams.set("lng", String(props.lng));
-  url.searchParams.set("status", props.overallStatus);
-  return `${url.pathname}?${url.searchParams.toString()}`;
+  return buildConnectDeepLink(
+    {
+      addressId: `prefill-${props.lat.toFixed(5)}-${props.lng.toFixed(5)}`,
+      formattedAddress: props.address,
+      streetLine: props.address,
+      place: "",
+      county: "",
+      region: "CA",
+      postcode: "",
+      lat: props.lat,
+      lng: props.lng,
+    },
+    props.overallStatus as EligibilityStatus,
+  );
 }
 
 export function LeadFallbackForm({
@@ -53,6 +64,7 @@ export function LeadFallbackForm({
   lng,
   variant = "restricted",
   overallStatus,
+  embedded = false,
 }: LeadFallbackFormProps) {
   const status = overallStatus ?? variant;
   const isWarning = status === "warning";
@@ -64,7 +76,7 @@ export function LeadFallbackForm({
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const connectHref = buildConnectHref({
+  const connectHref = buildLeadConnectHref({
     address,
     lat,
     lng,
@@ -122,7 +134,7 @@ export function LeadFallbackForm({
 
   if (submitted) {
     return (
-      <section className="border border-border bg-card p-6 sm:p-8">
+      <section className="rounded-[10px] border border-border bg-card p-6 sm:p-8">
         <p className="break-words text-foreground">
           Thank you{name ? `, ${name}` : ""}! We&apos;ll review {address} and
           contact you at {email}.
@@ -145,7 +157,7 @@ export function LeadFallbackForm({
     return (
       <section
         data-lead-form="warning"
-        className="border border-warning/30 bg-card p-6 sm:p-8"
+        className="rounded-[10px] border border-warning/30 bg-card p-6 sm:p-8"
       >
         <div className="mb-6 flex items-start gap-3">
           <div className="rounded-lg border border-amber-500/30 bg-amber-500/15 p-2">
@@ -226,7 +238,7 @@ export function LeadFallbackForm({
   return (
     <section
       data-lead-form="restricted"
-      className="border border-restricted/30 bg-card p-6 sm:p-8"
+      className="rounded-[10px] border border-restricted/30 bg-card p-6 sm:p-8"
     >
       <div className="mb-6 flex items-start gap-3">
         <div className="rounded-lg border border-rose-500/30 bg-rose-500/15 p-2">
@@ -253,7 +265,7 @@ export function LeadFallbackForm({
       {error ? (
         <div
           role="alert"
-          className="mb-4 flex items-start gap-2 rounded-[10px] border border-rose-500/30 bg-rose-500/15 p-3 text-sm text-rose-400"
+          className="mb-4 flex items-start gap-2 rounded-[10px] border border-rose-500/30 bg-rose-500/15 p-3 text-sm text-rose-600"
         >
           <AlertTriangle
             size={16}
@@ -352,15 +364,22 @@ export function LeadFallbackForm({
         </div>
 
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-muted-foreground">
-            Or{" "}
-            <Link
-              href={connectHref}
-              className="font-medium text-foreground underline-offset-2 hover:underline"
-            >
-              continue to builder match on Connect
-            </Link>
-          </p>
+          {!embedded ? (
+            <p className="text-xs text-muted-foreground">
+              Or{" "}
+              <Link
+                href={connectHref}
+                className="font-medium text-foreground underline-offset-2 hover:underline"
+              >
+                continue to builder match below
+              </Link>
+            </p>
+          ) : (
+            <span
+              className="text-xs text-muted-foreground"
+              aria-hidden="true"
+            />
+          )}
           <Button
             type="submit"
             disabled={isSubmitting}

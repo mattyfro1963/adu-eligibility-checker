@@ -44,7 +44,7 @@ export function ContractorMatchGrid({
 
   if (matches.length === 0) {
     return (
-      <section className="border border-border bg-card p-6 sm:p-8">
+      <section className="rounded-[10px] border border-border bg-card p-6 sm:p-8">
         <p className="text-sm text-muted-foreground">
           No mock contractors matched this structure nearby. Try a different
           structure choice or address.
@@ -82,7 +82,7 @@ export function ContractorMatchGrid({
           return (
             <li
               key={contractor.id}
-              className="flex flex-col border border-border bg-card p-5"
+              className="flex flex-col rounded-[10px] border border-border bg-card p-5"
             >
               <div className="mb-3 flex items-start justify-between gap-2">
                 <h3 className="text-base font-normal tracking-tight text-foreground">

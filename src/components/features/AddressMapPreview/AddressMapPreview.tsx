@@ -128,8 +128,7 @@ export function AddressMapPreview({
   const showMapboxImage = Boolean(objectUrl);
   const showMockLayer = hasCoords && !showMapboxImage;
   const showPin = hasCoords && (showMapboxImage || showMockLayer);
-  const pinLabel =
-    label && label.trim().length > 0 ? label.trim() : undefined;
+  const pinLabel = label && label.trim().length > 0 ? label.trim() : undefined;
   const pinStatus = status ?? undefined;
   const pinInteractive = chrome;
 
@@ -160,11 +159,11 @@ export function AddressMapPreview({
         />
       ) : showMockLayer ? (
         <div
-          className="absolute inset-0 z-0 bg-brand-cream"
+          className="absolute inset-0 z-0 bg-muted"
           style={{
             backgroundImage: `
-              linear-gradient(to right, rgb(154 143 130 / 0.08) 1px, transparent 1px),
-              linear-gradient(to bottom, rgb(154 143 130 / 0.08) 1px, transparent 1px)
+              linear-gradient(to right, rgb(230 232 235 / 0.45) 1px, transparent 1px),
+              linear-gradient(to bottom, rgb(230 232 235 / 0.45) 1px, transparent 1px)
             `,
             backgroundSize: "32px 32px",
           }}
@@ -187,8 +186,8 @@ export function AddressMapPreview({
 
       {showAwaitingChrome ? (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/60 backdrop-blur-sm">
-          <span className="flex items-center gap-2 border border-neutral-300 bg-white px-5 py-2.5 text-[11px] font-normal tracking-widest text-neutral-600 uppercase shadow-sm">
-            <MapPin size={14} className="text-black" aria-hidden="true" />
+          <span className="flex items-center gap-2 rounded-[10px] border border-border bg-card px-5 py-2.5 font-label text-[10px] text-muted-foreground shadow-elevated">
+            <MapPin size={14} className="text-foreground" aria-hidden="true" />
             Awaiting Target Coordinates
           </span>
         </div>
@@ -196,7 +195,7 @@ export function AddressMapPreview({
 
       {showLoadingChrome ? (
         <div className="pointer-events-none absolute inset-x-0 top-4 z-10 flex justify-center">
-          <span className="border border-brand-taupe/30 bg-white/90 px-4 py-2 text-[11px] font-normal tracking-widest text-brand-charcoal/80 uppercase shadow-sm backdrop-blur-sm">
+          <span className="rounded-[10px] border border-border bg-card px-4 py-2 font-label text-[10px] text-muted-foreground shadow-elevated backdrop-blur-sm">
             Loading Map Preview
           </span>
         </div>

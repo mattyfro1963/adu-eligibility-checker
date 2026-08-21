@@ -1,40 +1,21 @@
 "use client";
 
-import {
-  useEffect,
-  useRef,
-  useState,
-  useSyncExternalStore,
-  type ReactNode,
-} from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { Search } from "lucide-react";
-import { SearchAudienceToggle } from "@/components/features/AddressSearch/SearchAudienceToggle";
+import { SampleReportButtons } from "@/components/features/AddressSearch/SampleReportButtons";
 import { SearchTopicCards } from "@/components/features/AddressSearch/SearchTopicCards";
-import { SearchGlobe } from "@/components/features/SearchGlobe/SearchGlobe";
 import { useAddressSearch } from "@/components/features/AddressSearch/useAddressSearch";
 import { cn } from "@/lib/utils";
-import type { SearchAudience } from "@/lib/content/search-topics";
 import type { GeocodeResult } from "@/lib/types/gis";
 
 interface AddressSearchProps {
   onResolved: (result: GeocodeResult) => void;
   onError?: (message: string) => void;
   error?: string | null;
-  showDemoScenarios?: boolean;
+  showSampleReports?: boolean;
   compact?: boolean;
-  focusLat?: number | null;
-  focusLng?: number | null;
-  globeLoading?: boolean;
   children?: ReactNode;
 }
-
-const DEMO_SCENARIOS = [
-  { label: "Clean R-1", query: "123 Main St" },
-  { label: "Historic demo", query: "321 historic elm" },
-  { label: "Coastal demo", query: "555 coastal beach" },
-  { label: "Small lot", query: "950 small lot" },
-  { label: "Commercial", query: "100 commercial market" },
-] as const;
 
 function secondaryLine(suggestion: GeocodeResult): string {
   const parts = [
@@ -48,30 +29,14 @@ function secondaryLine(suggestion: GeocodeResult): string {
   return parts.join(", ");
 }
 
-function subscribeMapboxFlag() {
-  return () => {};
-}
-
-function getMapboxDemoSnapshot(): boolean {
-  return document.body.dataset.mapboxConfigured !== "1";
-}
-
-function getMapboxDemoServerSnapshot(): boolean {
-  return false;
-}
-
 export function AddressSearch({
   onResolved,
   onError,
   error = null,
-  showDemoScenarios,
+  showSampleReports = true,
   compact = false,
-  focusLat = null,
-  focusLng = null,
-  globeLoading = false,
   children,
 }: AddressSearchProps) {
-  const [audience, setAudience] = useState<SearchAudience>("homeowner");
   const {
     query,
     suggestions,
@@ -81,20 +46,11 @@ export function AddressSearch({
     handleQueryChange,
     selectAddress,
     handleSubmit,
-    resolveQuery,
   } = useAddressSearch({ onResolved, onError });
 
   const containerRef = useRef<HTMLDivElement>(null);
   const listboxId = "address-suggestions";
   const showList = isOpen && suggestions.length > 0;
-
-  const demosFromDom = useSyncExternalStore(
-    subscribeMapboxFlag,
-    getMapboxDemoSnapshot,
-    getMapboxDemoServerSnapshot,
-  );
-  const demosEnabled =
-    typeof showDemoScenarios === "boolean" ? showDemoScenarios : demosFromDom;
 
   useEffect(() => {
     function handlePointerDown(event: MouseEvent) {
@@ -122,14 +78,14 @@ export function AddressSearch({
       )}
     >
       {!compact ? (
-        <header className="space-y-3 text-center">
-          <span className="font-mono text-xs uppercase tracking-widest text-brand-taupe">
+        <header className="space-y-4 border-b border-border pb-8 text-center">
+          <p className="font-label text-[11px] uppercase text-muted-foreground">
             State of California · ADU &amp; SB 9
-          </span>
-          <h1 className="font-quote text-4xl font-normal text-brand-charcoal sm:text-5xl">
+          </p>
+          <h1 className="font-display text-3xl leading-[1.12] tracking-display text-balance text-foreground sm:text-4xl">
             Small Footprint. Elevated Living.
           </h1>
-          <p className="mx-auto max-w-lg text-base text-brand-charcoal/80">
+          <p className="mx-auto max-w-2xl text-sm leading-relaxed tracking-body text-muted-foreground sm:text-base">
             Enter a California address below for ADU and SB 9 eligibility,
             county requirements, and tiny-home guidance.
           </p>
@@ -153,8 +109,8 @@ export function AddressSearch({
         >
           <div
             className={cn(
-              "relative flex items-center border border-brand-taupe/40 bg-white shadow-elevated transition-colors focus-within:border-brand-charcoal",
-              compact ? "h-12 rounded-xl" : "h-14 rounded-none sm:h-16",
+              "relative flex items-center rounded-[10px] border border-border bg-card shadow-elevated transition-colors focus-within:border-foreground",
+              compact ? "h-12" : "h-14 sm:h-16",
               hasError && "ring-2 ring-rose-600 ring-inset",
             )}
           >
@@ -172,7 +128,7 @@ export function AddressSearch({
               }}
               placeholder="Enter a California address..."
               className={cn(
-                "h-full w-full bg-transparent pr-14 pl-5 text-body text-brand-charcoal placeholder:text-brand-taupe/70 focus:outline-none",
+                "h-full w-full bg-transparent pr-14 pl-5 text-body text-foreground placeholder:text-muted-foreground focus:outline-none",
                 compact ? "text-sm" : "text-base",
               )}
               aria-label="Property address search"
@@ -187,7 +143,7 @@ export function AddressSearch({
             <button
               type="submit"
               disabled={isResolving || !query.trim()}
-              className="absolute top-1/2 right-4 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center text-brand-charcoal transition-colors hover:text-brand-wood disabled:opacity-40"
+              className="absolute top-1/2 right-4 flex min-h-[44px] min-w-[44px] -translate-y-1/2 items-center justify-center text-foreground transition-colors hover:text-muted-foreground disabled:opacity-40"
               aria-label={isResolving ? "Locating address" : "Search address"}
             >
               {isResolving ? (
@@ -202,6 +158,13 @@ export function AddressSearch({
           </div>
         </form>
 
+        {showSampleReports && !compact && !isResolving ? (
+          <SampleReportButtons
+            onSelect={selectAddress}
+            disabled={isResolving}
+          />
+        ) : null}
+
         {hasError ? (
           <p role="alert" className="text-left text-caption text-rose-600">
             {error}
@@ -212,7 +175,7 @@ export function AddressSearch({
           <ul
             id={listboxId}
             role="listbox"
-            className="absolute z-20 mt-2 w-full overflow-hidden border border-brand-taupe/30 bg-white shadow-elevated"
+            className="absolute z-20 mt-2 w-full overflow-hidden rounded-[10px] border border-border bg-card shadow-elevated"
           >
             {suggestions.map((suggestion) => {
               const secondary = secondaryLine(suggestion);
@@ -245,22 +208,6 @@ export function AddressSearch({
           </ul>
         ) : null}
 
-        {!compact ? (
-          <div className="flex justify-center">
-            <SearchAudienceToggle value={audience} onChange={setAudience} />
-          </div>
-        ) : null}
-
-        {!compact ? (
-          <div className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2">
-            <SearchGlobe
-              targetLat={focusLat}
-              targetLng={focusLng}
-              isLoading={globeLoading}
-            />
-          </div>
-        ) : null}
-
         {!compact && children ? <div>{children}</div> : null}
 
         {!compact ? (
@@ -268,28 +215,6 @@ export function AddressSearch({
             All CA counties — free county requirements; SF lot GIS when
             available.
           </p>
-        ) : null}
-
-        {demosEnabled && !compact ? (
-          <div className="flex flex-col items-center gap-3 pt-2">
-            <span className="font-label text-muted-foreground">
-              Simulate scenarios
-            </span>
-            <div className="flex flex-wrap justify-center gap-2">
-              {DEMO_SCENARIOS.map((demo) => (
-                <button
-                  key={demo.label}
-                  type="button"
-                  onClick={() => {
-                    void resolveQuery(demo.query);
-                  }}
-                  className="min-h-[44px] rounded-full border border-border bg-background px-4 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
-                >
-                  {demo.label}
-                </button>
-              ))}
-            </div>
-          </div>
         ) : null}
       </div>
 

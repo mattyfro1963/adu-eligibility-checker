@@ -5,7 +5,7 @@ import {
 } from "@/lib/mock/address-hints";
 import { evaluateEligibility } from "@/lib/rules";
 import { buildStatutoryEvaluations } from "@/lib/rules/statutory-evaluations";
-import { CALIFORNIA_CENTROID } from "@/lib/globe/globe-config";
+import { CALIFORNIA_CENTROID } from "@/lib/map/california-bounds";
 
 const MOCK_GIS_LATENCY_MS = 1500;
 

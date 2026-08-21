@@ -212,20 +212,29 @@ describe("affiliate catalog (eligible monetization data)", () => {
 describe("monetization gating in UI sources", () => {
   const featuresRoot = path.join(process.cwd(), "src/components/features");
 
-  it("Connect page hosts partner/lead monetization — not the embed widget", () => {
+  it("unified landing hosts connect monetization below results", () => {
     const page = readFileSync(
-      path.join(process.cwd(), "src/app/page.tsx"),
+      path.join(process.cwd(), "src/app/HomePageClient.tsx"),
       "utf8",
     );
-    expect(page).not.toMatch(/PartnerOffers/);
-    expect(page).not.toMatch(/LeadFallbackForm/);
-    expect(page).toMatch(/coverage/);
+    expect(page).toMatch(/ConnectSection/);
+    expect(page).toMatch(/ResultsCard/);
 
-    const connect = readFileSync(
-      path.join(featuresRoot, "ConnectPage/ConnectPage.tsx"),
+    const connectSection = readFileSync(
+      path.join(featuresRoot, "ConnectPage/ConnectSection.tsx"),
       "utf8",
     );
-    expect(connect).toMatch(/ProjectLeadForm|ContractorMatchGrid/);
+    expect(connectSection).toMatch(/ProjectLeadForm|ContractorMatchGrid/);
+    expect(connectSection).toMatch(/PartnerOffers|LeadFallbackForm/);
+  });
+
+  it("/connect route redirects to unified landing anchor", () => {
+    const connectRoute = readFileSync(
+      path.join(process.cwd(), "src/app/connect/page.tsx"),
+      "utf8",
+    );
+    expect(connectRoute).toMatch(/redirect\(/);
+    expect(connectRoute).toMatch(/buildConnectRedirectPath/);
   });
 
   it("LeadFallbackForm includes budget + intent and restricted pivot copy", () => {

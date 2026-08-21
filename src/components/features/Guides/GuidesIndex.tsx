@@ -3,6 +3,7 @@ import { BookOpen } from "lucide-react";
 import {
   ContentLinkCard,
   PageActionLink,
+  PageAside,
   PageHeader,
   PageShell,
 } from "@/components/features/PageShell/PageShell";
@@ -31,6 +32,11 @@ export function GuidesIndex() {
           </>
         }
         meta={<RegulationsAuthorByline />}
+        actions={
+          <PageActionLink href="/" variant="outline">
+            Back to checker
+          </PageActionLink>
+        }
       />
 
       <ul className="space-y-3">
@@ -52,9 +58,19 @@ export function GuidesIndex() {
         ))}
       </ul>
 
-      <PageActionLink href="/" variant="outline">
-        Back to checker
-      </PageActionLink>
+      <PageAside>
+        <p>
+          These guides focus on San Francisco buyer decisions. For statewide
+          county rules and official planning links, see{" "}
+          <Link
+            href="/regulations"
+            className="font-medium text-foreground underline-offset-2 hover:underline"
+          >
+            California tiny home regulations
+          </Link>
+          .
+        </p>
+      </PageAside>
     </PageShell>
   );
 }

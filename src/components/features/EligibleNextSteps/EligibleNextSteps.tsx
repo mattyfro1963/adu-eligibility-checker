@@ -31,7 +31,7 @@ export function EligibleNextSteps() {
     <section
       aria-labelledby="eligible-next-steps-heading"
       data-affiliate-section="eligible-next-steps"
-      className="rounded-card border border-border bg-card p-5 shadow-editorial sm:p-6 md:p-8"
+      className="rounded-card border border-border bg-card p-5 shadow-elevated sm:p-6 md:p-8"
     >
       <div className="mb-5 flex items-start gap-3 sm:items-center">
         <div className="rounded-[6px] border border-border bg-muted p-2">

@@ -36,7 +36,7 @@ interface ResultsCardProps {
   isLoading?: boolean;
   /** Zoning API transport/5xx error — uncovered counties are not errors. */
   zoningError?: string | null;
-  /** Prefill link to `/connect` builder match. */
+  /** In-page anchor or shareable deep link to builder match on `/`. */
   connectHref?: string;
   /** Opens the Get Quotes modal (project lead → contractor matches). */
   onGetQuotes?: () => void;
@@ -122,7 +122,7 @@ export function ResultsCard({
   geocodeResult,
   isLoading = false,
   zoningError = null,
-  connectHref = "/connect",
+  connectHref = "#connect",
   onGetQuotes,
 }: ResultsCardProps) {
   const [program, setProgram] = useState<ProgramTab>("adu");
@@ -318,7 +318,7 @@ export function ResultsCard({
                 href={connectHref}
                 className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-button border border-border bg-card px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted"
               >
-                Open Connect
+                Connect &amp; quotes
                 <ArrowRight size={16} aria-hidden="true" />
               </Link>
             </div>

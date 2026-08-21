@@ -1,4 +1,4 @@
-import { CALIFORNIA_TILE } from "@/lib/globe/globe-config";
+import { CALIFORNIA_TILE } from "@/lib/map/california-bounds";
 
 /** WGS84 bounds aligned with {@link CALIFORNIA_TILE} angular dimensions. */
 export const CA_BOUNDS = {

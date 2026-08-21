@@ -1,10 +1,5 @@
 import Link from "next/link";
-import {
-  ExternalLink,
-  MapPinned,
-  Scale,
-  ShieldAlert,
-} from "lucide-react";
+import { ExternalLink, MapPinned, Scale, ShieldAlert } from "lucide-react";
 import {
   PageActionLink,
   PageAnchorLink,
@@ -141,7 +136,7 @@ export function RegulationsGuide() {
         actions={
           <>
             <PageActionLink href="/">Check a California address</PageActionLink>
-            <PageActionLink href="/connect" variant="outline">
+            <PageActionLink href="/#connect" variant="outline">
               Match with builders
             </PageActionLink>
             <PageAnchorLink href="#county-guides">
@@ -233,10 +228,7 @@ export function RegulationsGuide() {
             </div>
           </section>
 
-          <section
-            id="directories"
-            className="scroll-mt-24"
-          >
+          <section id="directories" className="scroll-mt-24">
             <ExpandableSection
               title="Official resource directories"
               description="County planning links and major city ordinances"
@@ -259,7 +251,8 @@ export function RegulationsGuide() {
                     Major cities
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    City rules can differ from the surrounding county—check both.
+                    City rules can differ from the surrounding county—check
+                    both.
                   </p>
                   <div className="rounded-[10px] border border-border bg-card p-5">
                     <ResourceList links={CITY_DIRECTORY} />
@@ -436,7 +429,7 @@ export function RegulationsGuide() {
           </Link>
           . Looking for contractors?{" "}
           <Link
-            href="/connect"
+            href="/#connect"
             className="font-medium text-foreground underline-offset-2 hover:underline"
           >
             Match with ADU builders

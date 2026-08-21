@@ -86,7 +86,9 @@ export function ProjectLeadForm({
   return (
     <section
       className={
-        isPlain ? "space-y-5" : "border border-border bg-card p-6 sm:p-8"
+        isPlain
+          ? "space-y-5"
+          : "rounded-[10px] border border-border bg-card p-6 sm:p-8"
       }
     >
       {isPlain ? null : (

@@ -47,26 +47,23 @@ export function FeaturePin({
           id={popoverId}
           role="dialog"
           aria-label={`${statusLabel} parcel: ${label}`}
-          className="pointer-events-auto absolute bottom-full z-30 mb-3 w-[min(18rem,calc(100vw-2rem))] border border-brand-taupe/30 bg-white shadow-[0_8px_30px_rgb(0_0_0_/_0.12)]"
+          className="pointer-events-auto absolute bottom-full z-30 mb-3 w-[min(18rem,calc(100vw-2rem))] rounded-[10px] border border-border bg-card shadow-elevated"
         >
-          <div className="flex items-start gap-2 border-b border-brand-cream px-3 py-2.5">
+          <div className="flex items-start gap-2 border-b border-border px-3 py-2.5">
             <div className="min-w-0 flex-1">
               <p
-                className={cn(
-                  "text-[11px] font-medium tracking-wider uppercase",
-                  STATUS_ACCENT[status],
-                )}
+                className={cn("font-label text-[10px]", STATUS_ACCENT[status])}
               >
                 {statusLabel}
               </p>
-              <p className="mt-0.5 truncate text-sm leading-snug text-brand-charcoal">
+              <p className="mt-0.5 truncate text-sm leading-snug text-foreground">
                 {label}
               </p>
             </div>
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="inline-flex min-h-[32px] min-w-[32px] shrink-0 items-center justify-center text-brand-taupe transition-colors hover:text-brand-charcoal"
+              className="inline-flex min-h-[32px] min-w-[32px] shrink-0 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
               aria-label="Close parcel details"
             >
               <X size={14} aria-hidden="true" />
@@ -92,9 +89,7 @@ export function FeaturePin({
         }
         className={cn(
           "group/pin relative flex flex-col items-center",
-          interactive && hasLabel
-            ? "cursor-pointer"
-            : "cursor-default",
+          interactive && hasLabel ? "cursor-pointer" : "cursor-default",
         )}
       >
         <span

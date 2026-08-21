@@ -1,14 +1,13 @@
-import Link from "next/link";
-import { MapPinOff } from "lucide-react";
 import {
+  PageActionLink,
   PageHeader,
   PageShell,
 } from "@/components/features/PageShell/PageShell";
-import { Button } from "@/components/ui/button";
+import { MapPinOff } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <PageShell spacing="compact" className="flex flex-col items-center justify-center py-16">
+    <PageShell className="flex flex-col items-center justify-center py-16">
       <PageHeader
         eyebrow="Navigation"
         title="Page not found"
@@ -19,10 +18,8 @@ export default function NotFound() {
             aria-hidden="true"
           />
         }
+        actions={<PageActionLink href="/">Return to checker</PageActionLink>}
       />
-      <Button asChild className="min-h-[44px] rounded-button">
-        <Link href="/">Return to checker</Link>
-      </Button>
     </PageShell>
   );
 }

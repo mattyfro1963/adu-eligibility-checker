@@ -64,7 +64,7 @@ export function AnalysisInterstitial({
         />
       </div>
       <div
-        className="relative z-10 w-[min(100%-2rem,400px)] rounded-card border border-border bg-card p-8 shadow-editorial"
+        className="relative z-10 w-[min(100%-2rem,400px)] rounded-[10px] border border-border bg-card p-8 shadow-elevated"
         aria-label="Analysis progress"
       >
         <p className="font-label text-muted-foreground">Parcel analysis</p>

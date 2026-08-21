@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  AlertTriangle,
-  CheckCircle2,
-  FileText,
-  XCircle,
-} from "lucide-react";
+import { AlertTriangle, CheckCircle2, FileText, XCircle } from "lucide-react";
 import type { StatutoryEvaluation } from "@/lib/types/statutory-evaluation";
 import type { ZoningReport } from "@/lib/types/zoning";
 
@@ -61,32 +56,32 @@ export function StatutoryComplianceChecklist({
   return (
     <section
       aria-labelledby="statutory-checklist-heading"
-      className="space-y-4 border border-brand-taupe/30 bg-brand-cream/30 p-5 sm:p-6"
+      className="space-y-4 rounded-[10px] border border-border bg-card p-5 sm:p-6"
     >
-      <div className="grid grid-cols-1 gap-4 border-b border-brand-cream pb-4 text-center sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 border-b border-border pb-4 text-center sm:grid-cols-3">
         <div>
-          <span className="block text-xs uppercase tracking-wider text-brand-taupe">
+          <span className="font-label text-[10px] text-muted-foreground">
             Zoning Code
           </span>
-          <span className="font-quote text-lg font-semibold text-brand-charcoal">
+          <span className="mt-1 block text-sm font-medium text-foreground">
             {report.zoning}
           </span>
         </div>
         <div>
-          <span className="block text-xs uppercase tracking-wider text-brand-taupe">
+          <span className="font-label text-[10px] text-muted-foreground">
             Lot Area
           </span>
-          <span className="font-quote text-lg font-semibold text-brand-charcoal">
+          <span className="mt-1 block text-sm font-medium text-foreground">
             {lotSizeSqFt != null && lotSizeSqFt > 0
               ? `${lotSizeSqFt.toLocaleString()} sq ft`
               : "Not verified"}
           </span>
         </div>
         <div>
-          <span className="block text-xs uppercase tracking-wider text-brand-taupe">
+          <span className="font-label text-[10px] text-muted-foreground">
             Max Units
           </span>
-          <span className="font-quote text-lg font-semibold text-brand-charcoal">
+          <span className="mt-1 block text-sm font-medium text-foreground">
             {maxUnits != null ? `${maxUnits} allowed` : "Confirm locally"}
           </span>
         </div>
@@ -95,25 +90,25 @@ export function StatutoryComplianceChecklist({
       <div className="space-y-3">
         <h3
           id="statutory-checklist-heading"
-          className="text-sm font-semibold tracking-wider text-brand-charcoal uppercase"
+          className="text-sm font-normal tracking-wide text-muted-foreground uppercase"
         >
           Statutory Compliance Checklist
         </h3>
-        <ul className="divide-y divide-brand-cream">
+        <ul className="divide-y divide-border">
           {visible.map((rule) => (
             <li key={rule.ruleId} className="flex items-start gap-3 py-3">
               <RuleIcon evaluation={rule} />
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-sm font-medium text-brand-charcoal">
+                  <span className="text-sm font-medium text-foreground">
                     {rule.title}
                   </span>
-                  <span className="flex items-center gap-1 font-mono text-xs text-brand-taupe">
+                  <span className="flex items-center gap-1 font-mono text-xs text-muted-foreground">
                     <FileText size={12} aria-hidden="true" />
                     {rule.citation}
                   </span>
                 </div>
-                <p className="mt-0.5 text-xs text-brand-charcoal/70">
+                <p className="mt-0.5 text-xs text-muted-foreground">
                   {rule.description}
                 </p>
               </div>

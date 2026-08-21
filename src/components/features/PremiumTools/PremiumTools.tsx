@@ -288,7 +288,7 @@ export function PremiumTools() {
         id="waitlist"
         ref={waitlistRef}
         aria-labelledby="premium-waitlist-heading"
-        className="scroll-mt-24 space-y-5 border border-border bg-card p-5 sm:p-6"
+        className="scroll-mt-24 space-y-5 rounded-[10px] border border-border bg-card p-5 shadow-elevated sm:p-6"
       >
         <div className="flex items-start gap-3">
           <div className="rounded-lg border border-border bg-muted p-2">

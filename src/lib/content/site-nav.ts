@@ -29,7 +29,7 @@ export const RESOURCE_NAV: SiteNavItem[] = [
     description: "Downloadable planning tools",
   },
   {
-    href: "/connect",
+    href: "/#connect",
     label: "Connect",
     description: "Builder match & lead routing",
   },

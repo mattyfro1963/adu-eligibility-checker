@@ -34,7 +34,7 @@ const INTENT_COPY: Record<
     subtitle:
       "Curated manufacturer resources for power, sanitation, chassis, and compact appliances — confirm permits locally before purchase.",
     Icon: Package,
-    sectionClass: "border border-border bg-card p-6 sm:p-8",
+    sectionClass: "rounded-[10px] border border-border bg-card p-6 sm:p-8",
     iconWrapClass: "rounded-[6px] border border-border bg-muted p-2",
     iconClass: "text-foreground",
     linkHoverClass: "hover:border-border hover:bg-muted",
@@ -44,7 +44,7 @@ const INTENT_COPY: Record<
     subtitle:
       "Optional product research while you resolve parcel constraints — secondary to a specialist review.",
     Icon: Search,
-    sectionClass: "border border-border bg-muted/50 p-5 sm:p-6",
+    sectionClass: "rounded-[10px] border border-border bg-muted/50 p-5 sm:p-6",
     iconWrapClass: "rounded-[6px] border border-border bg-muted p-2",
     iconClass: "text-foreground",
     linkHoverClass: "hover:border-border hover:bg-muted",
@@ -54,7 +54,7 @@ const INTENT_COPY: Record<
     subtitle:
       "Low-emphasis manufacturer links some builders research when foundation ADU timing is blocked — not a workaround for restricted overlays.",
     Icon: Route,
-    sectionClass: "border border-border bg-muted/40 p-5 sm:p-6",
+    sectionClass: "rounded-[10px] border border-border bg-muted/40 p-5 sm:p-6",
     iconWrapClass: "rounded-lg border border-border bg-card p-2",
     iconClass: "text-muted-foreground",
     linkHoverClass: "hover:border-border hover:bg-card",

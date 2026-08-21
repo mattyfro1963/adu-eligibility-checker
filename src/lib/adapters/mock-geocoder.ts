@@ -10,12 +10,31 @@ import { mockPropertyList, mockProperties } from "@/lib/mock/properties";
 const COORD_EPSILON = 0.0001;
 const HINT_FALLBACK = { lat: 36.7378, lng: -119.7871 } as const;
 
+/** Demo scenarios whose parcel facts are pinned at catalog coordinates for zoning lookup. */
+const DEMO_FACT_ADDRESS_IDS = [
+  "addr-r1-historic",
+  "addr-r1-coastal",
+  "addr-r1-small-lot",
+  "addr-c2",
+] as const satisfies readonly (keyof typeof mockProperties)[];
+
 const synthesizedParcels = new Map<string, Parcel>();
 
 function rememberSynthesizedParcel(parcel: Parcel): Parcel {
   synthesizedParcels.set(parcel.addressId, parcel);
   return parcel;
 }
+
+function registerDemoFactParcels(): void {
+  for (const id of DEMO_FACT_ADDRESS_IDS) {
+    const parcel = mockProperties[id];
+    if (parcel) {
+      rememberSynthesizedParcel(parcel);
+    }
+  }
+}
+
+registerDemoFactParcels();
 
 /** Resolve adapter-synthesized demo parcels for zoning lookup. */
 export function getSynthesizedParcelAt(
@@ -71,7 +90,7 @@ export function addressPartsFromFormattedAddress(
   };
 }
 
-function toGeocodeResult(parcel: Parcel): GeocodeResult {
+export function parcelToGeocodeResult(parcel: Parcel): GeocodeResult {
   return {
     addressId: parcel.addressId,
     formattedAddress: parcel.formattedAddress,
@@ -81,26 +100,33 @@ function toGeocodeResult(parcel: Parcel): GeocodeResult {
   };
 }
 
+function findCatalogParcel(query: string): Parcel | undefined {
+  const normalized = query.trim().toLowerCase();
+  if (!normalized) return undefined;
+
+  return mockPropertyList.find(
+    (p) =>
+      p.formattedAddress.toLowerCase() === normalized ||
+      p.formattedAddress.toLowerCase().includes(normalized) ||
+      p.addressId.toLowerCase() === normalized,
+  );
+}
+
 export const mockGeocoder: Geocoder = {
   async geocode(query: string): Promise<GeocodeResult | null> {
     if (isAddressHintError(query)) {
       return null;
     }
 
-    const normalized = query.trim().toLowerCase();
-    const match = mockPropertyList.find(
-      (p) =>
-        p.formattedAddress.toLowerCase().includes(normalized) ||
-        p.addressId.toLowerCase() === normalized,
-    );
+    const match = findCatalogParcel(query);
     if (match) {
-      return toGeocodeResult(match);
+      return parcelToGeocodeResult(match);
     }
 
     const hinted = rememberSynthesizedParcel(
       synthesizeParcelFromHints(query, HINT_FALLBACK),
     );
-    return toGeocodeResult(hinted);
+    return parcelToGeocodeResult(hinted);
   },
 
   async searchSuggestions(query: string): Promise<GeocodeResult[]> {
@@ -108,8 +134,12 @@ export const mockGeocoder: Geocoder = {
     if (!normalized) return [];
 
     return mockPropertyList
-      .filter((p) => p.formattedAddress.toLowerCase().includes(normalized))
-      .map(toGeocodeResult)
+      .filter(
+        (p) =>
+          p.formattedAddress.toLowerCase().includes(normalized) ||
+          p.addressId.toLowerCase().includes(normalized),
+      )
+      .map(parcelToGeocodeResult)
       .slice(0, 5);
   },
 
@@ -124,11 +154,7 @@ export const mockGeocoder: Geocoder = {
     lat: number,
     lng: number,
   ): Promise<Parcel | null> {
-    const synthesized = [...synthesizedParcels.values()].find(
-      (p) =>
-        Math.abs(p.lat - lat) < COORD_EPSILON &&
-        Math.abs(p.lng - lng) < COORD_EPSILON,
-    );
+    const synthesized = getSynthesizedParcelAt(lat, lng);
     if (synthesized) return synthesized;
 
     return (

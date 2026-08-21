@@ -24,7 +24,7 @@ export function WheelsVsFoundationGuide() {
       <section aria-labelledby="decision-tree-heading" className="space-y-4">
         <h2
           id="decision-tree-heading"
-          className="font-display text-lg tracking-tight text-foreground sm:text-xl"
+          className="text-xl font-normal tracking-tight text-foreground"
         >
           Decision tree
         </h2>
