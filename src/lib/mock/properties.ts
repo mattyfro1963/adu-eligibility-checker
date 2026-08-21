@@ -4,8 +4,8 @@ import type { Parcel } from "@/lib/types/zoning";
  * Mock parcel FACTS only. Do not add `status`, `overall`, `adu`, or `sb9`.
  * Eligibility is derived by `src/lib/rules` from zoning + overlays.
  *
- * Sample-report addresses are real San Francisco streets; lat/lng drive
- * `/api/zoning` lookup (SF DataSF lot GIS or pinned demo facts — see mock-geocoder).
+ * Demo-catalog streets only. Sample-report queries must not match these
+ * addresses, so `/api/zoning` uses live GIS or jurisdiction notes instead.
  */
 export const mockProperties: Record<string, Parcel> = {
   "addr-r1-clean": {

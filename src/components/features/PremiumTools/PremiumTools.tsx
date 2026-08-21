@@ -14,6 +14,7 @@ import {
   PageActionLink,
   PageAnchorLink,
   PageAside,
+  PageBody,
   PageHeader,
   PageSection,
   PageShell,
@@ -48,7 +49,10 @@ function ProductCard({
   const Icon = ICON_MAP[tool.icon];
 
   return (
-    <li className="flex flex-col rounded-card border border-border bg-card p-5 shadow-elevated sm:p-6">
+    <li
+      id={tool.id}
+      className="flex scroll-mt-32 flex-col rounded-xl border border-border bg-card p-5 shadow-elevated transition-colors hover:border-foreground/15 sm:scroll-mt-24 sm:p-6"
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="rounded-lg border border-border bg-muted p-2">
           <Icon size={18} className="text-foreground" aria-hidden={true} />
@@ -58,10 +62,10 @@ function ProductCard({
         </span>
       </div>
 
-      <h3 className="mt-4 text-lg font-normal tracking-tight text-foreground">
+      <h3 className="mt-4 font-display text-lg tracking-tight text-foreground">
         {tool.title}
       </h3>
-      <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
+      <p className="mt-2 flex-1 text-[15px] leading-relaxed text-muted-foreground">
         {tool.description}
       </p>
 
@@ -101,7 +105,7 @@ function ProductCard({
       <Button
         type="button"
         onClick={() => onJoinWaitlist(tool.id)}
-        className="mt-5 h-11 min-h-[44px] w-full rounded-[10px] bg-primary text-white hover:bg-primary"
+        className="mt-5 h-11 min-h-[44px] w-full rounded-xl bg-primary text-white hover:bg-primary"
       >
         Join waitlist
       </Button>
@@ -143,7 +147,7 @@ function WaitlistForm({
       PREMIUM_TOOLS.find((t) => t.id === selectedToolId)?.title ?? "that tool";
     return (
       <div
-        className="rounded-[10px] border border-border bg-muted p-5"
+        className="rounded-xl border border-border bg-muted p-5"
         role="status"
         aria-live="polite"
       >
@@ -176,7 +180,7 @@ function WaitlistForm({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Your name"
-            className="h-11 rounded-[10px] border-border bg-card"
+            className="h-11 rounded-xl border-border bg-card"
           />
         </div>
         <div className="space-y-1.5">
@@ -196,7 +200,7 @@ function WaitlistForm({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="your@email.com"
-            className="h-11 rounded-[10px] border-border bg-card"
+            className="h-11 rounded-xl border-border bg-card"
           />
         </div>
       </div>
@@ -214,7 +218,7 @@ function WaitlistForm({
           required
           value={selectedToolId}
           onChange={(e) => onSelectedToolChange(e.target.value)}
-          className="h-11 w-full rounded-[10px] border border-border bg-card px-3 text-sm text-foreground outline-none transition-[box-shadow] focus-visible:border-border focus-visible:ring-2 focus-visible:ring-ring"
+          className="h-11 w-full rounded-xl border border-border bg-card px-3 text-sm text-foreground outline-none transition-[box-shadow] focus-visible:border-border focus-visible:ring-2 focus-visible:ring-ring"
         >
           {PREMIUM_TOOLS.map((tool) => (
             <option key={tool.id} value={tool.id}>
@@ -231,7 +235,7 @@ function WaitlistForm({
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="h-11 min-h-[44px] w-full shrink-0 rounded-[10px] bg-primary text-white hover:bg-primary sm:w-auto sm:px-6"
+          className="h-11 min-h-[44px] w-full shrink-0 rounded-xl bg-primary text-white hover:bg-primary sm:w-auto sm:px-6"
         >
           {isSubmitting ? "Joining…" : "Join waitlist"}
         </Button>
@@ -269,64 +273,66 @@ export function PremiumTools() {
         }
       />
 
-      <PageSection
-        title="Catalog"
-        description="Three downloadable tools with suggested prices. Checkout and file delivery are not available yet — join the waitlist for the tool you need."
-      >
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {PREMIUM_TOOLS.map((tool) => (
-            <ProductCard
-              key={tool.id}
-              tool={tool}
-              onJoinWaitlist={joinWaitlistFor}
-            />
-          ))}
-        </ul>
-      </PageSection>
+      <PageBody className="space-y-8 sm:space-y-10">
+        <PageSection
+          title="Catalog"
+          description="Three downloadable tools with suggested prices. Checkout and file delivery are not available yet — join the waitlist for the tool you need."
+        >
+          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {PREMIUM_TOOLS.map((tool) => (
+              <ProductCard
+                key={tool.id}
+                tool={tool}
+                onJoinWaitlist={joinWaitlistFor}
+              />
+            ))}
+          </ul>
+        </PageSection>
 
-      <section
-        id="waitlist"
-        ref={waitlistRef}
-        aria-labelledby="premium-waitlist-heading"
-        className="scroll-mt-24 space-y-5 rounded-[10px] border border-border bg-card p-5 shadow-elevated sm:p-6"
-      >
-        <div className="flex items-start gap-3">
-          <div className="rounded-lg border border-border bg-muted p-2">
-            <Mail size={18} className="text-foreground" aria-hidden="true" />
+        <section
+          id="waitlist"
+          ref={waitlistRef}
+          aria-labelledby="premium-waitlist-heading"
+          className="scroll-mt-32 space-y-5 rounded-xl border border-border bg-card p-5 shadow-elevated sm:scroll-mt-24 sm:p-6"
+        >
+          <div className="flex items-start gap-3">
+            <div className="rounded-lg border border-border bg-muted p-2">
+              <Mail size={18} className="text-foreground" aria-hidden="true" />
+            </div>
+            <div className="min-w-0 space-y-1">
+              <h2
+                id="premium-waitlist-heading"
+                className="font-display text-xl tracking-tight text-foreground"
+              >
+                Join the waitlist
+              </h2>
+              <p className="text-[15px] leading-relaxed text-muted-foreground">
+                Choose a tool and leave an email. We&apos;ll notify you when
+                checkout opens — nothing is charged on this page.
+              </p>
+            </div>
           </div>
-          <div className="min-w-0 space-y-1">
-            <h2
-              id="premium-waitlist-heading"
-              className="text-xl font-normal tracking-tight text-foreground"
+          <WaitlistForm
+            selectedToolId={selectedToolId}
+            onSelectedToolChange={setSelectedToolId}
+            nameInputRef={nameInputRef}
+          />
+        </section>
+
+        <PageAside>
+          <p>{PREMIUM_TOOLS_INTRO.honestyNote}</p>
+          <p className="mt-3">
+            Need parcel eligibility first?{" "}
+            <Link
+              href="/"
+              className="font-medium text-foreground underline-offset-2 hover:underline"
             >
-              Join the waitlist
-            </h2>
-            <p className="text-sm leading-relaxed text-muted-foreground">
-              Choose a tool and leave an email. We&apos;ll notify you when
-              checkout opens — nothing is charged on this page.
-            </p>
-          </div>
-        </div>
-        <WaitlistForm
-          selectedToolId={selectedToolId}
-          onSelectedToolChange={setSelectedToolId}
-          nameInputRef={nameInputRef}
-        />
-      </section>
-
-      <PageAside>
-        <p>{PREMIUM_TOOLS_INTRO.honestyNote}</p>
-        <p className="mt-3">
-          Need parcel eligibility first?{" "}
-          <Link
-            href="/"
-            className="font-medium text-foreground underline-offset-2 hover:underline"
-          >
-            Open the Checker
-          </Link>
-          .
-        </p>
-      </PageAside>
+              Open the Checker
+            </Link>
+            .
+          </p>
+        </PageAside>
+      </PageBody>
     </PageShell>
   );
 }

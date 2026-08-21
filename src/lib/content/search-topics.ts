@@ -36,7 +36,7 @@ export const SEARCH_TOPIC_CARDS: SearchTopicCard[] = [
   },
   {
     id: "location-guides",
-    title: "Location-Based Guides",
+    title: "Location-based guides",
     links: [
       {
         label: "THOW legality",
@@ -73,5 +73,25 @@ export const SEARCH_TOPIC_CARDS: SearchTopicCard[] = [
     ],
     viewAllHref: "/partners",
     viewAllLabel: "View partners",
+  },
+  {
+    id: "premium",
+    title: "Premium tools",
+    links: [
+      {
+        label: "Site planning checklist",
+        href: "/premium#site-planning-checklist",
+      },
+      {
+        label: "Zoning outreach templates",
+        href: "/premium#zoning-outreach-templates",
+      },
+      {
+        label: "ADU budgeting spreadsheet",
+        href: "/premium#adu-budgeting-spreadsheet",
+      },
+    ],
+    viewAllHref: "/premium",
+    viewAllLabel: "View all premium tools",
   },
 ];

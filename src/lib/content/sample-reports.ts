@@ -1,124 +1,96 @@
 /**
  * Sample-chip catalog — query strings and place labels only.
  * Clicks run the same `/api/geocode` path as a typed search. No mock parcels.
- * `tone` is a chip color hint only; the live engine still decides the report.
+ * `tone` is a chip color hint aligned to a live engine outcome for that query.
  */
 
-export type SampleReportTone = "tiny_home" | "restricted";
+export type SampleReportTone = "eligible" | "warning" | "restricted";
 
 export type SampleReport = {
   id: string;
   label: string;
   /** Geocode query — must not match mock catalog streets (see mock-geocoder). */
   query: string;
-  /** Optional chip tint: tiny-home-friendly jurisdictions vs restricted lots. */
-  tone?: SampleReportTone;
+  tone: SampleReportTone;
 };
 
-/** Neighborhood / street shortcuts. Outcomes come from live geocode + zoning. */
+/**
+ * Statewide street shortcuts. Outcomes come from live geocode + zoning:
+ * lot GIS where a provider covers the coordinate, otherwise county/city notes.
+ * Chip tones are locked to engine output for Census-matched coordinates
+ * (see sample-report-summaries.test.ts).
+ */
 export const SAMPLE_REPORTS: readonly SampleReport[] = [
   {
-    id: "oakland-piedmont",
-    label: "Oakland",
-    query: "3800 Piedmont Avenue, Oakland, CA",
-    tone: "tiny_home",
+    id: "parkside",
+    label: "Parkside, San Francisco, CA",
+    query: "2000 16th Avenue, San Francisco, CA",
+    tone: "eligible",
   },
   {
-    id: "eureka-humboldt",
-    label: "Eureka",
-    query: "1500 H Street, Eureka, CA",
-    tone: "tiny_home",
-  },
-  {
-    id: "auburn-placer",
-    label: "Auburn",
-    query: "301 Lincoln Way, Auburn, CA",
-    tone: "tiny_home",
-  },
-  {
-    id: "santa-ana-oc",
-    label: "Santa Ana",
-    query: "1234 N Broadway, Santa Ana, CA",
-    tone: "tiny_home",
-  },
-  {
-    id: "irvine",
-    label: "Irvine",
-    query: "1000 Culver Drive, Irvine, CA",
-    tone: "tiny_home",
-  },
-  {
-    id: "anaheim",
-    label: "Anaheim",
-    query: "1234 W Broadway, Anaheim, CA",
-    tone: "tiny_home",
+    id: "richmond",
+    label: "Richmond District, San Francisco, CA",
+    query: "250 32nd Avenue, San Francisco, CA",
+    tone: "eligible",
   },
   {
     id: "los-angeles",
-    label: "Los Angeles",
-    query: "1234 N Alvarado Street, Los Angeles, CA",
-    tone: "tiny_home",
+    label: "Hancock Park, Los Angeles, CA",
+    query: "400 S June Street, Los Angeles, CA",
+    tone: "warning",
   },
   {
     id: "long-beach",
-    label: "Long Beach",
-    query: "1234 E 7th Street, Long Beach, CA",
-    tone: "tiny_home",
+    label: "Long Beach, Los Angeles County, CA",
+    query: "2100 E 4th Street, Long Beach, CA",
+    tone: "warning",
   },
   {
     id: "san-diego",
-    label: "San Diego",
-    query: "1234 30th Street, San Diego, CA",
-    tone: "tiny_home",
+    label: "North Park, San Diego, CA",
+    query: "3010 30th Street, San Diego, CA",
+    tone: "warning",
   },
   {
     id: "san-jose",
-    label: "San Jose",
-    query: "1234 Willow Street, San Jose, CA",
-    tone: "tiny_home",
+    label: "Willow Glen, San Jose, CA",
+    query: "1170 Lincoln Avenue, San Jose, CA",
+    tone: "warning",
   },
   {
     id: "sacramento",
-    label: "Sacramento",
-    query: "1234 21st Street, Sacramento, CA",
-    tone: "tiny_home",
+    label: "Midtown, Sacramento, CA",
+    query: "1000 21st Street, Sacramento, CA",
+    tone: "warning",
   },
   {
-    id: "fresno",
-    label: "Fresno",
-    query: "1234 N First Street, Fresno, CA",
-    tone: "tiny_home",
+    id: "oakland-piedmont",
+    label: "Oakland, East Bay, CA",
+    query: "3800 Piedmont Avenue, Oakland, CA",
+    tone: "warning",
   },
   {
-    id: "riverside",
-    label: "Riverside",
-    query: "3900 Main Street, Riverside, CA",
-    tone: "tiny_home",
+    id: "irvine",
+    label: "Irvine, Orange County, CA",
+    query: "1 Civic Center Plaza, Irvine, CA",
+    tone: "warning",
   },
   {
-    id: "inner-sunset",
-    label: "Inner Sunset",
-    query: "1234 9th Avenue, San Francisco, CA",
+    id: "downtown",
+    label: "Embarcadero, San Francisco, CA",
+    query: "1 Market Street, San Francisco, CA 94105",
+    tone: "restricted",
   },
   {
-    id: "pacific-heights",
-    label: "Pacific Heights",
-    query: "2100 Steiner Street, San Francisco, CA",
+    id: "california-street",
+    label: "Financial District, San Francisco, CA",
+    query: "555 California Street, San Francisco, CA 94104",
+    tone: "restricted",
   },
   {
-    id: "outer-richmond",
-    label: "Outer Richmond",
-    query: "800 48th Avenue, San Francisco, CA",
-  },
-  {
-    id: "mission",
-    label: "Mission",
-    query: "2700 24th Street, San Francisco, CA",
-  },
-  {
-    id: "soma",
-    label: "SOMA",
-    query: "500 3rd Street, San Francisco, CA",
+    id: "potrero-pdr",
+    label: "Bayview, San Francisco, CA",
+    query: "2500 Marin Street, San Francisco, CA",
     tone: "restricted",
   },
 ] as const;

@@ -1,10 +1,28 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { MapPin } from "lucide-react";
 import { MapPinOverlay } from "@/components/features/AddressMapPreview/MapPinOverlay";
+import { ParcelSiteOverlay } from "@/components/features/AddressMapPreview/ParcelSiteOverlay";
+import {
+  PARCEL_MAP_ZOOM,
+  STATIC_MAP_DEFAULTS,
+} from "@/lib/adapters/mapbox-static";
+import { buildApproximateSiteOverlay } from "@/lib/map/approximate-site";
 import { cn } from "@/lib/utils";
-import type { EligibilityStatus } from "@/lib/types/zoning";
+import type {
+  EligibilityStatus,
+  ZoningAnalysisScope,
+} from "@/lib/types/zoning";
+
+const InteractiveSiteMap = dynamic(
+  () =>
+    import("@/components/features/AddressMapPreview/InteractiveSiteMap").then(
+      (mod) => mod.InteractiveSiteMap,
+    ),
+  { ssr: false },
+);
 
 interface AddressMapPreviewProps {
   lat: number | null;
@@ -18,21 +36,36 @@ interface AddressMapPreviewProps {
   sublabel?: string | null;
   /** Engine overall status for pin coloring. */
   status?: EligibilityStatus | null;
+  lotSizeSqFt?: number | null;
+  zoning?: string | null;
+  analysisScope?: ZoningAnalysisScope | null;
+  /** Draw schematic lot + zoning layers (results map). */
+  showSiteLayers?: boolean;
 }
 
-function mapPreviewSrc(lat: number, lng: number): string {
+function mapPreviewSrc(
+  lat: number,
+  lng: number,
+  zoom: number,
+  width: number,
+  height: number,
+): string {
   const url = new URL("/api/map-preview", window.location.origin);
   url.searchParams.set("lat", String(lat));
   url.searchParams.set("lng", String(lng));
-  url.searchParams.set("width", "640");
-  url.searchParams.set("height", "400");
+  url.searchParams.set("width", String(width));
+  url.searchParams.set("height", String(height));
+  url.searchParams.set("zoom", String(zoom));
   return url.toString();
 }
 
+function isMapboxConfiguredClient(): boolean {
+  return document.body.dataset.mapboxConfigured === "1";
+}
+
 /**
- * Mapbox Static Images proxy — monochrome store-locator presentation:
- * full-bleed grayscale basemap with status-colored FeaturePin overlay.
- * Falls back to a projected pin on a mock CA layer when Mapbox is unset.
+ * Results: interactive Mapbox GL (token proxied server-side) with schematic
+ * lot/zoning layers. Interstitial / fallback: static image or mock grid.
  */
 export function AddressMapPreview({
   lat,
@@ -40,8 +73,11 @@ export function AddressMapPreview({
   className = "",
   chrome = true,
   label = null,
-  sublabel: _sublabel = null,
   status = null,
+  lotSizeSqFt = null,
+  zoning = null,
+  analysisScope = null,
+  showSiteLayers = false,
 }: AddressMapPreviewProps) {
   const hasCoords =
     typeof lat === "number" &&
@@ -49,12 +85,57 @@ export function AddressMapPreview({
     Number.isFinite(lat) &&
     Number.isFinite(lng);
 
-  const src = useMemo(
-    () => (hasCoords ? mapPreviewSrc(lat!, lng!) : null),
-    [hasCoords, lat, lng],
+  const width = STATIC_MAP_DEFAULTS.width;
+  const height = STATIC_MAP_DEFAULTS.height;
+  const zoom = showSiteLayers ? PARCEL_MAP_ZOOM : STATIC_MAP_DEFAULTS.zoom;
+
+  const [mapboxConfigured] = useState<boolean | null>(() =>
+    typeof document !== "undefined" ? isMapboxConfiguredClient() : null,
   );
 
-  /** Blob URL keyed by request src — stale keys are ignored (no sync reset in effect). */
+  const wantsInteractive = chrome && hasCoords && showSiteLayers;
+  const showInteractiveMap = wantsInteractive && mapboxConfigured === true;
+  const useStaticFallback =
+    hasCoords && (mapboxConfigured === false || !wantsInteractive);
+
+  const src = useMemo(
+    () =>
+      useStaticFallback ? mapPreviewSrc(lat!, lng!, zoom, width, height) : null,
+    [useStaticFallback, lat, lng, zoom, width, height],
+  );
+
+  const lotVerified =
+    analysisScope === "lot_zoning" && lotSizeSqFt != null && lotSizeSqFt > 0;
+  const analysisVerified = analysisScope === "lot_zoning";
+
+  const site = useMemo(() => {
+    if (!hasCoords || !showSiteLayers || showInteractiveMap) {
+      return null;
+    }
+    return buildApproximateSiteOverlay({
+      lat: lat!,
+      lng: lng!,
+      width,
+      height,
+      zoom,
+      lotSizeSqFt,
+      lotVerified,
+      zoning,
+    });
+  }, [
+    hasCoords,
+    showSiteLayers,
+    showInteractiveMap,
+    lat,
+    lng,
+    width,
+    height,
+    zoom,
+    lotSizeSqFt,
+    lotVerified,
+    zoning,
+  ]);
+
   const [image, setImage] = useState<{
     src: string;
     objectUrl: string;
@@ -90,7 +171,6 @@ export function AddressMapPreview({
         if (cancelled) {
           return;
         }
-        // 204 = Mapbox token unset; other non-OK = upstream failure.
         if (res.status === 204 || !res.ok) {
           setFailed({
             src,
@@ -126,15 +206,25 @@ export function AddressMapPreview({
   const objectUrl = src && image?.src === src ? image.objectUrl : null;
   const failedReason = src && failed?.src === src ? failed.reason : null;
   const showMapboxImage = Boolean(objectUrl);
-  const showMockLayer = hasCoords && !showMapboxImage;
-  const showPin = hasCoords && (showMapboxImage || showMockLayer);
+  const showMockLayer = Boolean(
+    useStaticFallback && hasCoords && !showMapboxImage && failedReason,
+  );
+  const showPin =
+    hasCoords && !showInteractiveMap && (showMapboxImage || showMockLayer);
   const pinLabel = label && label.trim().length > 0 ? label.trim() : undefined;
   const pinStatus = status ?? undefined;
   const pinInteractive = chrome;
 
   const showAwaitingChrome = chrome && !hasCoords;
   const showLoadingChrome =
-    chrome && hasCoords && !showMapboxImage && !failedReason;
+    chrome &&
+    hasCoords &&
+    !showInteractiveMap &&
+    !showMapboxImage &&
+    !showMockLayer;
+  const showLayers = Boolean(
+    showSiteLayers && site && (showMapboxImage || showMockLayer),
+  );
 
   return (
     <div
@@ -143,7 +233,18 @@ export function AddressMapPreview({
         className,
       )}
     >
-      {showMapboxImage ? (
+      {showInteractiveMap ? (
+        <InteractiveSiteMap
+          lat={lat!}
+          lng={lng!}
+          status={status}
+          label={label}
+          lotSizeSqFt={lotSizeSqFt}
+          zoning={zoning}
+          analysisScope={analysisScope}
+          interactive
+        />
+      ) : showMapboxImage ? (
         // eslint-disable-next-line @next/next/no-img-element -- blob URL from proxied Mapbox PNG
         <img
           src={objectUrl!}
@@ -153,17 +254,14 @@ export function AddressMapPreview({
               : "Map preview"
           }
           className="absolute inset-0 z-0 h-full w-full border-0 object-cover"
-          style={{
-            filter: "grayscale(100%) contrast(108%) brightness(103%)",
-          }}
         />
       ) : showMockLayer ? (
         <div
           className="absolute inset-0 z-0 bg-muted"
           style={{
             backgroundImage: `
-              linear-gradient(to right, rgb(230 232 235 / 0.45) 1px, transparent 1px),
-              linear-gradient(to bottom, rgb(230 232 235 / 0.45) 1px, transparent 1px)
+              linear-gradient(to right, rgb(230 232 235 / 0.8) 1px, transparent 1px),
+              linear-gradient(to bottom, rgb(230 232 235 / 0.8) 1px, transparent 1px)
             `,
             backgroundSize: "32px 32px",
           }}
@@ -172,6 +270,14 @@ export function AddressMapPreview({
       ) : (
         <div className="absolute inset-0 bg-muted" aria-hidden="true" />
       )}
+
+      {showLayers && site ? (
+        <ParcelSiteOverlay
+          site={site}
+          status={status}
+          analysisVerified={analysisVerified}
+        />
+      ) : null}
 
       {showPin ? (
         <MapPinOverlay
@@ -186,17 +292,17 @@ export function AddressMapPreview({
 
       {showAwaitingChrome ? (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/60 backdrop-blur-sm">
-          <span className="flex items-center gap-2 rounded-[10px] border border-border bg-card px-5 py-2.5 font-label text-[10px] text-muted-foreground shadow-elevated">
+          <span className="flex items-center gap-2 rounded-xl border border-border bg-card px-5 py-2.5 font-label text-[10px] text-muted-foreground shadow-elevated">
             <MapPin size={14} className="text-foreground" aria-hidden="true" />
             Enter an address to preview the map
           </span>
         </div>
       ) : null}
 
-      {showLoadingChrome ? (
+      {showLoadingChrome && !showInteractiveMap ? (
         <div className="pointer-events-none absolute inset-x-0 top-4 z-10 flex justify-center">
-          <span className="rounded-[10px] border border-border bg-card px-4 py-2 font-label text-[10px] text-muted-foreground shadow-elevated backdrop-blur-sm">
-            Loading Map Preview
+          <span className="rounded-xl border border-border bg-card px-4 py-2 font-label text-[10px] text-muted-foreground shadow-elevated backdrop-blur-sm">
+            Loading site map
           </span>
         </div>
       ) : null}

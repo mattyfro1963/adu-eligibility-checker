@@ -7,6 +7,7 @@ import { BuilderSignupPanel } from "@/components/features/BuilderSignupPanel/Bui
 import { LeadFallbackForm } from "@/components/features/LeadFallbackForm/LeadFallbackForm";
 import {
   PageAside,
+  PageBody,
   PageSection,
 } from "@/components/features/PageShell/PageShell";
 import {
@@ -126,98 +127,100 @@ export function ConnectSection({
       id={CONNECT_SECTION_ID}
       title="Request a builder intro"
       description="Share project details after your parcel check. We route high-intent leads to partner builders. Informational matching only — not a permit or marketplace guarantee."
-      className="scroll-mt-28 space-y-12"
+      className="scroll-mt-32 space-y-8 sm:scroll-mt-28 sm:space-y-12"
     >
-      <p className="text-center font-label text-[11px] text-muted-foreground">
-        Builder intro · Lead routing
-      </p>
+      <PageBody className="space-y-8 sm:space-y-10">
+        <p className="text-center font-label text-[11px] tracking-[0.14em] text-brand uppercase">
+          Builder intro · Lead routing
+        </p>
 
-      {error ? (
-        <div
-          role="alert"
-          className="flex items-start gap-3 rounded-[10px] border border-rose-500/30 bg-rose-500/15 p-4 text-rose-600"
-        >
-          <AlertTriangle
-            className="mt-0.5 shrink-0"
-            size={18}
-            aria-hidden="true"
-          />
-          <p className="min-w-0 text-sm font-medium break-words">{error}</p>
-        </div>
-      ) : null}
+        {error ? (
+          <div
+            role="alert"
+            className="flex items-start gap-3 rounded-xl border border-rose-500/30 bg-rose-500/15 p-4 text-rose-600"
+          >
+            <AlertTriangle
+              className="mt-0.5 shrink-0"
+              size={18}
+              aria-hidden="true"
+            />
+            <p className="min-w-0 text-sm font-medium break-words">{error}</p>
+          </div>
+        ) : null}
 
-      {submittedName && submittedEmail ? (
-        <section className="rounded-[10px] border border-border bg-card p-6 sm:p-8">
-          <p className="break-words text-foreground">
-            Thank you, {submittedName}. We&apos;ll follow up at {submittedEmail}{" "}
-            about {geocodeResult.formattedAddress}.
-          </p>
-        </section>
-      ) : (
-        <>
-          {overallStatus === "eligible" ? (
-            <>
+        {submittedName && submittedEmail ? (
+          <section className="rounded-xl border border-border bg-card p-6 sm:p-8">
+            <p className="break-words text-[15px] text-foreground">
+              Thank you, {submittedName}. We&apos;ll follow up at{" "}
+              {submittedEmail} about {geocodeResult.formattedAddress}.
+            </p>
+          </section>
+        ) : (
+          <>
+            {overallStatus === "eligible" ? (
+              <>
+                <ProjectLeadForm
+                  address={geocodeResult.formattedAddress}
+                  overallStatus={overallStatus}
+                  isSubmitting={isSubmitting}
+                  onSubmit={handleProjectSubmit}
+                />
+                <PartnersLink intent="eligible" />
+              </>
+            ) : null}
+
+            {overallStatus === "warning" ? (
+              <>
+                <LeadFallbackForm
+                  address={geocodeResult.formattedAddress}
+                  lat={geocodeResult.lat}
+                  lng={geocodeResult.lng}
+                  variant="warning"
+                  overallStatus="warning"
+                  embedded
+                />
+                <PartnersLink intent="warning" />
+              </>
+            ) : null}
+
+            {overallStatus === "restricted" ? (
+              <>
+                <LeadFallbackForm
+                  address={geocodeResult.formattedAddress}
+                  lat={geocodeResult.lat}
+                  lng={geocodeResult.lng}
+                  variant="restricted"
+                  overallStatus="restricted"
+                  embedded
+                />
+                <PartnersLink intent="restricted" />
+              </>
+            ) : null}
+
+            {overallStatus == null ||
+            (overallStatus !== "eligible" &&
+              overallStatus !== "warning" &&
+              overallStatus !== "restricted") ? (
               <ProjectLeadForm
                 address={geocodeResult.formattedAddress}
                 overallStatus={overallStatus}
                 isSubmitting={isSubmitting}
                 onSubmit={handleProjectSubmit}
               />
-              <PartnersLink intent="eligible" />
-            </>
-          ) : null}
+            ) : null}
+          </>
+        )}
 
-          {overallStatus === "warning" ? (
-            <>
-              <LeadFallbackForm
-                address={geocodeResult.formattedAddress}
-                lat={geocodeResult.lat}
-                lng={geocodeResult.lng}
-                variant="warning"
-                overallStatus="warning"
-                embedded
-              />
-              <PartnersLink intent="warning" />
-            </>
-          ) : null}
+        <BuilderSignupPanel />
 
-          {overallStatus === "restricted" ? (
-            <>
-              <LeadFallbackForm
-                address={geocodeResult.formattedAddress}
-                lat={geocodeResult.lat}
-                lng={geocodeResult.lng}
-                variant="restricted"
-                overallStatus="restricted"
-                embedded
-              />
-              <PartnersLink intent="restricted" />
-            </>
-          ) : null}
-
-          {overallStatus == null ||
-          (overallStatus !== "eligible" &&
-            overallStatus !== "warning" &&
-            overallStatus !== "restricted") ? (
-            <ProjectLeadForm
-              address={geocodeResult.formattedAddress}
-              overallStatus={overallStatus}
-              isSubmitting={isSubmitting}
-              onSubmit={handleProjectSubmit}
-            />
-          ) : null}
-        </>
-      )}
-
-      <BuilderSignupPanel />
-
-      <PageAside>
-        <p>
-          Builder intros are informational only — not a permit guarantee or
-          legal advice. Confirm licensing, scope, and local requirements
-          directly with each contractor.
-        </p>
-      </PageAside>
+        <PageAside>
+          <p>
+            Builder intros are informational only — not a permit guarantee or
+            legal advice. Confirm licensing, scope, and local requirements
+            directly with each contractor.
+          </p>
+        </PageAside>
+      </PageBody>
     </PageSection>
   );
 }

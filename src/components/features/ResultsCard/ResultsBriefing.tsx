@@ -8,7 +8,7 @@ export function ResultsBriefingSection({ summary }: { summary: CitedClaim[] }) {
   return (
     <section
       aria-labelledby="results-briefing-heading"
-      className="rounded-card border border-border bg-card p-5 sm:p-6 md:p-8 shadow-elevated"
+      className="rounded-xl border border-border bg-card p-5 sm:p-6 md:p-8 shadow-elevated"
     >
       <div className="mb-5 flex items-start gap-3 sm:items-center">
         <div className="rounded-lg border border-border bg-muted p-2">

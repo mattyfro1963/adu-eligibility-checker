@@ -113,7 +113,7 @@ export function ConnectPage() {
           compact
         />
       ) : (
-        <div className="flex flex-wrap items-start justify-between gap-3 rounded-[10px] border border-border bg-card px-4 py-3 sm:px-5">
+        <div className="flex flex-col gap-3 rounded-xl border border-border bg-card px-4 py-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:px-5">
           <div className="flex min-w-0 items-start gap-3">
             <div className="rounded-lg border border-border bg-muted p-2">
               <MapPinned
@@ -122,10 +122,10 @@ export function ConnectPage() {
               />
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] font-normal tracking-widest text-muted-foreground uppercase">
+              <p className="font-label text-[10px] tracking-[0.14em] text-muted-foreground uppercase">
                 Project address
               </p>
-              <p className="break-words text-sm font-medium text-foreground">
+              <p className="break-words text-[15px] font-medium text-foreground">
                 {geocodeResult.formattedAddress}
               </p>
             </div>
@@ -139,7 +139,7 @@ export function ConnectPage() {
               setManualResult(null);
               setManualStatus(null);
             }}
-            className="min-h-[40px] text-muted-foreground hover:text-foreground"
+            className="min-h-[44px] w-full shrink-0 text-muted-foreground hover:text-foreground sm:w-auto"
           >
             Change address
           </Button>
@@ -149,7 +149,7 @@ export function ConnectPage() {
       {error ? (
         <div
           role="alert"
-          className="flex items-start gap-3 rounded-[10px] border border-rose-500/30 bg-rose-500/15 p-4 text-rose-600"
+          className="flex items-start gap-3 rounded-xl border border-rose-500/30 bg-rose-500/15 p-4 text-rose-600"
         >
           <AlertTriangle
             className="mt-0.5 shrink-0"

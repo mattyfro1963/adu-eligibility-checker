@@ -47,7 +47,7 @@ export function FeaturePin({
           id={popoverId}
           role="dialog"
           aria-label={`${statusLabel} parcel: ${label}`}
-          className="pointer-events-auto absolute bottom-full z-30 mb-3 w-[min(18rem,calc(100vw-2rem))] rounded-[10px] border border-border bg-card shadow-elevated"
+          className="pointer-events-auto absolute bottom-full z-30 mb-3 w-[min(18rem,calc(100vw-2rem))] rounded-xl border border-border bg-card shadow-elevated"
         >
           <div className="flex items-start gap-2 border-b border-border px-3 py-2.5">
             <div className="min-w-0 flex-1">
@@ -88,24 +88,24 @@ export function FeaturePin({
             : `${statusLabel} parcel location`
         }
         className={cn(
-          "group/pin relative flex flex-col items-center",
+          "group/pin relative flex min-h-[44px] min-w-[44px] flex-col items-center justify-end",
           interactive && hasLabel ? "cursor-pointer" : "cursor-default",
         )}
       >
         <span
           className={cn(
-            "absolute -inset-3 animate-ping rounded-full opacity-60",
+            "absolute -inset-2 rounded-full opacity-50",
             STATUS_RING[status],
           )}
           aria-hidden="true"
         />
         <span
           className={cn(
-            "relative flex size-10 items-center justify-center rounded-full border-2 border-white bg-white shadow-[0_4px_14px_rgb(0_0_0_/_0.18)]",
+            "relative flex size-9 items-center justify-center rounded-full border border-white/90 bg-white/95 shadow-[0_6px_18px_rgb(44_40_37_/_0.16)]",
             STATUS_ACCENT[status],
           )}
         >
-          <MapPin size={20} strokeWidth={2.25} aria-hidden="true" />
+          <MapPin size={18} strokeWidth={2.1} aria-hidden="true" />
         </span>
       </button>
     </div>

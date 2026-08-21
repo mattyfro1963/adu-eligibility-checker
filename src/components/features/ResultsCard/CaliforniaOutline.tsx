@@ -19,7 +19,7 @@ function OutlineSectionDetails({
 
   return (
     <details
-      className="group rounded-[10px] border border-border bg-muted/40 open:bg-card "
+      className="group rounded-xl border border-border bg-muted/40 open:bg-card"
       open={open}
       onToggle={handleToggle}
     >
@@ -57,14 +57,14 @@ export function CaliforniaOutline({
 
   const outline = (
     <div className="space-y-3">
-        {sections.map((section) => (
-          <OutlineSectionDetails
-            key={section.id}
-            section={section}
-            defaultOpen={section.id === "use-of-land"}
-          />
-        ))}
-      </div>
+      {sections.map((section) => (
+        <OutlineSectionDetails
+          key={section.id}
+          section={section}
+          defaultOpen={section.id === "use-of-land"}
+        />
+      ))}
+    </div>
   );
 
   if (embedded) {
@@ -74,7 +74,7 @@ export function CaliforniaOutline({
   return (
     <section
       aria-labelledby="ca-outline-heading"
-      className="rounded-card border border-border bg-card p-5 sm:p-6 md:p-8"
+      className="rounded-xl border border-border bg-card p-5 sm:p-6 md:p-8"
     >
       <div className="mb-5 flex items-start gap-3 sm:items-center">
         <div className="rounded-lg border border-border bg-muted p-2">

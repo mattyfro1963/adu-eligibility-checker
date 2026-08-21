@@ -1,16 +1,17 @@
 import { env } from "@/lib/env";
 import { mapboxRequestHeaders } from "@/lib/adapters/mapbox-headers";
 
-/** Light basemap — client applies grayscale/contrast for store-locator monochrome look. */
-const MAPBOX_STYLE = "mapbox/light-v11";
-/** Large black teardrop pin (Mapbox Static Images overlay syntax). */
-const MAPBOX_PIN = "pin-l+000000";
+/** Standard streets basemap — keep unfiltered so roads and labels stay readable. */
+const MAPBOX_STYLE = "mapbox/streets-v12";
 
 export const STATIC_MAP_DEFAULTS = {
   width: 640,
-  height: 400,
+  height: 480,
   zoom: 15,
 } as const;
+
+/** Tight zoom so an urban lot reads as a site, not a city pin. */
+export const PARCEL_MAP_ZOOM = 18;
 
 export interface StaticMapParams {
   lat: number;
@@ -22,7 +23,8 @@ export interface StaticMapParams {
 }
 
 /**
- * Build a Mapbox Static Images URL (light-v11 + center pin).
+ * Build a Mapbox Static Images URL (streets-v12, no baked pin).
+ * Client draws the datum, lot, and zoning layers so they stay aligned.
  * Pure — no fetch; safe for unit tests.
  */
 export function buildMapboxStaticUrl(params: StaticMapParams): string {
@@ -31,8 +33,7 @@ export function buildMapboxStaticUrl(params: StaticMapParams): string {
   const zoom = params.zoom ?? STATIC_MAP_DEFAULTS.zoom;
   const { lat, lng, accessToken } = params;
 
-  const overlay = `${MAPBOX_PIN}(${lng},${lat})`;
-  const path = `https://api.mapbox.com/styles/v1/${MAPBOX_STYLE}/static/${overlay}/${lng},${lat},${zoom},0/${width}x${height}@2x`;
+  const path = `https://api.mapbox.com/styles/v1/${MAPBOX_STYLE}/static/${lng},${lat},${zoom},0/${width}x${height}@2x`;
 
   const url = new URL(path);
   url.searchParams.set("access_token", accessToken);

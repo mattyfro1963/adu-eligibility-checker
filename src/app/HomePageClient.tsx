@@ -148,7 +148,7 @@ export function HomePageClient() {
     <main
       id="main-content"
       tabIndex={-1}
-      className="mx-auto w-full max-w-layout flex-1 space-y-20 px-4 py-10 sm:px-6 sm:py-14"
+      className="mx-auto w-full max-w-layout flex-1 space-y-8 px-4 py-6 sm:space-y-12 sm:px-6 sm:py-12"
     >
       <div className="search-enter space-y-6 sm:space-y-8">
         <AddressSearch

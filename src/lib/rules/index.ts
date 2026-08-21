@@ -33,6 +33,8 @@ export function evaluateEligibility(parcel: Parcel): ZoningReport {
     analysisScope: "lot_zoning",
     unitCapacity,
     lotSizeSqFt: parcel.lotSizeSqFt ?? null,
+    zoningDistrictName: parcel.zoningDistrictName ?? null,
+    zoningSourceUrl: parcel.zoningSourceUrl ?? null,
   };
 }
 

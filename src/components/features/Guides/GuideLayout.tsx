@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import {
   BackLink,
   PageAside,
+  PageBody,
   PageHeader,
   PageShell,
 } from "@/components/features/PageShell/PageShell";
@@ -39,13 +40,15 @@ export function GuideLayout({
         }
       />
 
-      <div className="space-y-4 sm:space-y-6">{children}</div>
+      <PageBody className="space-y-4 sm:space-y-6">
+        {children}
 
-      {disclaimer ? (
-        <PageAside>
-          <p>{disclaimer}</p>
-        </PageAside>
-      ) : null}
+        {disclaimer ? (
+          <PageAside>
+            <p>{disclaimer}</p>
+          </PageAside>
+        ) : null}
+      </PageBody>
     </PageShell>
   );
 }

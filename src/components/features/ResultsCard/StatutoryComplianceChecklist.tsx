@@ -65,7 +65,7 @@ export function StatutoryComplianceChecklist({
   return (
     <section
       aria-labelledby="statutory-checklist-heading"
-      className="space-y-4 rounded-[10px] border border-border bg-card p-5 sm:p-6"
+      className="space-y-4 rounded-xl border border-border bg-card p-5 sm:p-6"
     >
       <div className="grid grid-cols-1 gap-4 border-b border-border pb-4 text-center sm:grid-cols-3">
         <div>

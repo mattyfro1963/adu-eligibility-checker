@@ -75,18 +75,18 @@ export function AddressSearch({
     <section
       className={cn(
         "flex flex-col",
-        compact ? "space-y-4" : "mx-auto w-full max-w-3xl space-y-8",
+        compact ? "space-y-4" : "mx-auto w-full max-w-3xl space-y-10",
       )}
     >
       {!compact ? (
-        <header className="space-y-4 border-b border-border pb-8 text-center">
-          <p className="font-label text-[11px] uppercase text-muted-foreground">
+        <header className="space-y-5 text-center">
+          <p className="font-label text-[11px] uppercase tracking-[0.14em] text-brand">
             State of California · ADU &amp; SB 9
           </p>
-          <h1 className="font-display text-3xl leading-[1.12] tracking-display text-balance text-foreground sm:text-4xl">
+          <h1 className="font-display text-[2rem] leading-[1.15] tracking-display text-balance text-foreground sm:text-4xl">
             Can this California lot take an ADU or SB 9 split?
           </h1>
-          <p className="mx-auto max-w-2xl text-sm leading-relaxed tracking-body text-muted-foreground sm:text-base">
+          <p className="mx-auto max-w-xl text-[15px] leading-relaxed text-muted-foreground sm:text-base">
             Enter an address for engine eligibility, county requirements, and
             tiny-home guidance — then confirm locally.
           </p>
@@ -95,7 +95,7 @@ export function AddressSearch({
 
       <div
         ref={containerRef}
-        className={cn("relative w-full", compact ? "space-y-2" : "space-y-6")}
+        className={cn("relative w-full", compact ? "space-y-2" : "space-y-8")}
       >
         <label htmlFor="address-search" className="sr-only">
           Search property address
@@ -110,7 +110,7 @@ export function AddressSearch({
         >
           <div
             className={cn(
-              "relative flex items-center rounded-[10px] border border-border bg-card shadow-elevated transition-colors focus-within:border-foreground",
+              "relative flex items-center rounded-xl border border-border bg-card shadow-elevated transition-[border-color,box-shadow] focus-within:border-foreground/40 focus-within:ring-2 focus-within:ring-ring/25",
               compact ? "h-12" : "h-14 sm:h-16",
               hasError && "ring-2 ring-rose-600 ring-inset",
             )}
@@ -178,7 +178,7 @@ export function AddressSearch({
           <ul
             id={listboxId}
             role="listbox"
-            className="absolute z-20 mt-2 w-full overflow-hidden rounded-[10px] border border-border bg-card shadow-elevated"
+            className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-border bg-card shadow-elevated"
           >
             {suggestions.map((suggestion) => {
               const secondary = secondaryLine(suggestion);
@@ -212,16 +212,10 @@ export function AddressSearch({
         ) : null}
 
         {!compact && children ? <div>{children}</div> : null}
-
-        {!compact ? (
-          <p className="text-center text-caption text-muted-foreground">
-            All CA counties — county requirements; SF lot GIS when available.
-          </p>
-        ) : null}
       </div>
 
       {!compact ? (
-        <div className="mx-auto w-full max-w-5xl pt-4">
+        <div className="mx-auto w-full max-w-5xl">
           <SearchTopicCards />
         </div>
       ) : null}

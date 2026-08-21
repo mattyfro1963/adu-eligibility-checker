@@ -4,6 +4,7 @@ import {
   ContentLinkCard,
   PageActionLink,
   PageAside,
+  PageBody,
   PageHeader,
   PageShell,
 } from "@/components/features/PageShell/PageShell";
@@ -39,38 +40,40 @@ export function GuidesIndex() {
         }
       />
 
-      <ul className="space-y-3">
-        {GUIDE_LINKS.map((guide) => (
-          <li key={guide.slug}>
-            <ContentLinkCard
-              href={guide.href}
-              title={guide.title}
-              description={guide.description}
-              icon={
-                <BookOpen
-                  size={18}
-                  className="text-muted-foreground"
-                  aria-hidden="true"
-                />
-              }
-            />
-          </li>
-        ))}
-      </ul>
+      <PageBody className="space-y-4">
+        <ul className="space-y-3">
+          {GUIDE_LINKS.map((guide) => (
+            <li key={guide.slug}>
+              <ContentLinkCard
+                href={guide.href}
+                title={guide.title}
+                description={guide.description}
+                icon={
+                  <BookOpen
+                    size={18}
+                    className="text-muted-foreground"
+                    aria-hidden="true"
+                  />
+                }
+              />
+            </li>
+          ))}
+        </ul>
 
-      <PageAside>
-        <p>
-          These guides focus on San Francisco buyer decisions. For statewide
-          county rules and official planning links, see{" "}
-          <Link
-            href="/regulations"
-            className="font-medium text-foreground underline-offset-2 hover:underline"
-          >
-            California tiny home regulations
-          </Link>
-          .
-        </p>
-      </PageAside>
+        <PageAside>
+          <p>
+            These guides focus on San Francisco buyer decisions. For statewide
+            county rules and official planning links, see{" "}
+            <Link
+              href="/regulations"
+              className="font-medium text-foreground underline-offset-2 hover:underline"
+            >
+              California tiny home regulations
+            </Link>
+            .
+          </p>
+        </PageAside>
+      </PageBody>
     </PageShell>
   );
 }

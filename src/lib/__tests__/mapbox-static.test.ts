@@ -5,7 +5,7 @@ import {
 } from "@/lib/adapters/mapbox-static";
 
 describe("buildMapboxStaticUrl", () => {
-  it("builds a light-v11 static URL with pin overlay and token", () => {
+  it("builds a streets-v12 static URL without a baked pin", () => {
     const url = buildMapboxStaticUrl({
       lat: 37.7749,
       lng: -122.4194,
@@ -13,9 +13,9 @@ describe("buildMapboxStaticUrl", () => {
     });
 
     expect(url).toContain(
-      "https://api.mapbox.com/styles/v1/mapbox/light-v11/static/",
+      "https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/",
     );
-    expect(url).toContain("pin-l+000000(-122.4194,37.7749)");
+    expect(url).not.toContain("pin-l");
     expect(url).toContain(
       `/-122.4194,37.7749,${STATIC_MAP_DEFAULTS.zoom},0/${STATIC_MAP_DEFAULTS.width}x${STATIC_MAP_DEFAULTS.height}@2x`,
     );

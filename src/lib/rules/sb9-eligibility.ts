@@ -1,23 +1,7 @@
 import type { EligibilityResult } from "@/lib/types/zoning";
 import type { Parcel } from "@/lib/types/zoning";
 import { SRC } from "@/lib/regulations/sources";
-
-/**
- * Single-family zones eligible for the SB 9 two-unit / lot-split path.
- * Gov. Code § 65852.21 is limited to lots zoned for single-family dwellings
- * (R-1 / RS / RH-1 equivalents) — not multifamily or commercial.
- */
-function isSingleFamilyZoning(zoning: string): boolean {
-  const z = zoning.toUpperCase();
-  switch (z) {
-    case "R-1":
-    case "RS":
-    case "RH-1":
-      return true;
-    default:
-      return z.startsWith("R-1") || z.startsWith("RH-1");
-  }
-}
+import { isSingleFamilyZoning } from "@/lib/rules/zoning-class";
 
 const SB9_SOURCES = [SRC.gov65852_21, SRC.gov66411_7, SRC.hcdSb9] as const;
 

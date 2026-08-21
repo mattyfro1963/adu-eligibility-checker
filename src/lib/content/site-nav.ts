@@ -3,6 +3,8 @@
 export type SiteNavItem = {
   href: string;
   label: string;
+  /** Compact header label on small screens when `label` is long. */
+  shortLabel?: string;
   description?: string;
 };
 
@@ -16,6 +18,7 @@ export const RESOURCE_NAV: SiteNavItem[] = [
   {
     href: "/regulations",
     label: "Regulations",
+    shortLabel: "Regs",
     description: "Statewide tiny-home context",
   },
   {
@@ -34,6 +37,11 @@ export const RESOURCE_NAV: SiteNavItem[] = [
     description: "Search an address first, then request a builder intro",
   },
 ];
+
+/** Compact header links — checker home is the wordmark, not a duplicate nav item. */
+export const HEADER_NAV: SiteNavItem[] = RESOURCE_NAV.filter(
+  (item) => item.href !== "/",
+);
 
 /** @deprecated Use RESOURCE_NAV — kept for any lingering imports during migration. */
 export const PRIMARY_NAV: SiteNavItem[] = [

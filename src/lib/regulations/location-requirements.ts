@@ -7,7 +7,9 @@ import {
   CBC_BASELINE,
   PARK_MODEL_OVERVIEW,
 } from "@/lib/content/ca-tiny-home-regulations";
+import { formatZoningDistrictName } from "@/lib/address/format-parcel-address";
 import {
+  isSanFranciscoPlace,
   requirementsFromJurisdictionNote,
   resolveJurisdictionGuide,
 } from "@/lib/content/resolve-jurisdiction";
@@ -16,7 +18,7 @@ import {
   CA_CRC_SIZE_CLAIM,
   CA_STRUCTURE_PATH_CLAIM,
 } from "@/lib/regulations/size-structure";
-import { SRC } from "@/lib/regulations/sources";
+import { SRC, uniqueSourceRefs } from "@/lib/regulations/sources";
 import type { CitedClaim, SourceRef } from "@/lib/regulations/types";
 import type { GeocodeResult } from "@/lib/types/gis";
 import type { ZoningReport } from "@/lib/types/zoning";
@@ -50,6 +52,18 @@ export type ComposeLocationRequirementsInput = {
 
 function claim(text: string, sources: SourceRef[]): CitedClaim {
   return { text, sources };
+}
+
+/** City links when the place matches a nested city; otherwise county links. */
+export function jurisdictionSourceRefs(
+  geocode: Pick<GeocodeResult, "place" | "county">,
+): SourceRef[] {
+  const resolved = resolveJurisdictionGuide(geocode.place, geocode.county);
+  const note = resolved.city ?? resolved.county;
+  if (!note) return [];
+  return uniqueSourceRefs(
+    note.links.map((link) => ({ label: link.label, href: link.href })),
+  );
 }
 
 function statewideFloor(): LocationRequirement[] {
@@ -199,14 +213,31 @@ function jurisdictionRequirements(
 
 function lotZoningRequirements(
   report: ZoningReport | null,
+  geocode: GeocodeResult,
 ): LocationRequirement[] {
   if (!report || report.analysisScope === "jurisdiction_context") return [];
 
-  const zoneSources: SourceRef[] = [
-    SRC.datasfZoning,
-    SRC.govChapter13,
-    SRC.hcdAdu,
-  ];
+  const local = jurisdictionSourceRefs(geocode);
+  const districtSource: SourceRef[] =
+    report.zoningSourceUrl && /^https:\/\//i.test(report.zoningSourceUrl)
+      ? [
+          {
+            label: `Planning Code — ${report.zoning}`,
+            href: report.zoningSourceUrl,
+          },
+        ]
+      : [];
+  const zoneSources: SourceRef[] = uniqueSourceRefs(
+    isSanFranciscoPlace(geocode.place)
+      ? [SRC.datasfZoning, ...districtSource, SRC.govChapter13, SRC.hcdAdu]
+      : [SRC.govChapter13, SRC.hcdAdu, ...local, ...districtSource],
+  );
+  const readableName = report.zoningDistrictName?.trim()
+    ? formatZoningDistrictName(report.zoningDistrictName)
+    : null;
+  const districtLabel = readableName
+    ? `${report.zoning} (${readableName})`
+    : report.zoning;
   return [
     {
       id: "lot-zoning",
@@ -216,7 +247,7 @@ function lotZoningRequirements(
       jurisdictionLabel: "This lot",
       sources: zoneSources,
       tinyHomeExplanation: claim(
-        `Local district ${report.zoning} was resolved for this coordinate. Residential / mixed-use districts are the usual ADU path; commercial-only districts generally do not carry statewide ADU rights for a dwelling-use tiny home.`,
+        `Local district ${districtLabel} was resolved for this coordinate. Residential / mixed-use districts are the usual ADU path; commercial-only districts generally do not carry statewide ADU rights for a dwelling-use tiny home.`,
         zoneSources,
       ),
     },
@@ -307,7 +338,7 @@ export function composeLocationRequirements(
   return [
     ...statewideFloor(),
     ...jurisdictionRequirements(input.geocode),
-    ...lotZoningRequirements(input.report),
+    ...lotZoningRequirements(input.report, input.geocode),
     ...overlayRequirements(input.report),
   ];
 }

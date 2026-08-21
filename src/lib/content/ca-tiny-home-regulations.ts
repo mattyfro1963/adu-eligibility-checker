@@ -63,8 +63,7 @@ export const TINY_HOME_SIZE_STRUCTURE = {
   structurePaths: {
     foundation:
       "Foundation-mounted site-built or factory-built dwellings follow CBC/CRC occupancy and habitability standards.",
-    thow:
-      "Chassis-mounted THOWs and park trailers (commonly ANSI A119.5) are recreational / park-trailer classes unless a local ordinance expressly authorizes dwelling or ADU use — with highway movement limits and skirting or residential appearance where required.",
+    thow: "Chassis-mounted THOWs and park trailers (commonly ANSI A119.5) are recreational / park-trailer classes unless a local ordinance expressly authorizes dwelling or ADU use — with highway movement limits and skirting or residential appearance where required.",
     factoryBuilt:
       "Factory-built housing (modular) is built to the California Building Standards Code with HCD oversight — not the same path as HUD Code manufactured homes.",
     hudManufactured:
@@ -187,8 +186,8 @@ export const COUNTY_DIRECTORY: ResourceLink[] = [
     href: "https://www.lassencounty.org/dept/planning-and-building-services/planning-and-building-services",
   },
   {
-    label: "Los Angeles County — Moveable Tiny House guidance",
-    href: "https://ladbs.org/docs/default-source/publications/information-bulletins/zoning-code/ib-p-zc-2020-021-guidelines-for-construction-of-adu.pdf?sfvrsn=4e15f653_20",
+    label: "Los Angeles County — Accessory Dwelling Units",
+    href: "https://planning.lacounty.gov/planning-permits/accessory-dwelling-units/",
   },
   {
     label: "Madera County — Building Division",
@@ -228,7 +227,7 @@ export const COUNTY_DIRECTORY: ResourceLink[] = [
   },
   {
     label: "Orange County — Development Services",
-    href: "https://ocds.ocpublicworks.com/",
+    href: "https://pwds.oc.gov/",
   },
   {
     label: "Placer County — Tiny Homes",
@@ -243,8 +242,8 @@ export const COUNTY_DIRECTORY: ResourceLink[] = [
     href: "https://building.rctlma.org/",
   },
   {
-    label: "Sacramento County",
-    href: "https://www.saccounty.gov/",
+    label: "Sacramento County — Land Use Regulation Library",
+    href: "https://landuse.saccounty.gov/",
   },
   {
     label: "San Benito County — Tiny Homes (AmLegal)",
@@ -259,8 +258,8 @@ export const COUNTY_DIRECTORY: ResourceLink[] = [
     href: "https://www.sandiego.gov/sites/default/files/dsdib403.pdf",
   },
   {
-    label: "San Francisco — Building",
-    href: "https://www.sf.gov/topics--building",
+    label: "San Francisco — Department of Building Inspection",
+    href: "https://www.sf.gov/departments/department-building-inspection",
   },
   {
     label: "San Francisco — Planning",
@@ -367,7 +366,7 @@ export const CITY_DIRECTORY: ResourceLink[] = [
   },
   {
     label: "Oakland — Vehicular residential facilities / THOW",
-    href: "https://www.oaklandca.gov/services/apply-for-vehicular-residential-facilities-occupied-recreational-vehicles-rvs-and-tiny-homes-on-wheels",
+    href: "https://www.oaklandca.gov/My-Household/Building-and-Remodeling/Homeowner-Projects-Permits/RVs-and-Tiny-Homes-on-Wheels",
   },
   {
     label: "Sacramento — Building Division contacts",
@@ -379,7 +378,7 @@ export const CITY_DIRECTORY: ResourceLink[] = [
   },
   {
     label: "San Francisco — Building codes",
-    href: "https://www.sf.gov/resource--2022--current-san-francisco-building-codes",
+    href: "https://www.sf.gov/resource/2022/current-san-francisco-building-codes",
   },
   {
     label: "San Jose — ADUs",
@@ -462,11 +461,11 @@ export const COUNTY_GUIDES: JurisdictionNote[] = [
         links: [
           {
             label: "Apply for vehicular residential facilities",
-            href: "https://www.oaklandca.gov/services/apply-for-vehicular-residential-facilities-occupied-recreational-vehicles-rvs-and-tiny-homes-on-wheels",
+            href: "https://www.oaklandca.gov/My-Household/Building-and-Remodeling/Homeowner-Projects-Permits/RVs-and-Tiny-Homes-on-Wheels",
           },
           {
             label: "Planning & Building",
-            href: "https://www.oaklandca.gov/departments/planning-and-building",
+            href: "https://www.oaklandca.gov/Government/Departments/Planning-Building",
           },
         ],
       },
@@ -669,17 +668,45 @@ export const COUNTY_GUIDES: JurisdictionNote[] = [
   {
     name: "Los Angeles County",
     summary:
-      "Implements 2022 CBC room minima and expressly addresses moveable tiny houses as permanent ADUs.",
+      "Unincorporated Los Angeles County implements 2022 CBC room minima and expressly addresses moveable tiny houses as permanent ADUs. Incorporated cities have their own ADU ordinances.",
     parkModel:
-      "Typical THOW criteria include DMV licensing/registration, ANSI A119.5, not self-propelled, highway size limits, and roughly 150–430 sq ft. Long Beach and the City of Los Angeles may differ—confirm with each municipality.",
+      "Typical unincorporated THOW criteria include DMV licensing/registration, ANSI A119.5, not self-propelled, highway size limits, and roughly 150–430 sq ft.",
     links: [
       {
-        label: "Moveable Tiny House / ADU guidance",
-        href: "https://ladbs.org/docs/default-source/publications/information-bulletins/zoning-code/ib-p-zc-2020-021-guidelines-for-construction-of-adu.pdf?sfvrsn=4e15f653_20",
+        label: "LA County Planning — Accessory Dwelling Units",
+        href: "https://planning.lacounty.gov/planning-permits/accessory-dwelling-units/",
+      },
+    ],
+    cities: [
+      {
+        name: "Los Angeles",
+        summary:
+          "The City of Los Angeles allows ADUs and movable tiny houses as ADUs under LAMC and state ADU law. A city permit is required.",
+        parkModel:
+          "Movable tiny houses must be DMV-registered, ANSI 119.5 or NFPA 1192 certified, not self-propelled, and typically 150–430 sq ft. Confirm current LADBS standards before delivery.",
+        links: [
+          {
+            label: "LADBS — Accessory Dwelling Units",
+            href: "https://dbs.lacity.gov/adu",
+          },
+          {
+            label: "Los Angeles City Planning",
+            href: "https://planning.lacity.gov/",
+          },
+        ],
       },
       {
-        label: "Long Beach Building & Safety",
-        href: "https://www.longbeach.gov/lbcd/building/",
+        name: "Long Beach",
+        summary:
+          "Long Beach allows code-compliant ADUs under city building and planning standards. Confirm current ADU submittal rules with Long Beach Development Services.",
+        parkModel:
+          "THOW permanence is not always the same as a foundation ADU — confirm with Long Beach Building & Safety.",
+        links: [
+          {
+            label: "Long Beach Building & Safety",
+            href: "https://www.longbeach.gov/lbcd/building/",
+          },
+        ],
       },
     ],
   },
@@ -795,15 +822,37 @@ export const COUNTY_GUIDES: JurisdictionNote[] = [
   {
     name: "Orange County",
     summary:
-      "Follows 2022 CBC (7 ft 6 in ceiling, 120 / 70 sq ft rooms). Anaheim similarly allows CBC-compliant tiny homes.",
+      "Follows 2022 CBC (7 ft 6 in ceiling, 120 / 70 sq ft rooms). Cities adopt local ADU ordinances on top of that floor.",
     links: [
       {
-        label: "Development Services",
-        href: "https://ocds.ocpublicworks.com/",
+        label: "OC Public Works — Development Services",
+        href: "https://pwds.oc.gov/",
+      },
+    ],
+    cities: [
+      {
+        name: "Irvine",
+        summary:
+          "Irvine allows ADUs and JADUs on residential lots under the municipal zoning ordinance, with ministerial review. A city permit is required.",
+        parkModel:
+          "Moveable tiny houses are not automatically ADUs; confirm Irvine’s current ordinance before wheels-on occupancy.",
+        links: [
+          {
+            label: "City of Irvine — Constructing an ADU",
+            href: "https://cityofirvine.gov/building-permits-and-inspections/project-constructing-accessory-dwelling-unit-adu",
+          },
+        ],
       },
       {
-        label: "Anaheim Planning & Building",
-        href: "https://www.anaheim.net/490/Planning-Building",
+        name: "Anaheim",
+        summary:
+          "Anaheim similarly allows CBC-compliant tiny homes as dwellings where zoning and ADU rules are met.",
+        links: [
+          {
+            label: "Anaheim Planning & Building",
+            href: "https://www.anaheim.net/490/Planning-Building",
+          },
+        ],
       },
     ],
   },
@@ -852,12 +901,23 @@ export const COUNTY_GUIDES: JurisdictionNote[] = [
       "Wheeled units typically need a permanent foundation and local code compliance. The City of Sacramento similarly allows tiny homes / park models on permanent foundations or in designated parks.",
     links: [
       {
-        label: "Sacramento County",
-        href: "https://www.saccounty.gov/",
+        label: "Sacramento County — Land Use Regulation Library (ADU)",
+        href: "https://landuse.saccounty.gov/",
       },
+    ],
+    cities: [
       {
-        label: "City Building Division contacts",
-        href: "https://www.cityofsacramento.gov/community-development/contact-cdd/building-division-contacts",
+        name: "Sacramento",
+        summary:
+          "The City of Sacramento allows tiny homes and park models that meet building-code and ADU standards, typically on a permanent foundation or in a designated park.",
+        parkModel:
+          "Wheeled units typically need a permanent foundation and local code compliance before occupancy.",
+        links: [
+          {
+            label: "City of Sacramento — Accessory Dwelling Units",
+            href: "https://www.cityofsacramento.gov/community-development/planning/housing/accessory-dwelling-units",
+          },
+        ],
       },
     ],
   },
@@ -887,11 +947,30 @@ export const COUNTY_GUIDES: JurisdictionNote[] = [
   {
     name: "San Diego County",
     summary:
-      "Follows 2022 CBC. The City of San Diego publishes a Movable Tiny House bulletin for permanent THOW use—confirm county vs city jurisdiction.",
+      "Unincorporated San Diego County follows 2022 CBC for tiny homes. Confirm county versus city jurisdiction before relying on City of San Diego bulletins.",
     links: [
       {
-        label: "City Movable Tiny House bulletin",
-        href: "https://www.sandiego.gov/sites/default/files/dsdib403.pdf",
+        label: "County of San Diego — Planning & Development Services",
+        href: "https://www.sandiegocounty.gov/pds/",
+      },
+    ],
+    cities: [
+      {
+        name: "San Diego",
+        summary:
+          "The City of San Diego allows ADUs and JADUs under the municipal code. A building permit is required; coastal overlay lots may also need a Coastal Development Permit.",
+        parkModel:
+          "The city publishes a Movable Tiny House bulletin (IB-403) for permanent THOW use as an ADU pathway — confirm current IB-400 / IB-403 standards with Development Services.",
+        links: [
+          {
+            label: "City of San Diego — ADU Information Bulletin 400",
+            href: "https://www.sandiego.gov/development-services/forms-publications/information-bulletins/400",
+          },
+          {
+            label: "Movable Tiny House bulletin (IB-403)",
+            href: "https://www.sandiego.gov/sites/default/files/dsdib403.pdf",
+          },
+        ],
       },
     ],
   },
@@ -916,8 +995,8 @@ export const COUNTY_GUIDES: JurisdictionNote[] = [
     ],
     links: [
       {
-        label: "Building",
-        href: "https://www.sf.gov/topics--building",
+        label: "Department of Building Inspection",
+        href: "https://www.sf.gov/departments/department-building-inspection",
       },
       {
         label: "Planning",
@@ -925,7 +1004,7 @@ export const COUNTY_GUIDES: JurisdictionNote[] = [
       },
       {
         label: "Current building codes",
-        href: "https://www.sf.gov/resource--2022--current-san-francisco-building-codes",
+        href: "https://www.sf.gov/resource/2022/current-san-francisco-building-codes",
       },
     ],
   },
@@ -974,9 +1053,20 @@ export const COUNTY_GUIDES: JurisdictionNote[] = [
         label: "Planning & Development",
         href: "https://plandev.santaclaracounty.gov/home",
       },
+    ],
+    cities: [
       {
-        label: "San Jose ADUs",
-        href: "https://www.sanjoseca.gov/business/development-services-permit-center/accessory-dwelling-units-adus",
+        name: "San Jose",
+        summary:
+          "San Jose allows tiny homes through ADU pathways. Confirm current Development Services standards and permits before placing a unit.",
+        parkModel:
+          "Park models as ADUs typically require ANSI A119.5 compliance and local authorization.",
+        links: [
+          {
+            label: "San Jose ADUs",
+            href: "https://www.sanjoseca.gov/business/development-services-permit-center/accessory-dwelling-units-adus",
+          },
+        ],
       },
     ],
   },

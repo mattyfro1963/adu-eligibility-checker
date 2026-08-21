@@ -1,5 +1,9 @@
 import { SRC } from "@/lib/regulations/sources";
 import { SB9_LOT_SPLIT_MIN_SQFT } from "@/lib/rules/unit-capacity";
+import {
+  isResidentialZoning,
+  isSingleFamilyZoning,
+} from "@/lib/rules/zoning-class";
 import type {
   StatutoryEvaluation,
   StatutoryOutcome,
@@ -9,36 +13,6 @@ import type { Parcel, ZoningReport } from "@/lib/types/zoning";
 function outcome(passed: boolean, lotVerified: boolean): StatutoryOutcome {
   if (!lotVerified) return "unverified";
   return passed ? "pass" : "fail";
-}
-
-function isSingleFamilyZoning(zoning: string): boolean {
-  const z = zoning.toUpperCase();
-  switch (z) {
-    case "R-1":
-    case "RS":
-    case "RH-1":
-      return true;
-    default:
-      return z.startsWith("R-1") || z.startsWith("RH-1");
-  }
-}
-
-function isResidentialZoning(zoning: string): boolean {
-  const z = zoning.toUpperCase();
-  switch (z) {
-    case "C-1":
-    case "C-2":
-    case "C-3":
-    case "M-1":
-    case "M-2":
-    case "PDR":
-      return false;
-    case "RS":
-    case "RH":
-      return true;
-    default:
-      return z.startsWith("R-") || z.startsWith("RM") || z.startsWith("RH-");
-  }
 }
 
 function primaryReasonText(

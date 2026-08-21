@@ -5,16 +5,16 @@ import { usePathname } from "next/navigation";
 import { SiteHeader } from "@/components/features/SiteHeader/SiteHeader";
 import { SiteFooter } from "@/components/features/SiteFooter/SiteFooter";
 
-/** Site chrome for sub-pages; hidden on `/` so the checker embeds cleanly. */
+/** Site chrome: header and footer on every route, including the checker. */
 export function SiteChrome({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isWidget = pathname === "/";
 
   return (
     <>
-      {!isWidget ? <SiteHeader /> : null}
+      <SiteHeader />
       {children}
-      {!isWidget ? <SiteFooter /> : null}
+      <SiteFooter demo={isWidget} />
     </>
   );
 }

@@ -55,7 +55,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${sohn.variable} ${ibmPlexMono.variable} h-full antialiased`}
     >
       <body
-        className="flex min-h-full flex-col bg-background text-foreground selection:bg-muted selection:text-foreground"
+        className="flex min-h-full flex-col overflow-x-clip bg-background text-foreground selection:bg-muted selection:text-foreground"
         data-mapbox-configured={mapboxConfigured ? "1" : "0"}
       >
         <SkipToContent />

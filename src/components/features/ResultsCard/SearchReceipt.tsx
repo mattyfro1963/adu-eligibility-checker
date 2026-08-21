@@ -120,7 +120,7 @@ export function SearchReceiptCard({
   return (
     <section
       aria-labelledby="search-receipt-heading"
-      className="rounded-card border border-border bg-muted/50 p-5 sm:p-6 md:p-8"
+      className="rounded-xl border border-border bg-muted/50 p-5 sm:p-6 md:p-8"
     >
       <div className="mb-5 flex items-center gap-3">
         <div className="rounded-lg border border-border bg-card p-2">

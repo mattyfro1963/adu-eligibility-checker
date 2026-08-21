@@ -69,7 +69,7 @@ function ResourceList({ links }: { links: ResourceLink[] }) {
 
 function CountyCard({ county }: { county: JurisdictionNote }) {
   return (
-    <details className="group rounded-[10px] border border-border bg-card ">
+    <details className="group rounded-xl border border-border bg-card">
       <summary className="min-h-[44px] cursor-pointer list-none px-4 py-3 font-medium text-foreground marker:content-none [&::-webkit-details-marker]:hidden">
         <span className="flex items-center justify-between gap-3">
           <span>{county.name}</span>
@@ -81,7 +81,7 @@ function CountyCard({ county }: { county: JurisdictionNote }) {
           </span>
         </span>
       </summary>
-      <div className="space-y-3 border-t border-border px-4 py-4 text-sm leading-relaxed text-muted-foreground">
+      <div className="space-y-3 border-t border-border px-4 py-4 text-[15px] leading-relaxed text-muted-foreground">
         <p>{county.summary}</p>
         {county.parkModel ? (
           <p>
@@ -128,8 +128,8 @@ export function RegulationsGuide() {
         title={GUIDE_INTRO.title}
         description={
           <>
-            <p className="text-base sm:text-lg">{GUIDE_INTRO.subtitle}</p>
-            <p className="mt-3 text-sm">{GUIDE_INTRO.lead}</p>
+            <p className="text-[15px] sm:text-base">{GUIDE_INTRO.subtitle}</p>
+            <p className="mt-3 text-sm sm:text-[15px]">{GUIDE_INTRO.lead}</p>
           </>
         }
         meta={<RegulationsAuthorByline />}
@@ -152,7 +152,10 @@ export function RegulationsGuide() {
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_13rem] lg:gap-10">
         <div className="space-y-10 sm:space-y-12">
-          <section id="overview" className="scroll-mt-24 space-y-4">
+          <section
+            id="overview"
+            className="scroll-mt-32 sm:scroll-mt-24 space-y-4"
+          >
             <div className="flex items-center gap-2">
               <Scale
                 size={18}
@@ -167,7 +170,7 @@ export function RegulationsGuide() {
               {GUIDE_INTRO.buildingCodeNote}
             </p>
             <dl className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-[10px] border border-border bg-card p-4">
+              <div className="rounded-xl border border-border bg-card p-4">
                 <dt className="text-xs font-normal tracking-wide text-muted-foreground uppercase">
                   Ceiling height
                 </dt>
@@ -175,7 +178,7 @@ export function RegulationsGuide() {
                   {CBC_BASELINE.ceilingHeight}
                 </dd>
               </div>
-              <div className="rounded-[10px] border border-border bg-card p-4">
+              <div className="rounded-xl border border-border bg-card p-4">
                 <dt className="text-xs font-normal tracking-wide text-muted-foreground uppercase">
                   Primary room
                 </dt>
@@ -183,7 +186,7 @@ export function RegulationsGuide() {
                   ≥ {CBC_BASELINE.primaryRoomSqFt} sq ft
                 </dd>
               </div>
-              <div className="rounded-[10px] border border-border bg-card p-4">
+              <div className="rounded-xl border border-border bg-card p-4">
                 <dt className="text-xs font-normal tracking-wide text-muted-foreground uppercase">
                   Additional rooms
                 </dt>
@@ -194,7 +197,10 @@ export function RegulationsGuide() {
             </dl>
           </section>
 
-          <section id="park-models" className="scroll-mt-24 space-y-4">
+          <section
+            id="park-models"
+            className="scroll-mt-32 sm:scroll-mt-24 space-y-4"
+          >
             <div className="flex items-center gap-2">
               <MapPinned
                 size={18}
@@ -212,7 +218,10 @@ export function RegulationsGuide() {
             </div>
           </section>
 
-          <section id="county-guides" className="scroll-mt-24 space-y-4">
+          <section
+            id="county-guides"
+            className="scroll-mt-32 sm:scroll-mt-24 space-y-4"
+          >
             <h2 className="text-xl font-normal tracking-tight text-foreground">
               What counties allow tiny houses?
             </h2>
@@ -228,7 +237,7 @@ export function RegulationsGuide() {
             </div>
           </section>
 
-          <section id="directories" className="scroll-mt-24">
+          <section id="directories" className="scroll-mt-32 sm:scroll-mt-24">
             <ExpandableSection
               title="Official resource directories"
               description="County planning links and major city ordinances"
@@ -242,7 +251,7 @@ export function RegulationsGuide() {
                   <p className="text-sm text-muted-foreground">
                     Direct links to planning, building, and tiny-home materials.
                   </p>
-                  <div className="rounded-[10px] border border-border bg-card p-5">
+                  <div className="rounded-xl border border-border bg-card p-5">
                     <ResourceList links={COUNTY_DIRECTORY} />
                   </div>
                 </div>
@@ -254,7 +263,7 @@ export function RegulationsGuide() {
                     City rules can differ from the surrounding county—check
                     both.
                   </p>
-                  <div className="rounded-[10px] border border-border bg-card p-5">
+                  <div className="rounded-xl border border-border bg-card p-5">
                     <ResourceList links={CITY_DIRECTORY} />
                   </div>
                 </div>
@@ -262,7 +271,10 @@ export function RegulationsGuide() {
             </ExpandableSection>
           </section>
 
-          <section id="unclear" className="scroll-mt-24 space-y-4">
+          <section
+            id="unclear"
+            className="scroll-mt-32 sm:scroll-mt-24 space-y-4"
+          >
             <div className="flex items-center gap-2">
               <ShieldAlert
                 size={18}
@@ -283,7 +295,10 @@ export function RegulationsGuide() {
             </div>
           </section>
 
-          <section id="permits" className="scroll-mt-24 space-y-3">
+          <section
+            id="permits"
+            className="scroll-mt-32 sm:scroll-mt-24 space-y-3"
+          >
             <h2 className="text-xl font-normal tracking-tight text-foreground">
               {PERMIT_OVERVIEW.title}
             </h2>
@@ -292,7 +307,7 @@ export function RegulationsGuide() {
             </p>
           </section>
 
-          <section id="communities" className="scroll-mt-24">
+          <section id="communities" className="scroll-mt-32 sm:scroll-mt-24">
             <ExpandableSection
               title="Example tiny-home communities"
               description="Designated parks when local rules require community placement"
@@ -307,7 +322,7 @@ export function RegulationsGuide() {
                 {COMMUNITIES.map((community) => (
                   <li
                     key={community.name}
-                    className="rounded-[10px] border border-border bg-card p-5"
+                    className="rounded-xl border border-border bg-card p-5"
                   >
                     <p className="font-medium text-foreground">
                       {community.name}
@@ -324,7 +339,7 @@ export function RegulationsGuide() {
             </ExpandableSection>
           </section>
 
-          <section id="partners" className="scroll-mt-24">
+          <section id="partners" className="scroll-mt-32 sm:scroll-mt-24">
             <ExpandableSection
               title="Partners & build-out resources"
               description="Curated manufacturer links — not endorsements or permit substitutes"
@@ -355,7 +370,7 @@ export function RegulationsGuide() {
                   return (
                     <li
                       key={category}
-                      className="rounded-[10px] border border-border bg-card p-5"
+                      className="rounded-xl border border-border bg-card p-5"
                     >
                       <p className="text-xs font-normal tracking-wider text-muted-foreground uppercase">
                         {AFFILIATE_CATEGORY_LABELS[category]}
@@ -391,7 +406,7 @@ export function RegulationsGuide() {
             </ExpandableSection>
           </section>
 
-          <section id="faqs" className="scroll-mt-24 space-y-4">
+          <section id="faqs" className="scroll-mt-32 sm:scroll-mt-24 space-y-4">
             <h2 className="text-xl font-normal tracking-tight text-foreground">
               FAQs
             </h2>
@@ -399,7 +414,7 @@ export function RegulationsGuide() {
               {FAQS.map((faq) => (
                 <details
                   key={faq.question}
-                  className="rounded-[10px] border border-border bg-card "
+                  className="rounded-xl border border-border bg-card"
                 >
                   <summary className="min-h-[44px] cursor-pointer list-none px-4 py-3 font-medium text-foreground marker:content-none [&::-webkit-details-marker]:hidden">
                     {faq.question}

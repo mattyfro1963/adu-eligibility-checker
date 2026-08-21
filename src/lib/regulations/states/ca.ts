@@ -39,7 +39,7 @@ export const CA_USE_DOCTRINE: CitedClaim[] = [
   },
   {
     text: "Residential occupancy triggers higher health and safety standards than storage or workshop use. Converting a studio or storage permit to housing later is a change of use — local planning must confirm the unit meets residential standards before you live in it.",
-    sources: [...hcdClass, SRC.sfPlanning],
+    sources: [...hcdClass],
   },
 ];
 
@@ -51,7 +51,7 @@ export const CA_OUTLINE: OutlineSection[] = [
       ...CA_USE_DOCTRINE,
       {
         text: "Do not skip permits. Unpermitted placement can lead to fines and code enforcement. This checker is informational only — confirm with your local Planning/Building department (or SF Planning/DBI in San Francisco) or a California-licensed land-use attorney for site-specific advice.",
-        sources: [SRC.sfPlanning, SRC.sfDbi, SRC.hcdAdu],
+        sources: [SRC.hcdAdu, SRC.hcdTinyHomesIb],
       },
     ],
   },
@@ -71,7 +71,7 @@ export const CA_OUTLINE: OutlineSection[] = [
       },
       {
         text: "Your city or county zoning ordinance still lists which uses are allowed in which districts and sets setbacks, parking, access, and screening. State law limits how restrictive locals can be for ADUs — it does not replace reading the local code.",
-        sources: [...chapter13, SRC.sfPlanning],
+        sources: [...chapter13],
       },
       {
         text: "A tiny home on wheels is an ADU pathway only where local regulation expressly allows moveable tiny houses. Removing wheels or a tongue does not automatically create a lawful ADU; foundation-mounted residential use must still meet Chapter 13 and local standards.",
@@ -115,11 +115,11 @@ export const CA_OUTLINE: OutlineSection[] = [
     claims: [
       {
         text: "Park trailers are commonly built to ANSI A119.5 and treated as recreational / seasonal units unless a local path (special occupancy park or express THOW-as-ADU ordinance) allows residential use. Certification matters — DIY builders should ask the local building department what proof they accept.",
-        sources: [...ansi],
+        sources: [...hcdClass],
       },
       {
         text: "Rules vary city to city across California. California jurisdictions may allow or restrict moveable tiny houses (THOWs) differently under their own local ordinances — confirm local standards with your city or county planning department.",
-        sources: [...hcdClass, SRC.sfPlanningAdu, SRC.hcdAdu],
+        sources: [...hcdClass, SRC.hcdAdu],
       },
     ],
   },
@@ -298,7 +298,7 @@ export const CA_CHECKLIST: ChecklistItem[] = [
     title: "Plan safety / certification",
     detail: {
       text: "Residential park trailers commonly need ANSI A119.5 certification (HCD IB 2016-01). Site-built and factory-built dwellings follow the 2025 California Building Standards Code path effective January 1, 2026.",
-      sources: [...ansi, ...cbsc],
+      sources: [...hcdClass, ...cbsc],
     },
   },
   {

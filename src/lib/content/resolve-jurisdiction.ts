@@ -69,6 +69,12 @@ function formatCountyLabel(county: string, place: string): string {
   return `${raw} County`;
 }
 
+/** City of San Francisco only — not South San Francisco or other substrings. */
+export function isSanFranciscoPlace(place: string): boolean {
+  const p = place.trim().toLowerCase();
+  return p === "san francisco" || p === "city and county of san francisco";
+}
+
 /**
  * Match place + county against COUNTY_GUIDES and nested cities[].
  * City match under a county wins over bare place≈county name collisions.

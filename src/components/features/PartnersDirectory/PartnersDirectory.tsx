@@ -3,6 +3,7 @@ import { ExternalLink, Package } from "lucide-react";
 import {
   PageActionLink,
   PageAside,
+  PageBody,
   PageHeader,
   PageShell,
 } from "@/components/features/PageShell/PageShell";
@@ -38,7 +39,7 @@ export function PartnersDirectory() {
         title="Partners & build-out resources"
         description="Curated manufacturer and product-line links for solar, sanitation, chassis, and compact appliances — research aids after you check a parcel, not endorsements or legal advice."
         meta={
-          <p className="max-w-3xl text-xs leading-relaxed text-muted-foreground">
+          <p className="max-w-xl text-xs leading-relaxed text-muted-foreground">
             {AFFILIATE_DISCLOSURE}
           </p>
         }
@@ -50,61 +51,64 @@ export function PartnersDirectory() {
         }
       />
 
-      <div className="space-y-4">
-        {sections.map((section, index) => (
-          <ExpandableSection
-            key={section.category}
-            id={`partners-${section.category}`}
-            title={section.label}
-            description={`${section.partners.length} featured resource${section.partners.length === 1 ? "" : "s"}`}
-            defaultOpen={index === 0}
-          >
-            <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {section.partners.map((partner) => {
-                const href = buildAffiliateHref(partner, {
-                  intent: "eligible",
-                });
-                return (
-                  <li key={partner.id}>
-                    <a
-                      href={href}
-                      target="_blank"
-                      rel="sponsored noopener noreferrer"
-                      className="flex min-h-[44px] flex-col gap-1 rounded-[10px] border border-border bg-card p-4 transition-colors hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none"
-                    >
-                      <span className="inline-flex items-center gap-1.5 text-sm font-normal text-foreground">
-                        {partner.name}
-                        <ExternalLink
-                          size={12}
-                          className="shrink-0 opacity-60"
-                          aria-hidden="true"
-                        />
-                      </span>
-                      <span className="text-sm leading-relaxed text-muted-foreground">
-                        {partner.blurb}
-                      </span>
-                    </a>
-                  </li>
-                );
-              })}
-            </ul>
-          </ExpandableSection>
-        ))}
-      </div>
+      <PageBody className="space-y-4">
+        <div className="space-y-3">
+          {sections.map((section, index) => (
+            <ExpandableSection
+              key={section.category}
+              id={`partners-${section.category}`}
+              title={section.label}
+              description={`${section.partners.length} featured resource${section.partners.length === 1 ? "" : "s"}`}
+              defaultOpen={index === 0}
+            >
+              <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {section.partners.map((partner) => {
+                  const href = buildAffiliateHref(partner, {
+                    intent: "eligible",
+                  });
+                  return (
+                    <li key={partner.id}>
+                      <a
+                        href={href}
+                        target="_blank"
+                        rel="sponsored noopener noreferrer"
+                        className="flex min-h-[44px] flex-col gap-1 rounded-xl border border-border bg-card p-4 transition-colors hover:border-foreground/15 focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
+                      >
+                        <span className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground">
+                          {partner.name}
+                          <ExternalLink
+                            size={12}
+                            className="shrink-0 opacity-60"
+                            aria-hidden="true"
+                          />
+                        </span>
+                        <span className="text-[15px] leading-relaxed text-muted-foreground">
+                          {partner.blurb}
+                        </span>
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </ExpandableSection>
+          ))}
+        </div>
 
-      <PageAside>
-        <p>
-          Catalog includes {AFFILIATE_PARTNERS.length} featured resources across{" "}
-          {sections.length} categories. Ready to evaluate overlays for your lot?{" "}
-          <Link
-            href="/"
-            className="font-medium text-foreground underline-offset-2 hover:underline"
-          >
-            Open the eligibility checker
-          </Link>
-          .
-        </p>
-      </PageAside>
+        <PageAside>
+          <p>
+            Catalog includes {AFFILIATE_PARTNERS.length} featured resources
+            across {sections.length} categories. Ready to evaluate overlays for
+            your lot?{" "}
+            <Link
+              href="/"
+              className="font-medium text-foreground underline-offset-2 hover:underline"
+            >
+              Open the eligibility checker
+            </Link>
+            .
+          </p>
+        </PageAside>
+      </PageBody>
     </PageShell>
   );
 }

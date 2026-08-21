@@ -2,16 +2,9 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import {
-  ArrowRight,
-  Building2,
-  Home,
-  Landmark,
-  MapPin,
-  ShieldAlert,
-  Trees,
-} from "lucide-react";
+import { ArrowRight, Home, Landmark, ShieldAlert, Trees } from "lucide-react";
 import { AddressMapPreview } from "@/components/features/AddressMapPreview/AddressMapPreview";
+import { MapSiteLegend } from "@/components/features/AddressMapPreview/MapSiteLegend";
 import { ApplicationChecklist } from "@/components/features/ResultsCard/ApplicationChecklist";
 import { BuyerGuideLinks } from "@/components/features/ResultsCard/BuyerGuideLinks";
 import { CaliforniaOutline } from "@/components/features/ResultsCard/CaliforniaOutline";
@@ -25,6 +18,7 @@ import { SearchReceiptCard } from "@/components/features/ResultsCard/SearchRecei
 import { EligibilityBadge } from "@/components/ui/eligibility-badge";
 import { ExpandableSection } from "@/components/ui/expandable-section";
 import { composeResultsBriefing } from "@/lib/regulations/compose-briefing";
+import { formatParcelAddress } from "@/lib/address/format-parcel-address";
 import { buildStatutoryEvaluations } from "@/lib/rules/statutory-evaluations";
 import { cn } from "@/lib/utils";
 import type { GeocodeResult } from "@/lib/types/gis";
@@ -39,8 +33,7 @@ function formatJurisdiction(geocode: GeocodeResult | null): string | null {
   if (!place && !county) return null;
   const countyLabel = !county
     ? ""
-    : /\bcounty\b/i.test(county) ||
-        county.toLowerCase() === place.toLowerCase()
+    : /\bcounty\b/i.test(county) || county.toLowerCase() === place.toLowerCase()
       ? county
       : `${county} County`;
   if (
@@ -128,7 +121,7 @@ function ProgramToggle({
             }
             onClick={() => onChange(tab.id)}
             className={cn(
-              "inline-flex min-h-[40px] items-center justify-center rounded-pill px-2 text-caption font-medium transition-colors",
+              "inline-flex min-h-[44px] items-center justify-center rounded-pill px-2 text-caption font-medium transition-colors",
               selected
                 ? "bg-card text-foreground shadow-editorial"
                 : "text-muted-foreground hover:text-foreground",
@@ -156,8 +149,9 @@ export function ResultsCard({
   const [program, setProgram] = useState<ProgramTab>("adu");
   const lat = geocodeResult?.lat ?? null;
   const lng = geocodeResult?.lng ?? null;
-  const address =
-    report?.formattedAddress ?? geocodeResult?.formattedAddress ?? "—";
+  const address = geocodeResult
+    ? formatParcelAddress(geocodeResult)
+    : (report?.formattedAddress ?? "—");
   const mapblklot = report?.mapblklot ?? null;
   const isJurisdictionContext =
     report?.analysisScope === "jurisdiction_context";
@@ -200,13 +194,40 @@ export function ResultsCard({
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 space-y-6 duration-700 fill-mode-both sm:space-y-8">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:items-stretch lg:gap-8">
-        <div className="relative flex flex-col overflow-hidden rounded-card border border-border bg-card shadow-elevated lg:col-span-2 lg:max-h-[min(720px,calc(100vh-8rem))] lg:border-r-0">
-          <div className="flex-1 space-y-6 overflow-y-auto p-8 pb-28">
-            <div className="flex items-start justify-between gap-3">
+        <div className="order-1 flex flex-col overflow-hidden rounded-xl border border-border bg-muted shadow-elevated lg:order-2 lg:col-span-3 lg:h-[min(720px,calc(100vh-8rem))]">
+          <AddressMapPreview
+            lat={lat}
+            lng={lng}
+            status={report?.overall ?? null}
+            label={address}
+            sublabel={mapCalloutSublabel}
+            lotSizeSqFt={report?.lotSizeSqFt ?? null}
+            zoning={isJurisdictionContext ? null : (report?.zoning ?? null)}
+            analysisScope={report?.analysisScope ?? null}
+            showSiteLayers
+            className="min-h-[280px] flex-1 rounded-none border-0 sm:min-h-[360px] lg:min-h-0"
+          />
+          <MapSiteLegend
+            zoningLabel={
+              isJurisdictionContext
+                ? "Unverified"
+                : report?.zoning?.trim() || "Unverified"
+            }
+            lotVerified={
+              !isJurisdictionContext &&
+              report?.lotSizeSqFt != null &&
+              report.lotSizeSqFt > 0
+            }
+            analysisVerified={!isJurisdictionContext && Boolean(report)}
+            status={report?.overall ?? null}
+          />
+        </div>
+
+        <div className="relative order-2 flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-elevated lg:order-1 lg:col-span-2 lg:max-h-[min(720px,calc(100vh-8rem))]">
+          <div className="flex-1 space-y-6 overflow-y-auto p-5 pb-24 sm:p-8 sm:pb-28">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
-                <p className="font-label text-muted-foreground">
-                  Parcel evaluation
-                </p>
+                <p className="font-label text-brand">Parcel evaluation</p>
                 <h3 className="font-heading mt-2 text-heading-sm leading-tight break-words text-foreground">
                   {address}
                 </h3>
@@ -244,56 +265,41 @@ export function ResultsCard({
               </p>
             ) : null}
 
-            <div className="flex items-center justify-between border-b border-border py-3.5">
-              <span className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                <MapPin
-                  size={16}
-                  className="text-muted-foreground"
-                  aria-hidden="true"
-                />
-                Jurisdiction
-              </span>
-              <span className="text-right text-sm font-normal text-foreground">
-                {jurisdictionLabel ?? "—"}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between border-b border-border py-3.5">
-              <span className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                <Building2
-                  size={16}
-                  className="text-muted-foreground"
-                  aria-hidden="true"
-                />
-                Base Zoning
-              </span>
-              <span className="rounded-input border border-border bg-muted px-2.5 py-1 font-mono text-xs font-normal text-foreground">
-                {isJurisdictionContext
-                  ? "Not verified"
-                  : (report?.zoning ?? "—")}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between border-b border-border py-3.5">
-              <span className="text-sm font-medium text-muted-foreground">
-                Lot area
-              </span>
-              <span className="text-sm font-normal text-foreground">
-                {report?.lotSizeSqFt != null && report.lotSizeSqFt > 0
-                  ? `${report.lotSizeSqFt.toLocaleString()} sq ft`
-                  : "Not verified"}
-              </span>
-            </div>
+            <dl className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+              <div className="rounded-xl border border-border bg-muted/40 px-3 py-3">
+                <dt className="font-label text-[10px] text-muted-foreground">
+                  Jurisdiction
+                </dt>
+                <dd className="mt-1.5 text-sm leading-snug text-foreground">
+                  {jurisdictionLabel ?? "—"}
+                </dd>
+              </div>
+              <div className="rounded-xl border border-border bg-muted/40 px-3 py-3">
+                <dt className="font-label text-[10px] text-muted-foreground">
+                  Base zoning
+                </dt>
+                <dd className="mt-1.5 font-mono text-sm text-foreground">
+                  {isJurisdictionContext
+                    ? "Not verified"
+                    : (report?.zoning ?? "—")}
+                </dd>
+              </div>
+              <div className="rounded-xl border border-border bg-muted/40 px-3 py-3">
+                <dt className="font-label text-[10px] text-muted-foreground">
+                  Lot area
+                </dt>
+                <dd className="mt-1.5 text-sm text-foreground">
+                  {report?.lotSizeSqFt != null && report.lotSizeSqFt > 0
+                    ? `${report.lotSizeSqFt.toLocaleString()} sq ft`
+                    : "Not verified"}
+                </dd>
+              </div>
+            </dl>
 
             {isJurisdictionContext ? (
-              <div className="flex items-center justify-between border-b border-border py-3.5">
-                <span className="text-sm font-medium text-muted-foreground">
-                  Analysis scope
-                </span>
-                <span className="text-sm font-normal text-amber-700">
-                  Jurisdiction context
-                </span>
-              </div>
+              <p className="text-xs text-amber-700">
+                Analysis scope: jurisdiction context — lot GIS not verified.
+              </p>
             ) : null}
 
             <div>
@@ -384,7 +390,7 @@ export function ResultsCard({
           </div>
 
           {geocodeResult ? (
-            <div className="flex shrink-0 flex-col gap-2 border-t border-border bg-card p-6 sm:flex-row sm:items-center">
+            <div className="flex shrink-0 flex-col gap-2 border-t border-border bg-card p-4 sm:flex-row sm:items-center sm:p-6">
               <Link
                 href={connectHref}
                 className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-button border border-border bg-card px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted"
@@ -394,17 +400,6 @@ export function ResultsCard({
               </Link>
             </div>
           ) : null}
-        </div>
-
-        <div className="overflow-hidden lg:col-span-3 lg:h-[min(720px,calc(100vh-8rem))]">
-          <AddressMapPreview
-            lat={lat}
-            lng={lng}
-            status={report?.overall ?? null}
-            label={address}
-            sublabel={mapCalloutSublabel}
-            className="min-h-[280px] rounded-none border-0 sm:min-h-[360px] lg:min-h-full"
-          />
         </div>
       </div>
 

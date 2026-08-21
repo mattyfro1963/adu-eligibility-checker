@@ -1,29 +1,10 @@
 import type { EligibilityResult } from "@/lib/types/zoning";
 import type { Parcel } from "@/lib/types/zoning";
 import { SRC } from "@/lib/regulations/sources";
-
-/**
- * Whether the lot is zoned for a single-family or multifamily dwelling.
- * Gov. Code Chapter 13 (§ 66314) ministerial ADU rights attach to those
- * residential use districts, not commercial- or industrial-only sites.
- */
-function isResidentialZoning(zoning: string): boolean {
-  const z = zoning.toUpperCase();
-  switch (z) {
-    case "C-1":
-    case "C-2":
-    case "C-3":
-    case "M-1":
-    case "M-2":
-    case "PDR":
-      return false;
-    case "RS":
-    case "RH":
-      return true;
-    default:
-      return z.startsWith("R-") || z.startsWith("RM") || z.startsWith("RH-");
-  }
-}
+import {
+  isMixedUseZoning,
+  isResidentialZoning,
+} from "@/lib/rules/zoning-class";
 
 const ADU_SOURCES = [SRC.gov66314, SRC.govChapter13, SRC.hcdAdu] as const;
 
@@ -37,18 +18,25 @@ export function evaluateAduStandard(parcel: Parcel): EligibilityResult {
   const { zoning, overlays } = parcel;
 
   // 1. Hard stop: § 66314 ministerial ADU applies to lots zoned for
-  // residential dwellings. Commercial-only sites (e.g. C-2) have no
-  // statewide ADU right, so we restrict rather than warn.
+  // residential dwellings, including mixed-use. Commercial-only sites
+  // (e.g. C-2, C-3, PDR) have no statewide ADU right.
   if (!isResidentialZoning(zoning)) {
     return {
       status: "restricted",
       reasons: [
         {
-          text: `Zoning ${zoning} is not a single-family or multifamily residential district. Gov. Code § 66314 ministerial ADU rights apply to lots zoned to allow residential dwellings, not commercial-only sites.`,
+          text: `Zoning ${zoning} is not a residential or mixed-use district. Gov. Code § 66314 ministerial ADU rights apply to lots zoned to allow residential dwellings, including mixed-use zones — not commercial- or industrial-only sites.`,
           sources: [...ADU_SOURCES],
         },
       ],
     };
+  }
+
+  if (isMixedUseZoning(zoning)) {
+    reasons.push({
+      text: `Zoning ${zoning} is a mixed-use district. Statewide ADU rights under Chapter 13 attach where residential dwellings are allowed, including mixed-use zones — still confirm primary use, local development standards, and permits.`,
+      sources: [...ADU_SOURCES],
+    });
   }
 
   let status: "eligible" | "warning" = "eligible";
@@ -95,7 +83,7 @@ export function evaluateAduStandard(parcel: Parcel): EligibilityResult {
   // 6. Default: qualifying residential zone, no blocking facts → standard ADU path.
   if (reasons.length === 0) {
     reasons.push({
-      text: "Qualifying residential zoning with no blocking overlays. Standard ADU path under Gov. Code Chapter 13 (§§ 66310–66342).",
+      text: "Qualifying residential or mixed-use zoning with no blocking overlays. Standard ADU path under Gov. Code Chapter 13 (§§ 66310–66342).",
       sources: [...ADU_SOURCES],
     });
   }

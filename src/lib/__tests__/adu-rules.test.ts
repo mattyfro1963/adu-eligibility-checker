@@ -112,4 +112,17 @@ describe("evaluateEligibility", () => {
     expect(report.adu.status).not.toBe("restricted");
     expect(report.sb9.status).not.toBe("restricted");
   });
+
+  it("NC-3 mixed-use → ADU eligible, SB 9 restricted, overall warning", () => {
+    const mixed: Parcel = {
+      ...parcel("addr-c2"),
+      zoning: "NC-3",
+    };
+    const report = evaluateEligibility(mixed);
+    expect(report.adu.status).toBe("eligible");
+    expect(report.sb9.status).toBe("restricted");
+    expect(report.overall).toBe("warning");
+    expectCited(report.adu.reasons);
+    expectCited(report.sb9.reasons);
+  });
 });

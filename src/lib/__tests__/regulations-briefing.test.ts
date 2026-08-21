@@ -103,6 +103,34 @@ describe("resolveJurisdictionGuide", () => {
     expect(resolved.county?.name).toBe("Humboldt County");
     expect(resolved.city).toBeNull();
   });
+
+  it("Los Angeles city → Los Angeles County + City of Los Angeles notes", () => {
+    const resolved = resolveJurisdictionGuide(
+      "Los Angeles",
+      "Los Angeles County",
+    );
+    expect(resolved.county?.name).toBe("Los Angeles County");
+    expect(resolved.city?.name).toBe("Los Angeles");
+    expect(
+      resolved.city?.links.some((l) => /dbs\.lacity\.gov\/adu/.test(l.href)),
+    ).toBe(true);
+    expect(
+      resolved.county?.links.some((l) =>
+        /planning\.lacounty\.gov/.test(l.href),
+      ),
+    ).toBe(true);
+  });
+
+  it("Irvine city → Orange County + Irvine ADU page, not Anaheim", () => {
+    const resolved = resolveJurisdictionGuide("Irvine", "Orange County");
+    expect(resolved.city?.name).toBe("Irvine");
+    expect(
+      resolved.city?.links.some((l) => /cityofirvine\.gov/.test(l.href)),
+    ).toBe(true);
+    expect(resolved.city?.links.some((l) => /anaheim\.net/.test(l.href))).toBe(
+      false,
+    );
+  });
 });
 
 describe("composeLocationRequirements", () => {
@@ -120,9 +148,9 @@ describe("composeLocationRequirements", () => {
     ).toBe(true);
     expect(reqs.some((r) => r.id === "ca-size-structure")).toBe(true);
     expect(reqs.some((r) => r.id === "ca-cbc-appendix-aq")).toBe(true);
-    expect(
-      reqs.find((r) => r.id === "ca-cbc-appendix-aq")?.applies,
-    ).toBe("always");
+    expect(reqs.find((r) => r.id === "ca-cbc-appendix-aq")?.applies).toBe(
+      "always",
+    );
     const crcReq = reqs.find((r) => r.id === "ca-cbc-appendix-aq");
     expect(crcReq?.tinyHomeExplanation.text).toMatch(/120/);
     expect(crcReq?.tinyHomeExplanation.text).toMatch(/70/);
@@ -174,26 +202,27 @@ describe("composeLocationRequirements", () => {
       },
     });
     expect(reqs.some((r) => r.id === "lot-zoning")).toBe(false);
-    expect(reqs.some((r) => /Not verified was resolved/i.test(r.tinyHomeExplanation.text))).toBe(
-      false,
-    );
+    expect(
+      reqs.some((r) =>
+        /Not verified was resolved/i.test(r.tinyHomeExplanation.text),
+      ),
+    ).toBe(false);
   });
 });
 
-function assertCaSizeStructurePresent(briefing: ReturnType<typeof composeResultsBriefing>): void {
+function assertCaSizeStructurePresent(
+  briefing: ReturnType<typeof composeResultsBriefing>,
+): void {
   expect(briefing.sizeStructure).not.toBeNull();
   expect(briefing.sizeStructure?.stats.primaryRoomSqFt).toBe(120);
   expect(briefing.sizeStructure?.stats.additionalRoomSqFt).toBe(70);
   expect(briefing.sizeStructure?.stats.aduMinisterialSqFt).toBe(850);
   expect(briefing.sizeStructure?.stats.aduMinisterialMultiBedSqFt).toBe(1000);
-  expect(
-    briefing.requirements.some((r) => r.id === "ca-size-structure"),
-  ).toBe(true);
-  expect(
-    briefing.summary.some(
-      (c) => /120/.test(c.text) && /850/.test(c.text),
-    ),
-  ).toBe(true);
+  expect(briefing.requirements.some((r) => r.id === "ca-size-structure")).toBe(
+    true,
+  );
+  expect(briefing.summary.some((c) => /120/.test(c.text))).toBe(true);
+  expect(briefing.summary.some((c) => /850/.test(c.text))).toBe(true);
   expect(
     briefing.checklist.some((item) => item.id === "ca-size-structure"),
   ).toBe(true);
@@ -221,7 +250,9 @@ describe("composeResultsBriefing", () => {
     expect(briefing.outline.some((s) => s.id === "use-of-land")).toBe(true);
     expect(briefing.summary.length).toBeGreaterThanOrEqual(3);
     expect(
-      briefing.summary.some((c) => c.text.startsWith("On this California lot")),
+      briefing.summary.some((c) =>
+        c.text.startsWith("On this San Francisco lot"),
+      ),
     ).toBe(true);
     expect(briefing.guideLinks.length).toBe(3);
     expect(briefing.requirements.length).toBeGreaterThan(0);
@@ -257,6 +288,42 @@ describe("composeResultsBriefing", () => {
         /not available for this coordinate/i.test(c.text),
       ),
     ).toBe(true);
+  });
+
+  it("Oakland jurisdiction report cites local sources, not SF Planning/DBI", () => {
+    const briefing = composeResultsBriefing({
+      geocode: {
+        ...sfGeocode,
+        place: "Oakland",
+        county: "Alameda",
+        formattedAddress: "100 Broadway, Oakland, CA",
+      },
+      report: {
+        addressId: "test-oakland",
+        formattedAddress: "100 Broadway, Oakland, CA",
+        zoning: "Not verified",
+        overlays: {
+          tinyHomeFriendly: false,
+          fireHazard: false,
+          vhfhsz: false,
+          historicDistrict: false,
+          coastalZone: false,
+        },
+        adu: { status: "eligible", reasons: [] },
+        sb9: { status: "warning", reasons: [] },
+        overall: "warning",
+        analysisScope: "jurisdiction_context",
+      },
+    });
+
+    const hrefs = briefing.summary.flatMap((c) => c.sources.map((s) => s.href));
+    expect(hrefs.some((href) => /oaklandca\.gov/i.test(href))).toBe(true);
+    expect(
+      hrefs.some((href) =>
+        /sfplanning\.org|sf\.gov|data\.sfgov\.org/i.test(href),
+      ),
+    ).toBe(false);
+    expect(briefing.summary[0]?.text).toMatch(/Oakland/i);
   });
 
   it("South San Francisco (no report) → CA checklist, not SF guides", () => {
@@ -313,6 +380,15 @@ describe("ADU topic coverage and legal sources", () => {
     expect(SRC.civ4751.href).toMatch(/lawCode=CIV.*sectionNum=4751/);
     expect(SRC.civ4740.label).toBe("Civil Code § 4740");
     expect(SRC.civ4740.href).toMatch(/lawCode=CIV.*sectionNum=4740/);
+  });
+
+  it("HCD 2026 fact sheets cite a live official HCD document", () => {
+    expect(SRC.hcdFactSheets2026.href).toBe(
+      "https://www.hcd.ca.gov/sites/default/files/docs/planning-and-community/housing-law-fact-sheets.pdf",
+    );
+    expect(SRC.hcdFactSheets2026.href).not.toMatch(
+      /housing-law-fact-sheets-2026-combined/,
+    );
   });
 
   it("includes impact fees, garage conversion, JADUs, and CC&Rs in CA outline", () => {
@@ -448,7 +524,6 @@ describe("California visitor-facing branding", () => {
       "utf8",
     );
     expect(search).toMatch(/Enter a California address/);
-    expect(search).toMatch(/All CA counties/);
 
     const results = readFileSync(
       path.join(componentsRoot, "ResultsCard/ResultsCard.tsx"),
@@ -514,7 +589,7 @@ describe("California visitor-facing branding", () => {
       ],
       [
         "SiteFooter/SiteFooter.tsx",
-        [/\bpx-4\b/, /sm:px-6/, /py-8/, /min-h-\[44px\]/],
+        [/\bpx-4\b/, /sm:px-6/, /py-6/, /sm:py-8/, /min-h-\[44px\]/],
       ],
     ];
 

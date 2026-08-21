@@ -52,7 +52,7 @@ export const SRC = {
   },
   hcdFactSheets2026: {
     label: "HCD Housing Law Fact Sheets 2026",
-    href: "https://www.hcd.ca.gov/sites/default/files/docs/policy-and-research/housing-law-fact-sheets-2026-combined.pdf",
+    href: "https://www.hcd.ca.gov/sites/default/files/docs/planning-and-community/housing-law-fact-sheets.pdf",
   },
   hcdSb9: {
     label: "HCD SB 9 Fact Sheet",
@@ -87,3 +87,13 @@ export const SRC = {
     href: "https://sfplanning.org/",
   },
 } as const satisfies Record<string, SourceRef>;
+
+/** One entry per href — claim arrays may repeat the same official source. */
+export function uniqueSourceRefs(sources: SourceRef[]): SourceRef[] {
+  const seen = new Set<string>();
+  return sources.filter((source) => {
+    if (seen.has(source.href)) return false;
+    seen.add(source.href);
+    return true;
+  });
+}

@@ -61,7 +61,7 @@ export function AnalysisInterstitial({
           lat={lat}
           lng={lng}
           chrome={false}
-          className="min-h-full rounded-none border-0 bg-[#e4e4e4] shadow-none sm:min-h-full lg:min-h-full"
+          className="min-h-full rounded-none border-0 bg-muted shadow-none sm:min-h-full lg:min-h-full"
         />
       </div>
       <div

@@ -2,12 +2,6 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 interface PageShellProps {
@@ -26,8 +20,8 @@ export function PageShell({
       id="main-content"
       tabIndex={-1}
       className={cn(
-        "mx-auto w-full max-w-layout flex-1 px-4 py-10 sm:px-6 sm:py-14",
-        spacing === "default" ? "space-y-20" : "space-y-12",
+        "mx-auto w-full max-w-layout flex-1 px-4 py-8 sm:px-6 sm:py-12",
+        spacing === "default" ? "space-y-10" : "space-y-8",
         className,
       )}
     >
@@ -52,24 +46,26 @@ export function PageHeader({
   actions,
 }: PageHeaderProps) {
   return (
-    <header className="space-y-4 border-b border-border pb-8 text-center">
+    <header className="space-y-5 text-center">
       {eyebrow ? (
-        <p className="font-label text-[11px] text-muted-foreground">{eyebrow}</p>
+        <p className="font-label text-[11px] uppercase tracking-[0.14em] text-brand">
+          {eyebrow}
+        </p>
       ) : null}
       <div className="flex flex-col items-center gap-5">
         <div className="mx-auto min-w-0 max-w-3xl space-y-3">
-          <h1 className="font-display text-3xl leading-[1.12] tracking-display text-balance text-foreground sm:text-4xl">
+          <h1 className="font-display text-[2rem] leading-[1.15] tracking-display text-balance text-foreground sm:text-4xl">
             {title}
           </h1>
           {description ? (
-            <div className="mx-auto max-w-2xl text-sm leading-relaxed tracking-body text-muted-foreground sm:text-base">
+            <div className="mx-auto max-w-xl text-[15px] leading-relaxed text-muted-foreground sm:text-base">
               {description}
             </div>
           ) : null}
           {meta}
         </div>
         {actions ? (
-          <div className="flex shrink-0 flex-wrap justify-center gap-2">
+          <div className="flex w-full flex-col gap-2 sm:max-w-none sm:flex-row sm:flex-wrap sm:justify-center">
             {actions}
           </div>
         ) : null}
@@ -79,9 +75,7 @@ export function PageHeader({
 }
 
 export function PageActions({ children }: { children: ReactNode }) {
-  return (
-    <div className="flex flex-wrap justify-center gap-2">{children}</div>
-  );
+  return <div className="flex flex-wrap justify-center gap-2">{children}</div>;
 }
 
 interface PageActionLinkProps {
@@ -100,7 +94,7 @@ export function PageActionLink({
       asChild
       variant={variant === "outline" ? "outline" : "default"}
       size="lg"
-      className="min-h-[44px] px-5 font-label text-[11px] tracking-[0.12em]"
+      className="min-h-[44px] w-full px-5 font-label text-[11px] tracking-[0.12em] sm:w-auto"
     >
       <Link href={href}>{children}</Link>
     </Button>
@@ -119,7 +113,7 @@ export function PageAnchorLink({
       asChild
       variant="outline"
       size="lg"
-      className="min-h-[44px] px-5 font-label text-[11px] tracking-[0.12em]"
+      className="min-h-[44px] w-full px-5 font-label text-[11px] tracking-[0.12em] sm:w-auto"
     >
       <a href={href}>{children}</a>
     </Button>
@@ -166,15 +160,19 @@ export function PageSection({
   return (
     <section
       id={id}
-      className={cn(id && "scroll-mt-24", "space-y-4", className)}
+      className={cn(
+        id && "scroll-mt-32 sm:scroll-mt-24",
+        "space-y-4",
+        className,
+      )}
     >
       {title ? (
-        <div className="space-y-1 border-b border-border pb-3 text-center">
+        <div className="space-y-1.5 text-center">
           <h2 className="font-display text-xl tracking-tight text-foreground sm:text-2xl">
             {title}
           </h2>
           {description ? (
-            <div className="mx-auto max-w-3xl text-sm leading-relaxed text-muted-foreground">
+            <div className="mx-auto max-w-xl text-[15px] leading-relaxed text-muted-foreground">
               {description}
             </div>
           ) : null}
@@ -196,12 +194,26 @@ export function PageAside({
     <aside
       role="note"
       className={cn(
-        "rounded-card border border-border bg-muted p-5 text-sm leading-relaxed text-muted-foreground shadow-elevated",
+        "rounded-xl border border-border bg-muted p-5 text-[15px] leading-relaxed text-muted-foreground shadow-elevated",
         className,
       )}
     >
       {children}
     </aside>
+  );
+}
+
+export function PageBody({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("mx-auto w-full max-w-3xl space-y-4", className)}>
+      {children}
+    </div>
   );
 }
 
@@ -219,33 +231,31 @@ export function ContentLinkCard({
   icon,
 }: ContentLinkCardProps) {
   return (
-    <Link href={href} className="group block outline-none">
-      <Card
-        size="sm"
-        className="rounded-card border border-border bg-card shadow-elevated ring-0 transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/50"
-      >
-        <div className="flex min-h-[44px] items-start gap-4">
-          {icon ? (
-            <div className="flex size-9 items-center justify-center rounded-[6px] border border-border">
-              {icon}
-            </div>
-          ) : null}
-          <CardHeader className="min-w-0 flex-1 gap-1 px-0 pt-0">
-            <CardTitle className="font-display text-lg group-hover:text-foreground">
-              {title}
-            </CardTitle>
-            <CardDescription className="leading-relaxed">
-              {description}
-            </CardDescription>
-          </CardHeader>
-          <ChevronRight
-            size={16}
-            strokeWidth={1.5}
-            className="mt-1 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
-            aria-hidden="true"
-          />
-        </div>
-      </Card>
+    <Link
+      href={href}
+      className="group block rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+    >
+      <article className="flex min-h-[44px] items-start gap-3 rounded-xl border border-border bg-card px-4 py-4 shadow-elevated transition-colors hover:border-foreground/15 sm:gap-4 sm:px-5">
+        {icon ? (
+          <span className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden>
+            {icon}
+          </span>
+        ) : null}
+        <span className="min-w-0 flex-1">
+          <span className="block font-display text-lg tracking-tight text-foreground">
+            {title}
+          </span>
+          <span className="mt-1 block text-xs leading-snug text-muted-foreground sm:text-sm sm:leading-relaxed">
+            {description}
+          </span>
+        </span>
+        <ChevronRight
+          size={16}
+          strokeWidth={1.5}
+          className="mt-1 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+          aria-hidden="true"
+        />
+      </article>
     </Link>
   );
 }
@@ -260,7 +270,7 @@ export function TocNav({
   return (
     <nav
       aria-label={label}
-      className="rounded-[10px] border border-border bg-card p-5 lg:sticky lg:top-24"
+      className="rounded-xl border border-border bg-card p-5 shadow-elevated lg:sticky lg:top-24"
     >
       <p className="mb-3 font-label text-[10px] text-muted-foreground">
         {label}

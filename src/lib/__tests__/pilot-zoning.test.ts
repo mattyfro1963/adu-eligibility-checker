@@ -96,13 +96,14 @@ describe("pilot zoning PIP", () => {
     expect(report.overall).toBe("restricted");
   });
 
-  it("NC-3 PIP → both restricted (non-residential hard stop)", () => {
+  it("NC-3 PIP → ADU eligible (mixed-use), SB 9 restricted", () => {
     const zoning = lookupZoningInCollection(FIXTURE, 37.765, -122.375);
     expect(zoning).toBe("NC-3");
     const report = evaluateEligibility(
       buildPilotParcel(37.765, -122.375, zoning!),
     );
-    expect(report.adu.status).toBe("restricted");
+    expect(report.adu.status).toBe("eligible");
     expect(report.sb9.status).toBe("restricted");
+    expect(report.overall).toBe("warning");
   });
 });

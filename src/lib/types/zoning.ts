@@ -27,6 +27,10 @@ export interface Parcel {
   lotSizeSqFt?: number | null;
   /** SF assessor block/lot when resolved from a local parcel index. */
   mapblklot?: string | null;
+  /** Vendor district title when GIS provides one. */
+  zoningDistrictName?: string | null;
+  /** Official district / ordinance URL from the GIS feature, when present. */
+  zoningSourceUrl?: string | null;
 }
 
 export interface UnitCapacity {
@@ -54,4 +58,6 @@ export interface ZoningReport {
   unitCapacity?: UnitCapacity | null;
   /** Lot area when known at evaluation time. */
   lotSizeSqFt?: number | null;
+  zoningDistrictName?: string | null;
+  zoningSourceUrl?: string | null;
 }

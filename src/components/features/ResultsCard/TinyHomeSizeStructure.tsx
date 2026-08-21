@@ -17,7 +17,7 @@ export function TinyHomeSizeStructure({
   return (
     <section
       aria-labelledby="tiny-home-size-structure-heading"
-      className="rounded-card border border-border bg-card p-5 sm:p-6 md:p-8 shadow-elevated"
+      className="rounded-xl border border-border bg-card p-5 sm:p-6 md:p-8 shadow-elevated"
     >
       <div className="mb-5 flex items-start gap-3 sm:items-center">
         <div className="rounded-lg border border-border bg-muted p-2">
@@ -39,7 +39,7 @@ export function TinyHomeSizeStructure({
       </div>
 
       <dl className="grid gap-3 sm:grid-cols-3">
-        <div className="rounded-[10px] border border-border bg-muted/40 p-4">
+        <div className="rounded-xl border border-border bg-muted/40 p-4">
           <dt className="text-xs font-normal tracking-wide text-muted-foreground uppercase">
             Ceiling height
           </dt>
@@ -47,7 +47,7 @@ export function TinyHomeSizeStructure({
             {stats.ceilingHeight}
           </dd>
         </div>
-        <div className="rounded-[10px] border border-border bg-muted/40 p-4">
+        <div className="rounded-xl border border-border bg-muted/40 p-4">
           <dt className="text-xs font-normal tracking-wide text-muted-foreground uppercase">
             Primary room
           </dt>
@@ -55,7 +55,7 @@ export function TinyHomeSizeStructure({
             ≥ {stats.primaryRoomSqFt} sq ft
           </dd>
         </div>
-        <div className="rounded-[10px] border border-border bg-muted/40 p-4">
+        <div className="rounded-xl border border-border bg-muted/40 p-4">
           <dt className="text-xs font-normal tracking-wide text-muted-foreground uppercase">
             Additional rooms
           </dt>
@@ -66,7 +66,7 @@ export function TinyHomeSizeStructure({
       </dl>
 
       <dl className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-[10px] border border-border bg-muted/40 p-4">
+        <div className="rounded-xl border border-border bg-muted/40 p-4">
           <dt className="text-xs font-normal tracking-wide text-muted-foreground uppercase">
             ADU ministerial floor
           </dt>
@@ -78,7 +78,7 @@ export function TinyHomeSizeStructure({
             than one bedroom)
           </dd>
         </div>
-        <div className="rounded-[10px] border border-border bg-muted/40 p-4">
+        <div className="rounded-xl border border-border bg-muted/40 p-4">
           <dt className="text-xs font-normal tracking-wide text-muted-foreground uppercase">
             JADU maximum
           </dt>
@@ -86,7 +86,7 @@ export function TinyHomeSizeStructure({
             ≤ {stats.jaduMaxSqFt} sq ft
           </dd>
         </div>
-        <div className="rounded-[10px] border border-border bg-muted/40 p-4">
+        <div className="rounded-xl border border-border bg-muted/40 p-4">
           <dt className="text-xs font-normal tracking-wide text-muted-foreground uppercase">
             Impact fee exempt
           </dt>
@@ -94,7 +94,7 @@ export function TinyHomeSizeStructure({
             &lt; {stats.impactFeeExemptSqFt} sq ft
           </dd>
         </div>
-        <div className="rounded-[10px] border border-border bg-muted/40 p-4">
+        <div className="rounded-xl border border-border bg-muted/40 p-4">
           <dt className="text-xs font-normal tracking-wide text-muted-foreground uppercase">
             Park trailer / THOW range
           </dt>
