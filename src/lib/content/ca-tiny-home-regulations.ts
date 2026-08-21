@@ -278,8 +278,8 @@ export const COUNTY_DIRECTORY: ResourceLink[] = [
     href: "https://www.countyofsb.org/160/Planning-Development",
   },
   {
-    label: "Santa Clara County — Planning & Development",
-    href: "https://plandev.santaclaracounty.gov/home",
+    label: "Santa Clara County — ADU handbook",
+    href: "https://stgenpln.blob.core.windows.net/document/ADU_Handbook.pdf",
   },
   {
     label: "Santa Cruz County — Tiny Homes on Wheels",
@@ -1050,8 +1050,8 @@ export const COUNTY_GUIDES: JurisdictionNote[] = [
     parkModel: "Park models as ADUs typically require ANSI A119.5 compliance.",
     links: [
       {
-        label: "Planning & Development",
-        href: "https://plandev.santaclaracounty.gov/home",
+        label: "Santa Clara County — ADU handbook",
+        href: "https://stgenpln.blob.core.windows.net/document/ADU_Handbook.pdf",
       },
     ],
     cities: [

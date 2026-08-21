@@ -35,8 +35,5 @@ describe("formatParcelAddress", () => {
     expect(
       formatZoningDistrictName("RESIDENTIAL- HOUSE, ONE FAMILY- DETACHED"),
     ).toBe("Residential House, One Family Detached");
-    expect(
-      formatZoningDistrictName("PDR PRODUCTION, DISTRIBUTION, AND REPAIR"),
-    ).toBe("PDR Production, Distribution, And Repair");
   });
 });

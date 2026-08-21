@@ -26,7 +26,6 @@ export const WHEELS_VS_FOUNDATION_INTRO = {
 
 export const WHEELS_VS_FOUNDATION_DISCLAIMER = formatRegulationsDisclaimer(
   "Side-by-side trade-offs are planning guidance for San Francisco buyers — not a permit determination. Confirm financing, insurance, and local THOW rules with lenders, carriers, and SF Planning/DBI before you commit.",
-  [SRC.hcdAdu, SRC.sfPlanning, SRC.sfDbi],
 );
 
 export const DECISION_NODES: DecisionNode[] = [

@@ -27,15 +27,25 @@ const ZONE_COLOR: Record<EligibilityStatus | "unverified", string> = {
 };
 
 if (typeof window !== "undefined") {
+  // GL JS requires a pk.* client token, but session auth XHR bypasses
+  // transformRequest. Point the API host at our proxy so the real
+  // MAPBOX_ACCESS_TOKEN stays server-side. EVENTS_URL is a getter derived
+  // from API_URL — do not assign it (throws in mapbox-gl 3.29).
   mapboxgl.accessToken = "pk.proxy";
-  // Dummy client token would 403 against events.mapbox.com; sessions still
-  // bill through the server proxy when the style loads.
-  mapboxgl.config.EVENTS_URL = null;
+  mapboxgl.baseApiUrl = `${window.location.origin}/api/mapbox`;
 }
 
-function proxyMapboxRequest(url: string): { url: string } {
+function proxyMapboxRequest(
+  url: string,
+  resourceType?: string,
+): { url: string } {
   try {
     const parsed = new URL(url, window.location.origin);
+    const isTelemetry =
+      resourceType === "Event" || parsed.hostname.includes("events.mapbox");
+    if (isTelemetry) {
+      return { url: "data:application/json,[]" };
+    }
     const isMapboxHost = parsed.hostname === "api.mapbox.com";
     const isLocalProxy = parsed.pathname.startsWith("/api/mapbox/");
     if (!isMapboxHost && !isLocalProxy) {
@@ -72,7 +82,8 @@ function applySiteLayers(
   color: string,
 ) {
   const zoningSource = map.getSource("site-zoning") as
-    GeoJSONSource | undefined;
+    | GeoJSONSource
+    | undefined;
   const lotSource = map.getSource("site-lot") as GeoJSONSource | undefined;
 
   if (zoningSource) {
@@ -209,7 +220,8 @@ export function InteractiveSiteMap({
       maxZoom: MAX_ZOOM,
       attributionControl: true,
       interactive,
-      transformRequest: (url) => proxyMapboxRequest(url),
+      transformRequest: (url, resourceType) =>
+        proxyMapboxRequest(url, resourceType),
     });
     mapRef.current = map;
 
@@ -226,6 +238,7 @@ export function InteractiveSiteMap({
     markerRef.current = marker;
 
     const onLoad = () => {
+      map.resize();
       applySiteLayers(map, site, color);
     };
     map.on("load", onLoad);
@@ -284,7 +297,7 @@ export function InteractiveSiteMap({
     <div className="absolute inset-0">
       <div
         ref={containerRef}
-        className="absolute inset-0 [&_.mapboxgl-ctrl-attrib]:text-[10px]"
+        className="h-full w-full [&_.mapboxgl-ctrl-attrib]:text-[10px]"
         aria-label="Interactive site map"
       />
       {interactive ? (
