@@ -12,8 +12,7 @@ export function RuleDetail({
   title: string;
   category: string;
 }) {
-  const [primary, ...rest] = result.reasons;
-  const rationaleSources = primary?.sources ?? [];
+  const rationaleSources = result.reasons.flatMap((reason) => reason.sources);
 
   return (
     <article className="group border border-border bg-card p-5 transition-colors hover:border-primary/40 sm:p-6">
@@ -28,36 +27,21 @@ export function RuleDetail({
         {title}
       </h4>
 
-      {primary ? (
-        <CitedText
-          claim={primary}
-          className="mb-3 text-sm leading-relaxed font-light text-muted-foreground"
-        />
+      {result.reasons.length > 0 ? (
+        <ul className="mb-5 list-none space-y-3">
+          {result.reasons.map((reason) => (
+            <li key={reason.text}>
+              <CitedText
+                claim={reason}
+                className="text-sm leading-relaxed font-light text-muted-foreground"
+              />
+            </li>
+          ))}
+        </ul>
       ) : (
-        <p className="mb-3 text-sm leading-relaxed font-light text-muted-foreground">
+        <p className="mb-5 text-sm leading-relaxed font-light text-muted-foreground">
           No additional detail from the rules engine.
         </p>
-      )}
-
-      {rest.length > 0 ? (
-        <ExpandableSection
-          title="Additional engine reasons"
-          description={`${rest.length} more cited factor${rest.length === 1 ? "" : "s"} from the rules engine`}
-          defaultOpen={false}
-          variant="muted"
-          contentClassName="px-0 py-0 sm:px-0 sm:py-0"
-          className="mb-5 border-0 bg-transparent shadow-none"
-        >
-          <ul className="list-none space-y-3 px-4 py-4 sm:px-5">
-            {rest.map((reason) => (
-              <li key={reason.text}>
-                <CitedText claim={reason} />
-              </li>
-            ))}
-          </ul>
-        </ExpandableSection>
-      ) : (
-        <div className="mb-5" />
       )}
 
       <ExpandableSection

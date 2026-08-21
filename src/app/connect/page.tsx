@@ -3,9 +3,9 @@ import { redirect } from "next/navigation";
 import { buildConnectRedirectPath } from "@/lib/content/connect-url";
 
 export const metadata: Metadata = {
-  title: "Connect with ADU Builders — doihave.space",
+  title: "Connect — doihave.space",
   description:
-    "Share your ADU or tiny-home project details and match with nearby contractors. Licensed California builders can join the beta lead network.",
+    "Redirects to the checker with builder intro and specialist lead forms after you search an address.",
 };
 
 type ConnectRouteProps = {

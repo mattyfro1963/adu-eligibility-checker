@@ -52,7 +52,7 @@ const INTENT_COPY: Record<
   restricted: {
     title: "Alternate pathways",
     subtitle:
-      "Low-emphasis manufacturer links some builders research when foundation ADU timing is blocked — not a workaround for restricted overlays.",
+      "Low-emphasis manufacturer links some builders research for chassis and off-grid subsystems — not a substitute for restricted overlays.",
     Icon: Route,
     sectionClass: "rounded-[10px] border border-border bg-muted/40 p-5 sm:p-6",
     iconWrapClass: "rounded-lg border border-border bg-card p-2",

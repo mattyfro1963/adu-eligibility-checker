@@ -55,6 +55,28 @@ export type GuideLinkRef = {
   href: string;
 };
 
+/** Structured size/structure stats + cited claims for the ResultsCard panel. */
+export type SizeStructureStats = {
+  codeYear: string;
+  appendix: string;
+  ceilingHeight: string;
+  primaryRoomSqFt: number;
+  additionalRoomSqFt: number;
+  aduMinisterialSqFt: number;
+  aduMinisterialMultiBedSqFt: number;
+  jaduMaxSqFt: number;
+  impactFeeExemptSqFt: number;
+  parkTrailerTypicalSqFtRange: string;
+};
+
+export type SizeStructureBriefing = {
+  stats: SizeStructureStats;
+  crcClaim: CitedClaim;
+  chapter13Claim: CitedClaim;
+  jaduFeeClaim: CitedClaim;
+  structurePathClaim: CitedClaim;
+};
+
 export type ResultsBriefing = {
   region: string;
   isCalifornia: boolean;
@@ -63,6 +85,8 @@ export type ResultsBriefing = {
   summary: CitedClaim[];
   /** Jurisdiction-aware requirement list with tiny-home explanations. */
   requirements: LocationRequirement[];
+  /** Always-visible size/structure panel for California searches. */
+  sizeStructure: SizeStructureBriefing | null;
   checklist: ChecklistItem[];
   /** CA building-path outline; empty when not California. */
   outline: OutlineSection[];

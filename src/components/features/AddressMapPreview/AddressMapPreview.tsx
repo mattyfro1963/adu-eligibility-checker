@@ -188,7 +188,7 @@ export function AddressMapPreview({
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/60 backdrop-blur-sm">
           <span className="flex items-center gap-2 rounded-[10px] border border-border bg-card px-5 py-2.5 font-label text-[10px] text-muted-foreground shadow-elevated">
             <MapPin size={14} className="text-foreground" aria-hidden="true" />
-            Awaiting Target Coordinates
+            Enter an address to preview the map
           </span>
         </div>
       ) : null}

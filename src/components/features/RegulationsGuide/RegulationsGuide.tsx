@@ -136,8 +136,8 @@ export function RegulationsGuide() {
         actions={
           <>
             <PageActionLink href="/">Check a California address</PageActionLink>
-            <PageActionLink href="/#connect" variant="outline">
-              Match with builders
+            <PageActionLink href="/" variant="outline">
+              Search, then request a builder intro
             </PageActionLink>
             <PageAnchorLink href="#county-guides">
               Jump to county guides
@@ -427,14 +427,7 @@ export function RegulationsGuide() {
           >
             Open the eligibility checker
           </Link>
-          . Looking for contractors?{" "}
-          <Link
-            href="/#connect"
-            className="font-medium text-foreground underline-offset-2 hover:underline"
-          >
-            Match with ADU builders
-          </Link>
-          .
+          . After a search, request a builder intro on the results page.
         </p>
       </PageAside>
     </PageShell>

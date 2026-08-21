@@ -42,13 +42,28 @@ function formatLeadWebhookContent(body: LeadBody): string {
       .join("\n");
   }
 
+  if (body.type === "specialist_review") {
+    return [
+      "**Specialist review (warning)**",
+      `Address: ${body.address}`,
+      `Contact: ${body.name} (${body.email})`,
+      body.phone ? `Phone: ${body.phone}` : null,
+      body.overallStatus ? `Checker status: ${body.overallStatus}` : null,
+    ]
+      .filter(Boolean)
+      .join("\n");
+  }
+
   return [
-    "**Restricted expert review**",
+    body.overallStatus === "warning"
+      ? "**Specialist review**"
+      : "**Restricted expert review**",
     `Address: ${body.address}`,
     `Contact: ${body.name} (${body.email})`,
     body.phone ? `Phone: ${body.phone}` : null,
     `Intent: ${body.intent}`,
     `Budget: ${body.budget}`,
+    body.overallStatus ? `Checker status: ${body.overallStatus}` : null,
   ]
     .filter(Boolean)
     .join("\n");

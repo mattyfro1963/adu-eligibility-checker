@@ -22,8 +22,7 @@ export function ResultsBriefingSection({ summary }: { summary: CitedClaim[] }) {
             Parcel briefing
           </h3>
           <p className="text-xs text-muted-foreground">
-            Why this address may or may not legally house a tiny home for your
-            intended use
+            What the engine found for this parcel, and what to confirm locally.
           </p>
           <RegulationsAuthorByline className="mt-1 text-xs text-muted-foreground" />
         </div>

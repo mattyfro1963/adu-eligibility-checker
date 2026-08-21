@@ -1,53 +1,40 @@
-import { parcelToGeocodeResult } from "@/lib/adapters/mock-geocoder";
-import { mockProperties } from "@/lib/mock/properties";
-import type { GeocodeResult } from "@/lib/types/gis";
+/**
+ * Sample-chip catalog — query strings and place labels only.
+ * Clicks run the same `/api/geocode` path as a typed search. No mock parcels.
+ */
 
 export type SampleReport = {
   id: string;
   label: string;
-  description: string;
-  /** Pre-built geocode payload — same shape as `/api/geocode` + suggestion select. */
-  geocodeResult: GeocodeResult;
+  /** Geocode query — must not match mock catalog streets (see mock-geocoder). */
+  query: string;
 };
 
-function sampleFromProperty(id: keyof typeof mockProperties): GeocodeResult {
-  const parcel = mockProperties[id];
-  if (!parcel) {
-    throw new Error(`Missing mock parcel for sample report: ${String(id)}`);
-  }
-  return parcelToGeocodeResult(parcel);
-}
-
-/** Sample-report catalog — real CA addresses with coordinate-driven demo facts. */
+/** Neighborhood / street shortcuts. Outcomes come from live geocode + zoning. */
 export const SAMPLE_REPORTS: readonly SampleReport[] = [
   {
-    id: "clean-r1",
-    label: "SF R-1 · Inner Sunset",
-    description: "eligible residential lot",
-    geocodeResult: sampleFromProperty("addr-r1-clean"),
+    id: "inner-sunset",
+    label: "Inner Sunset",
+    query: "1234 9th Avenue, San Francisco, CA",
   },
   {
-    id: "historic",
-    label: "Historic · Pacific Hts",
-    description: "historic district overlay",
-    geocodeResult: sampleFromProperty("addr-r1-historic"),
+    id: "pacific-heights",
+    label: "Pacific Heights",
+    query: "2100 Steiner Street, San Francisco, CA",
   },
   {
-    id: "coastal",
-    label: "Coastal · Great Hwy",
-    description: "coastal zone overlay",
-    geocodeResult: sampleFromProperty("addr-r1-coastal"),
+    id: "outer-richmond",
+    label: "Outer Richmond",
+    query: "800 48th Avenue, San Francisco, CA",
   },
   {
-    id: "small-lot",
-    label: "Small lot · Mission",
-    description: "sub-1,200 sq ft lot",
-    geocodeResult: sampleFromProperty("addr-r1-small-lot"),
+    id: "mission",
+    label: "Mission",
+    query: "2700 24th Street, San Francisco, CA",
   },
   {
-    id: "commercial",
-    label: "Commercial · SOMA",
-    description: "non-residential zoning",
-    geocodeResult: sampleFromProperty("addr-c2"),
+    id: "soma",
+    label: "SOMA",
+    query: "500 3rd Street, San Francisco, CA",
   },
 ] as const;

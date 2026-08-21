@@ -224,8 +224,11 @@ describe("monetization gating in UI sources", () => {
       path.join(featuresRoot, "ConnectPage/ConnectSection.tsx"),
       "utf8",
     );
-    expect(connectSection).toMatch(/ProjectLeadForm|ContractorMatchGrid/);
-    expect(connectSection).toMatch(/PartnerOffers|LeadFallbackForm/);
+    expect(connectSection).toMatch(/ProjectLeadForm/);
+    expect(connectSection).toMatch(/LeadFallbackForm/);
+    expect(connectSection).toMatch(/\/partners/);
+    expect(connectSection).not.toMatch(/ContractorMatchGrid/);
+    expect(connectSection).not.toMatch(/PartnerOffers/);
   });
 
   it("/connect route redirects to unified landing anchor", () => {
@@ -245,6 +248,7 @@ describe("monetization gating in UI sources", () => {
     expect(form).toMatch(/lead-intent/);
     expect(form).toMatch(/lead-budget/);
     expect(form).toMatch(/restricted_review/);
+    expect(form).toMatch(/specialist_review/);
     expect(form).toMatch(/permanent-foundation ADU pathway/i);
     expect(form).toMatch(/data-lead-form="restricted"/);
   });
@@ -319,6 +323,19 @@ describe("restricted_review lead schema", () => {
       propertyIntent: "primary",
       structure: "permanent_adu",
       budget: "50k_150k",
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  it("accepts a warning specialist_review payload", () => {
+    const parsed = leadBodySchema.safeParse({
+      type: "specialist_review",
+      name: "Ada",
+      email: "ada@example.com",
+      address: "1 Market St, San Francisco, CA",
+      lat: 37.79,
+      lng: -122.39,
+      overallStatus: "warning",
     });
     expect(parsed.success).toBe(true);
   });

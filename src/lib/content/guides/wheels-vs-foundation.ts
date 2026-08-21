@@ -3,6 +3,7 @@
  * Zero React.
  */
 
+import { formatRegulationsDisclaimer } from "@/lib/regulations/agent";
 import { SRC } from "@/lib/regulations/sources";
 import type {
   ComparisonRow,
@@ -22,6 +23,11 @@ export const WHEELS_VS_FOUNDATION_META: GuideMeta = {
 export const WHEELS_VS_FOUNDATION_INTRO = {
   lead: "Choosing wheels versus a permanent foundation is a financing, insurance, depreciation, and compliance decision — not just a lifestyle preference. In San Francisco, the foundation ADU path is usually the clearer residential route under State ADU Law; wheeled units need an express local or park pathway.",
 } as const;
+
+export const WHEELS_VS_FOUNDATION_DISCLAIMER = formatRegulationsDisclaimer(
+  "Side-by-side trade-offs are planning guidance for San Francisco buyers — not a permit determination. Confirm financing, insurance, and local THOW rules with lenders, carriers, and SF Planning/DBI before you commit.",
+  [SRC.hcdAdu, SRC.sfPlanning, SRC.sfDbi],
+);
 
 export const DECISION_NODES: DecisionNode[] = [
   {

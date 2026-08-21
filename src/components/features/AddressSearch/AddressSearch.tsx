@@ -46,6 +46,7 @@ export function AddressSearch({
     handleQueryChange,
     selectAddress,
     handleSubmit,
+    resolveQuery,
   } = useAddressSearch({ onResolved, onError });
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -83,11 +84,11 @@ export function AddressSearch({
             State of California · ADU &amp; SB 9
           </p>
           <h1 className="font-display text-3xl leading-[1.12] tracking-display text-balance text-foreground sm:text-4xl">
-            Small Footprint. Elevated Living.
+            Can this California lot take an ADU or SB 9 split?
           </h1>
           <p className="mx-auto max-w-2xl text-sm leading-relaxed tracking-body text-muted-foreground sm:text-base">
-            Enter a California address below for ADU and SB 9 eligibility,
-            county requirements, and tiny-home guidance.
+            Enter an address for engine eligibility, county requirements, and
+            tiny-home guidance — then confirm locally.
           </p>
         </header>
       ) : null}
@@ -160,7 +161,9 @@ export function AddressSearch({
 
         {showSampleReports && !compact && !isResolving ? (
           <SampleReportButtons
-            onSelect={selectAddress}
+            onSelectQuery={(value) => {
+              void resolveQuery(value);
+            }}
             disabled={isResolving}
           />
         ) : null}
@@ -212,8 +215,7 @@ export function AddressSearch({
 
         {!compact ? (
           <p className="text-center text-caption text-muted-foreground">
-            All CA counties — free county requirements; SF lot GIS when
-            available.
+            All CA counties — county requirements; SF lot GIS when available.
           </p>
         ) : null}
       </div>

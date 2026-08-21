@@ -78,13 +78,20 @@ export const restrictedReviewBodySchema = z.object({
   ...leadContactBase,
   intent: restrictedIntentSchema,
   budget: restrictedBudgetSchema,
-  overallStatus: z.literal("restricted").optional(),
+  overallStatus: z.enum(["restricted", "warning"]).optional(),
+});
+
+export const specialistReviewBodySchema = z.object({
+  type: z.literal("specialist_review"),
+  ...leadContactBase,
+  overallStatus: z.literal("warning").optional(),
 });
 
 export const leadBodySchema = z.discriminatedUnion("type", [
   projectLeadBodySchema,
   quoteInterestBodySchema,
   restrictedReviewBodySchema,
+  specialistReviewBodySchema,
 ]);
 
 export type LeadBody = z.infer<typeof leadBodySchema>;

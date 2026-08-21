@@ -1,62 +1,39 @@
 import { describe, expect, it } from "vitest";
-import { getSynthesizedParcelAt } from "@/lib/adapters/mock-geocoder";
 import { SAMPLE_REPORTS } from "@/lib/content/sample-reports";
-import { evaluateEligibility } from "@/lib/rules";
-import { mockProperties } from "@/lib/mock/properties";
+import { mockPropertyList } from "@/lib/mock/properties";
+
+const SPOILER =
+  /\b(eligible|warning|restricted|historic|coastal|commercial)\b/i;
+
+function catalogWouldCapture(query: string): boolean {
+  const normalized = query.trim().toLowerCase();
+  return mockPropertyList.some(
+    (p) =>
+      p.formattedAddress.toLowerCase() === normalized ||
+      p.formattedAddress.toLowerCase().includes(normalized) ||
+      p.addressId.toLowerCase() === normalized,
+  );
+}
 
 describe("SAMPLE_REPORTS catalog", () => {
-  it("has unique ids and formatted addresses", () => {
+  it("has unique ids and queries only — no mock geocode payloads", () => {
     const ids = SAMPLE_REPORTS.map((s) => s.id);
-    const addresses = SAMPLE_REPORTS.map(
-      (s) => s.geocodeResult.formattedAddress,
-    );
+    const queries = SAMPLE_REPORTS.map((s) => s.query);
     expect(new Set(ids).size).toBe(ids.length);
-    expect(new Set(addresses).size).toBe(addresses.length);
-  });
+    expect(new Set(queries).size).toBe(queries.length);
 
-  it("includes coordinate-driven geocode results tied to mock parcels", () => {
     for (const sample of SAMPLE_REPORTS) {
-      const { geocodeResult } = sample;
-      expect(Number.isFinite(geocodeResult.lat)).toBe(true);
-      expect(Number.isFinite(geocodeResult.lng)).toBe(true);
-      expect(geocodeResult.formattedAddress).toMatch(/, CA(?:\s+\d{5})?$/);
-      expect(geocodeResult.streetLine.length).toBeGreaterThan(0);
-      expect(geocodeResult.place).toBe("San Francisco");
-      expect(geocodeResult.region).toBe("CA");
-      expect(mockProperties[geocodeResult.addressId]).toBeDefined();
-      expect(geocodeResult.formattedAddress).toBe(
-        mockProperties[geocodeResult.addressId]!.formattedAddress,
-      );
-      expect(geocodeResult.lat).toBe(
-        mockProperties[geocodeResult.addressId]!.lat,
-      );
-      expect(geocodeResult.lng).toBe(
-        mockProperties[geocodeResult.addressId]!.lng,
-      );
+      expect(sample).not.toHaveProperty("geocodeResult");
+      expect(sample.query).toMatch(/, CA(?:\s+\d{5})?$/);
+      expect(sample.label.length).toBeGreaterThan(0);
+      expect(sample.label).not.toMatch(SPOILER);
+      expect(sample.query).not.toMatch(SPOILER);
     }
   });
 
-  it("covers eligible, warning, and restricted demo outcomes", () => {
-    const outcomes = new Map(
-      SAMPLE_REPORTS.map((sample) => {
-        const parcel = mockProperties[sample.geocodeResult.addressId]!;
-        return [sample.id, evaluateEligibility(parcel).overall] as const;
-      }),
-    );
-
-    expect(outcomes.get("clean-r1")).toBe("eligible");
-    expect(outcomes.get("historic")).toBe("warning");
-    expect(outcomes.get("coastal")).toBe("warning");
-    expect(outcomes.get("small-lot")).toBe("warning");
-    expect(outcomes.get("commercial")).toBe("restricted");
-  });
-
-  it("pins overlay demo facts at catalog coordinates for zoning lookup", () => {
+  it("does not reuse mock catalog streets (would pin demo-fact parcels)", () => {
     for (const sample of SAMPLE_REPORTS) {
-      if (sample.id === "clean-r1") continue;
-      const { lat, lng, addressId } = sample.geocodeResult;
-      const pinned = getSynthesizedParcelAt(lat, lng);
-      expect(pinned?.addressId).toBe(addressId);
+      expect(catalogWouldCapture(sample.query)).toBe(false);
     }
   });
 });

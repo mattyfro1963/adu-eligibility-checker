@@ -4,6 +4,11 @@
  */
 
 import { SRC } from "@/lib/regulations/sources";
+import {
+  CA_CHAPTER13_SIZE_CLAIM,
+  CA_CRC_SIZE_CLAIM,
+  CA_JADU_FEE_CLAIM,
+} from "@/lib/regulations/size-structure";
 import type {
   ChecklistItem,
   CitedClaim,
@@ -248,6 +253,20 @@ export const CA_CHECKLIST: ChecklistItem[] = [
     detail: {
       text: "Identify dwelling, home occupation, studio, storage, or retail first. A later switch to residential occupancy is a change of use that must meet higher safety standards.",
       sources: [...hcdClass],
+    },
+  },
+  {
+    id: "ca-size-structure",
+    title: "Confirm size and structure limits",
+    detail: {
+      text: `${CA_CRC_SIZE_CLAIM.text} ${CA_CHAPTER13_SIZE_CLAIM.text} ${CA_JADU_FEE_CLAIM.text}`,
+      sources: [
+        SRC.cbscBulletin2601,
+        SRC.hcdTinyHomesIb,
+        SRC.govChapter13,
+        SRC.gov66317,
+        SRC.hcdFactSheets2026,
+      ],
     },
   },
   {

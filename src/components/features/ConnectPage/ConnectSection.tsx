@@ -1,11 +1,10 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
 import { BuilderSignupPanel } from "@/components/features/BuilderSignupPanel/BuilderSignupPanel";
-import { ContractorMatchGrid } from "@/components/features/ContractorMatchGrid/ContractorMatchGrid";
 import { LeadFallbackForm } from "@/components/features/LeadFallbackForm/LeadFallbackForm";
-import { PartnerOffers } from "@/components/features/PartnerOffers/PartnerOffers";
 import {
   PageAside,
   PageSection,
@@ -16,45 +15,67 @@ import {
 } from "@/components/features/ProjectLeadForm/ProjectLeadForm";
 import { CONNECT_SECTION_ID } from "@/lib/content/connect-url";
 import type { GeocodeResult } from "@/lib/types/gis";
-import type {
-  ContractorMatch,
-  LeadSuccessResponse,
-  ProjectLeadPayload,
-} from "@/lib/types/leads";
+import type { ProjectLeadPayload } from "@/lib/types/leads";
 import type { EligibilityStatus } from "@/lib/types/zoning";
-
-const MATCH_UX_LATENCY_MS = 1200;
 
 interface ConnectSectionProps {
   geocodeResult: GeocodeResult;
   overallStatus: EligibilityStatus | null;
 }
 
+const PARTNERS_COPY: Record<
+  EligibilityStatus,
+  { sentence: string; link: string }
+> = {
+  eligible: {
+    sentence:
+      "Manufacturer resources for power, sanitation, chassis, and appliances live on the partners directory.",
+    link: "Browse partners",
+  },
+  warning: {
+    sentence:
+      "Optional product research is on the partners directory — secondary to specialist review.",
+    link: "Browse partners",
+  },
+  restricted: {
+    sentence:
+      "Alternate-pathway manufacturer links are listed on the partners directory, below expert review.",
+    link: "Browse partners",
+  },
+};
+
+function PartnersLink({ intent }: { intent: EligibilityStatus }) {
+  const copy = PARTNERS_COPY[intent];
+  return (
+    <p className="text-sm leading-relaxed text-muted-foreground">
+      {copy.sentence}{" "}
+      <Link
+        href="/partners"
+        className="font-medium text-foreground underline-offset-2 hover:underline"
+      >
+        {copy.link}
+      </Link>
+      .
+    </p>
+  );
+}
+
 /**
- * Builder match, partner offers, and lead forms — bifurcated by eligibility.
- * Rendered on `/` below parcel results; deep-linkable via `/#connect`.
+ * Lead forms after parcel results; deep-linkable via `/#connect` when a report exists.
  */
 export function ConnectSection({
   geocodeResult,
   overallStatus,
 }: ConnectSectionProps) {
-  const [contact, setContact] = useState<{
-    name: string;
-    email: string;
-    phone?: string;
-  } | null>(null);
-  const [lastProject, setLastProject] = useState<ProjectLeadFormValues | null>(
-    null,
-  );
-  const [matches, setMatches] = useState<ContractorMatch[] | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittedName, setSubmittedName] = useState<string | null>(null);
+  const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleProjectSubmit = useCallback(
     async (values: ProjectLeadFormValues) => {
       setIsSubmitting(true);
       setError(null);
-      const started = Date.now();
       try {
         const payload: ProjectLeadPayload = {
           type: "project",
@@ -86,20 +107,9 @@ export function ConnectSection({
               : "Failed to submit project lead";
           throw new Error(message);
         }
-        const data = (await res.json()) as LeadSuccessResponse;
-        const elapsed = Date.now() - started;
-        if (elapsed < MATCH_UX_LATENCY_MS) {
-          await new Promise((r) =>
-            setTimeout(r, MATCH_UX_LATENCY_MS - elapsed),
-          );
-        }
-        setContact({
-          name: values.name,
-          email: values.email,
-          phone: values.phone.trim() || undefined,
-        });
-        setLastProject(values);
-        setMatches(data.matches);
+        await res.json();
+        setSubmittedName(values.name);
+        setSubmittedEmail(values.email);
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Failed to submit project lead",
@@ -111,52 +121,15 @@ export function ConnectSection({
     [geocodeResult, overallStatus],
   );
 
-  const handleQuoteInterest = useCallback(
-    async (contractor: ContractorMatch) => {
-      if (!contact) {
-        return;
-      }
-      const res = await fetch("/api/lead", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "quote_interest",
-          name: contact.name,
-          email: contact.email,
-          phone: contact.phone,
-          address: geocodeResult.formattedAddress,
-          lat: geocodeResult.lat,
-          lng: geocodeResult.lng,
-          contractorId: contractor.id,
-          propertyIntent: lastProject?.propertyIntent,
-          structure: lastProject?.structure,
-          budget: lastProject?.budget,
-        }),
-      });
-      if (!res.ok) {
-        const body: unknown = await res.json().catch(() => null);
-        const message =
-          body &&
-          typeof body === "object" &&
-          "error" in body &&
-          typeof body.error === "string"
-            ? body.error
-            : "Failed to request quote";
-        throw new Error(message);
-      }
-    },
-    [contact, geocodeResult, lastProject],
-  );
-
   return (
     <PageSection
       id={CONNECT_SECTION_ID}
-      title="Connect with ADU and tiny-home builders"
-      description="Share project details after your parcel check. We compile nearby mock contractors for quotes and route high-intent leads to partner builders. Informational matching only — not a permit or marketplace guarantee."
-      className="space-y-12"
+      title="Request a builder intro"
+      description="Share project details after your parcel check. We route high-intent leads to partner builders. Informational matching only — not a permit or marketplace guarantee."
+      className="scroll-mt-28 space-y-12"
     >
       <p className="text-center font-label text-[11px] text-muted-foreground">
-        Builder match · Lead routing
+        Builder intro · Lead routing
       </p>
 
       {error ? (
@@ -173,17 +146,24 @@ export function ConnectSection({
         </div>
       ) : null}
 
-      {!matches ? (
+      {submittedName && submittedEmail ? (
+        <section className="rounded-[10px] border border-border bg-card p-6 sm:p-8">
+          <p className="break-words text-foreground">
+            Thank you, {submittedName}. We&apos;ll follow up at {submittedEmail}{" "}
+            about {geocodeResult.formattedAddress}.
+          </p>
+        </section>
+      ) : (
         <>
           {overallStatus === "eligible" ? (
             <>
-              <PartnerOffers intent="eligible" />
               <ProjectLeadForm
                 address={geocodeResult.formattedAddress}
                 overallStatus={overallStatus}
                 isSubmitting={isSubmitting}
                 onSubmit={handleProjectSubmit}
               />
+              <PartnersLink intent="eligible" />
             </>
           ) : null}
 
@@ -197,7 +177,7 @@ export function ConnectSection({
                 overallStatus="warning"
                 embedded
               />
-              <PartnerOffers intent="warning" compact />
+              <PartnersLink intent="warning" />
             </>
           ) : null}
 
@@ -211,7 +191,7 @@ export function ConnectSection({
                 overallStatus="restricted"
                 embedded
               />
-              <PartnerOffers intent="restricted" compact />
+              <PartnersLink intent="restricted" />
             </>
           ) : null}
 
@@ -227,20 +207,13 @@ export function ConnectSection({
             />
           ) : null}
         </>
-      ) : null}
-
-      {matches ? (
-        <ContractorMatchGrid
-          matches={matches}
-          onRequestQuote={handleQuoteInterest}
-        />
-      ) : null}
+      )}
 
       <BuilderSignupPanel />
 
       <PageAside>
         <p>
-          Builder matching is informational only — not a permit guarantee or
+          Builder intros are informational only — not a permit guarantee or
           legal advice. Confirm licensing, scope, and local requirements
           directly with each contractor.
         </p>

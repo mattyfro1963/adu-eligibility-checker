@@ -23,7 +23,7 @@ interface LeadFallbackFormProps {
 }
 
 const INTENT_OPTIONS = [
-  { value: "adu_workaround", label: "Permanent-foundation ADU workaround" },
+  { value: "adu_workaround", label: "Permanent-foundation ADU pathway" },
   { value: "lot_split", label: "Lot split / SB 9 path" },
   { value: "other", label: "Other / not sure" },
 ] as const;
@@ -125,11 +125,44 @@ export function LeadFallbackForm({
     }
   }
 
-  /** Warning soft-lead: name/email stub only — no backend yet. */
-  function handleWarningSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleWarningSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
-    setSubmitted(true);
+    setIsSubmitting(true);
+
+    try {
+      const res = await fetch("/api/lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "specialist_review",
+          name,
+          email,
+          address,
+          lat,
+          lng,
+          overallStatus: "warning",
+        }),
+      });
+      if (!res.ok) {
+        const body: unknown = await res.json().catch(() => null);
+        const message =
+          body &&
+          typeof body === "object" &&
+          "error" in body &&
+          typeof body.error === "string"
+            ? body.error
+            : "Could not submit review request";
+        throw new Error(message);
+      }
+      setSubmitted(true);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Could not submit review request",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   if (submitted) {
@@ -138,16 +171,6 @@ export function LeadFallbackForm({
         <p className="break-words text-foreground">
           Thank you{name ? `, ${name}` : ""}! We&apos;ll review {address} and
           contact you at {email}.
-        </p>
-        <p className="mt-3 text-sm text-muted-foreground">
-          Prefer builder matching now?{" "}
-          <Link
-            href={connectHref}
-            className="font-medium text-foreground underline-offset-2 hover:underline"
-          >
-            Open Connect
-          </Link>
-          .
         </p>
       </section>
     );
@@ -173,13 +196,26 @@ export function LeadFallbackForm({
               does not invent new statute.
             </p>
             <p className="text-sm font-light break-words text-muted-foreground">
-              Leave a name and email and we&apos;ll follow up. Optional product
-              research links may appear below.
+              Leave a name and email and we&apos;ll follow up. Partner resources
+              are linked below this form.
             </p>
           </div>
         </div>
 
         <form onSubmit={handleWarningSubmit} className="flex flex-col gap-3">
+          {error ? (
+            <div
+              role="alert"
+              className="flex items-start gap-2 rounded-[10px] border border-rose-500/30 bg-rose-500/15 p-3 text-sm text-rose-600"
+            >
+              <AlertTriangle
+                size={16}
+                className="mt-0.5 shrink-0"
+                aria-hidden="true"
+              />
+              <p>{error}</p>
+            </div>
+          ) : null}
           <div className="flex flex-col gap-3 sm:flex-row">
             <div className="flex-1 space-y-1.5">
               <Label htmlFor="lead-warning-name" className="sr-only">
@@ -213,21 +249,13 @@ export function LeadFallbackForm({
             </div>
           </div>
 
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs text-muted-foreground">
-              Or{" "}
-              <Link
-                href={connectHref}
-                className="font-medium text-foreground underline-offset-2 hover:underline"
-              >
-                continue to builder match on Connect
-              </Link>
-            </p>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
             <Button
               type="submit"
+              disabled={isSubmitting}
               className="h-11 min-h-[44px] w-full shadow-editorial sm:w-auto"
             >
-              Request specialist review
+              {isSubmitting ? "Submitting…" : "Request specialist review"}
             </Button>
           </div>
         </form>
@@ -249,15 +277,14 @@ export function LeadFallbackForm({
             Restricted — expert compliance review
           </h2>
           <p className="text-sm font-medium break-words text-muted-foreground">
-            Movable tiny homes / THOW placement is restricted on this parcel
-            under the pilot overlays and applicable local rules. Review the
-            diagnostics above for engine reasons — this form does not invent new
-            statute.
+            This parcel is restricted for at least one program in the
+            diagnostics above. Review those engine reasons with a local
+            compliance expert — this form does not invent new statute.
           </p>
           <p className="text-sm font-light break-words text-muted-foreground">
-            You may still qualify for a permanent-foundation ADU pathway. Local
-            compliance experts manually audit complex lots and route referrals
-            through our review queue.
+            You may still have a lawful pathway, such as a permanent-foundation
+            ADU. Local experts audit complex lots and route referrals through
+            our review queue.
           </p>
         </div>
       </div>

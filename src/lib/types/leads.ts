@@ -25,7 +25,10 @@ export interface ContractorMatch extends Contractor {
 }
 
 export type LeadRequestType =
-  "project" | "quote_interest" | "restricted_review";
+  | "project"
+  | "quote_interest"
+  | "restricted_review"
+  | "specialist_review";
 
 export interface ProjectLeadPayload {
   type: "project";
@@ -72,11 +75,25 @@ export interface RestrictedReviewPayload {
   lng: number;
   intent: RestrictedIntent;
   budget: RestrictedBudget;
-  overallStatus?: "restricted";
+  overallStatus?: "restricted" | "warning";
+}
+
+export interface SpecialistReviewPayload {
+  type: "specialist_review";
+  name: string;
+  email: string;
+  phone?: string;
+  address: string;
+  lat: number;
+  lng: number;
+  overallStatus?: "warning";
 }
 
 export type LeadPayload =
-  ProjectLeadPayload | QuoteInterestPayload | RestrictedReviewPayload;
+  | ProjectLeadPayload
+  | QuoteInterestPayload
+  | RestrictedReviewPayload
+  | SpecialistReviewPayload;
 
 export interface BuilderSignupPayload {
   company: string;

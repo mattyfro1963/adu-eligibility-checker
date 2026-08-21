@@ -131,7 +131,7 @@ export function HomePageClient() {
   const showInterstitial = Boolean(geocodeResult) && isZoningLoading;
   const showDashboard = Boolean(geocodeResult) && !isZoningLoading;
   const connectOverallStatus = report?.overall ?? queryStatus;
-  const compact = showDashboard;
+  const compact = Boolean(geocodeResult);
 
   useEffect(() => {
     if (!showDashboard || typeof window === "undefined") {

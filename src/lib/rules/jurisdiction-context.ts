@@ -115,21 +115,24 @@ function buildAduResult(
   note: JurisdictionNote | null,
   status: EligibilityStatus,
 ): EligibilityResult {
-  const reasons: CitedClaim[] = [
-    {
-      text: "Lot-level zoning was not verified for this coordinate. This ADU posture reflects published county/city tiny-home guidance plus the statewide Gov. Code Chapter 13 floor — confirm residential zoning and local development standards with Planning/Building before placing or occupying a unit.",
-      sources: [...BASE_ADU_SOURCES],
-    },
-  ];
+  const reasons: CitedClaim[] = [];
+  const label = jurisdictionLabel(resolved);
 
   if (note) {
     const seeds = requirementsFromJurisdictionNote(note);
     const explanation = seeds[0]?.tinyHomeExplanation ?? note.summary;
     const sources = noteSources(note);
     reasons.push({
-      text: `${jurisdictionLabel(resolved)}: ${explanation}`,
+      text: `${label}: ${explanation}`,
       sources: sources.length > 0 ? sources : [...BASE_ADU_SOURCES],
     });
+    const parkModel = note.parkModel?.trim();
+    if (parkModel && seeds[0]?.tinyHomeExplanation !== parkModel) {
+      reasons.push({
+        text: `${label} park model / THOW: ${parkModel}`,
+        sources: sources.length > 0 ? sources : [...BASE_ADU_SOURCES],
+      });
+    }
   } else {
     reasons.push({
       text: `${resolved.countyLabel}: This checker does not yet have structured local guidance. Statewide ADU and tiny-home classification rules still apply — confirm THOW / park-model / ADU pathways with local planning staff before you buy or place a unit.`,
@@ -137,15 +140,10 @@ function buildAduResult(
     });
   }
 
-  if (status === "warning" && note?.parkModel?.trim()) {
-    reasons.push({
-      text: note.parkModel.trim(),
-      sources:
-        noteSources(note).length > 0
-          ? noteSources(note)
-          : [...BASE_ADU_SOURCES],
-    });
-  }
+  reasons.push({
+    text: "Lot-level zoning was not verified for this coordinate. This ADU posture reflects published county/city tiny-home guidance plus the statewide Gov. Code Chapter 13 floor — confirm residential zoning and local development standards with Planning/Building before placing or occupying a unit.",
+    sources: [...BASE_ADU_SOURCES],
+  });
 
   return { status, reasons };
 }

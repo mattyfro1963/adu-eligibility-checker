@@ -6,6 +6,7 @@ import {
   DECISION_NODES,
   WHEELS_VS_FOUNDATION_INTRO,
   WHEELS_VS_FOUNDATION_META,
+  WHEELS_VS_FOUNDATION_DISCLAIMER,
 } from "@/lib/content/guides/wheels-vs-foundation";
 import type { CitedClaim } from "@/lib/regulations/types";
 
@@ -20,6 +21,7 @@ export function WheelsVsFoundationGuide() {
     <GuideLayout
       meta={WHEELS_VS_FOUNDATION_META}
       lead={WHEELS_VS_FOUNDATION_INTRO.lead}
+      disclaimer={WHEELS_VS_FOUNDATION_DISCLAIMER}
     >
       <section aria-labelledby="decision-tree-heading" className="space-y-4">
         <h2

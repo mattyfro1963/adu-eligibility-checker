@@ -118,6 +118,17 @@ describe("composeLocationRequirements", () => {
         (r) => r.id.startsWith("county-") || r.id === "county-fallback",
       ),
     ).toBe(true);
+    expect(reqs.some((r) => r.id === "ca-size-structure")).toBe(true);
+    expect(reqs.some((r) => r.id === "ca-cbc-appendix-aq")).toBe(true);
+    expect(
+      reqs.find((r) => r.id === "ca-cbc-appendix-aq")?.applies,
+    ).toBe("always");
+    const crcReq = reqs.find((r) => r.id === "ca-cbc-appendix-aq");
+    expect(crcReq?.tinyHomeExplanation.text).toMatch(/120/);
+    expect(crcReq?.tinyHomeExplanation.text).toMatch(/70/);
+    const ch13Req = reqs.find((r) => r.id === "ca-chapter13-adu-floor");
+    expect(ch13Req?.tinyHomeExplanation.text).toMatch(/850/);
+    expect(ch13Req?.tinyHomeExplanation.text).toMatch(/1,000|1000/);
   });
 
   it("includes Oakland city requirements when place is Oakland", () => {
@@ -136,7 +147,57 @@ describe("composeLocationRequirements", () => {
       ),
     ).toBe(true);
   });
+
+  it("does not claim a resolved lot district for jurisdiction-context reports", () => {
+    const reqs = composeLocationRequirements({
+      geocode: {
+        ...sfGeocode,
+        place: "Oakland",
+        county: "Alameda",
+        formattedAddress: "100 Broadway, Oakland, CA",
+      },
+      report: {
+        addressId: "test-oakland",
+        formattedAddress: "100 Broadway, Oakland, CA",
+        zoning: "Not verified",
+        overlays: {
+          tinyHomeFriendly: false,
+          fireHazard: false,
+          vhfhsz: false,
+          historicDistrict: false,
+          coastalZone: false,
+        },
+        adu: { status: "eligible", reasons: [] },
+        sb9: { status: "warning", reasons: [] },
+        overall: "warning",
+        analysisScope: "jurisdiction_context",
+      },
+    });
+    expect(reqs.some((r) => r.id === "lot-zoning")).toBe(false);
+    expect(reqs.some((r) => /Not verified was resolved/i.test(r.tinyHomeExplanation.text))).toBe(
+      false,
+    );
+  });
 });
+
+function assertCaSizeStructurePresent(briefing: ReturnType<typeof composeResultsBriefing>): void {
+  expect(briefing.sizeStructure).not.toBeNull();
+  expect(briefing.sizeStructure?.stats.primaryRoomSqFt).toBe(120);
+  expect(briefing.sizeStructure?.stats.additionalRoomSqFt).toBe(70);
+  expect(briefing.sizeStructure?.stats.aduMinisterialSqFt).toBe(850);
+  expect(briefing.sizeStructure?.stats.aduMinisterialMultiBedSqFt).toBe(1000);
+  expect(
+    briefing.requirements.some((r) => r.id === "ca-size-structure"),
+  ).toBe(true);
+  expect(
+    briefing.summary.some(
+      (c) => /120/.test(c.text) && /850/.test(c.text),
+    ),
+  ).toBe(true);
+  expect(
+    briefing.checklist.some((item) => item.id === "ca-size-structure"),
+  ).toBe(true);
+}
 
 describe("composeResultsBriefing", () => {
   it("lot zoning report → CA checklist, outline, receipt with lot_zoning scope", () => {
@@ -164,6 +225,7 @@ describe("composeResultsBriefing", () => {
     ).toBe(true);
     expect(briefing.guideLinks.length).toBe(3);
     expect(briefing.requirements.length).toBeGreaterThan(0);
+    assertCaSizeStructurePresent(briefing);
     for (const claim of briefing.summary) {
       assertClaimCited(claim);
     }
@@ -189,6 +251,7 @@ describe("composeResultsBriefing", () => {
     expect(briefing.checklist[0]?.id).toBe("ca-use");
     expect(briefing.guideLinks).toEqual([]);
     expect(briefing.requirements.length).toBeGreaterThan(0);
+    assertCaSizeStructurePresent(briefing);
     expect(
       briefing.summary.some((c) =>
         /not available for this coordinate/i.test(c.text),
@@ -213,6 +276,7 @@ describe("composeResultsBriefing", () => {
       false,
     );
     expect(briefing.guideLinks).toEqual([]);
+    assertCaSizeStructurePresent(briefing);
   });
 
   it("unpublished state → only not-published notice, no CA/SF summary claims", () => {
@@ -231,6 +295,7 @@ describe("composeResultsBriefing", () => {
     expect(briefing.checklist).toEqual([]);
     expect(briefing.outline).toEqual([]);
     expect(briefing.requirements).toEqual([]);
+    expect(briefing.sizeStructure).toBeNull();
     expect(briefing.summary).toHaveLength(1);
     expect(briefing.summary[0]?.text).toMatch(/not published/i);
     expect(
@@ -376,7 +441,7 @@ describe("California visitor-facing branding", () => {
       path.join(componentsRoot, "SiteHeader/SiteHeader.tsx"),
       "utf8",
     );
-    expect(header).toMatch(/Eligibility Check/);
+    expect(header).toMatch(/doihave\.space/);
 
     const search = readFileSync(
       path.join(componentsRoot, "AddressSearch/AddressSearch.tsx"),
@@ -391,6 +456,7 @@ describe("California visitor-facing branding", () => {
     );
     expect(results).toMatch(/California application checklist/);
     expect(results).toMatch(/JurisdictionRequirements/);
+    expect(results).toMatch(/TinyHomeSizeStructure/);
 
     const receipt = readFileSync(
       path.join(componentsRoot, "ResultsCard/SearchReceipt.tsx"),
@@ -425,6 +491,10 @@ describe("California visitor-facing branding", () => {
         ],
       ],
       ["ResultsCard/ResultsBriefing.tsx", [/\bp-5\b/, /sm:p-6/, /md:p-8/]],
+      [
+        "ResultsCard/TinyHomeSizeStructure.tsx",
+        [/\bp-5\b/, /sm:p-6/, /md:p-8/],
+      ],
       [
         "ResultsCard/ApplicationChecklist.tsx",
         [/\bp-5\b/, /sm:p-6/, /md:p-8/, /gap-3/, /sm:gap-4/],

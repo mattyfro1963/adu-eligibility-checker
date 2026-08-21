@@ -52,6 +52,7 @@ describe("evaluateJurisdictionContext", () => {
     expect(report.adu.status).toBe("eligible");
     expect(report.sb9.status).toBe("warning");
     expect(report.overall).toBe("warning");
+    expect(report.adu.reasons[0]?.text).toMatch(/Oakland/i);
     expect(report.adu.reasons.some((r) => /Oakland/i.test(r.text))).toBe(true);
     expect(
       report.adu.reasons.some((r) =>

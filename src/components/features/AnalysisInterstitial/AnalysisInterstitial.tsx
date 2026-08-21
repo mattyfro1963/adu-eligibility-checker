@@ -36,9 +36,9 @@ export function AnalysisInterstitial({
   }, []);
 
   useEffect(() => {
-    if (completedCount >= STEPS.length - 1) return;
+    if (completedCount >= STEPS.length) return;
     const timeoutId = window.setTimeout(() => {
-      setCompletedCount((count) => Math.min(count + 1, STEPS.length - 1));
+      setCompletedCount((count) => Math.min(count + 1, STEPS.length));
     }, STEP_MS);
     return () => {
       window.clearTimeout(timeoutId);
@@ -46,6 +46,7 @@ export function AnalysisInterstitial({
   }, [completedCount]);
 
   const activeIndex = Math.min(completedCount, STEPS.length - 1);
+  const allComplete = completedCount >= STEPS.length;
 
   return (
     <div
@@ -73,8 +74,10 @@ export function AnalysisInterstitial({
         </p>
         <ol className="mt-5 space-y-3">
           {STEPS.map((label, index) => {
-            const done = index < activeIndex;
-            const active = index === activeIndex;
+            const done =
+              index < activeIndex ||
+              (allComplete && index === STEPS.length - 1);
+            const active = index === activeIndex && !allComplete;
             return (
               <li key={label} className="flex items-center gap-3">
                 <span
@@ -109,8 +112,8 @@ export function AnalysisInterstitial({
           })}
         </ol>
         <p className="mt-5 text-xs text-muted-foreground">
-          Resolving county requirements → local zoning when available → ADU/SB
-          9. Overlay layers remain progressive where GIS is not yet loaded.
+          County requirements, then lot GIS when available, then ADU and SB 9
+          eligibility.
         </p>
       </div>
     </div>

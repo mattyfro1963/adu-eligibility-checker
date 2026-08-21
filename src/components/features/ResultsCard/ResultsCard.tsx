@@ -5,7 +5,9 @@ import Link from "next/link";
 import {
   ArrowRight,
   Building2,
+  Home,
   Landmark,
+  MapPin,
   ShieldAlert,
   Trees,
 } from "lucide-react";
@@ -18,8 +20,8 @@ import { RegulationsAuthorByline } from "@/components/features/ResultsCard/Regul
 import { ResultsBriefingSection } from "@/components/features/ResultsCard/ResultsBriefing";
 import { RuleDetail } from "@/components/features/ResultsCard/RuleDetail";
 import { StatutoryComplianceChecklist } from "@/components/features/ResultsCard/StatutoryComplianceChecklist";
+import { TinyHomeSizeStructure } from "@/components/features/ResultsCard/TinyHomeSizeStructure";
 import { SearchReceiptCard } from "@/components/features/ResultsCard/SearchReceipt";
-import { Button } from "@/components/ui/button";
 import { EligibilityBadge } from "@/components/ui/eligibility-badge";
 import { ExpandableSection } from "@/components/ui/expandable-section";
 import { composeResultsBriefing } from "@/lib/regulations/compose-briefing";
@@ -30,16 +32,35 @@ import type { Parcel, ZoningReport } from "@/lib/types/zoning";
 
 type ProgramTab = "adu" | "sb9";
 
+function formatJurisdiction(geocode: GeocodeResult | null): string | null {
+  if (!geocode) return null;
+  const place = geocode.place.trim();
+  const county = geocode.county.trim();
+  if (!place && !county) return null;
+  const countyLabel = !county
+    ? ""
+    : /\bcounty\b/i.test(county) ||
+        county.toLowerCase() === place.toLowerCase()
+      ? county
+      : `${county} County`;
+  if (
+    place &&
+    countyLabel &&
+    place.toLowerCase() !== countyLabel.toLowerCase()
+  ) {
+    return `${place}, ${countyLabel}`;
+  }
+  return place || countyLabel || null;
+}
+
 interface ResultsCardProps {
   report: ZoningReport | null;
   geocodeResult: GeocodeResult | null;
   isLoading?: boolean;
   /** Zoning API transport/5xx error — uncovered counties are not errors. */
   zoningError?: string | null;
-  /** In-page anchor or shareable deep link to builder match on `/`. */
+  /** In-page anchor to builder intro on `/`. */
   connectHref?: string;
-  /** Opens the Get Quotes modal (project lead → contractor matches). */
-  onGetQuotes?: () => void;
 }
 
 function OverlayRow({
@@ -47,12 +68,20 @@ function OverlayRow({
   icon: Icon,
   detected,
   detectedClassName,
+  undetermined = false,
 }: {
   label: string;
   icon: typeof Trees;
   detected: boolean;
   detectedClassName: string;
+  /** When lot GIS did not run — do not imply overlays were verified clear. */
+  undetermined?: boolean;
 }) {
+  const statusLabel = detected
+    ? "Detected"
+    : undetermined
+      ? "Not verified"
+      : "Clear";
   return (
     <div className="flex items-center justify-between border-b border-border py-3.5">
       <span className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
@@ -60,9 +89,9 @@ function OverlayRow({
         {label}
       </span>
       <span
-        className={`text-sm font-normal ${detected ? detectedClassName : "text-foreground"}`}
+        className={`text-sm font-normal ${detected ? detectedClassName : undetermined ? "text-amber-700" : "text-foreground"}`}
       >
-        {detected ? "Detected" : "Clear"}
+        {statusLabel}
       </span>
     </div>
   );
@@ -123,7 +152,6 @@ export function ResultsCard({
   isLoading = false,
   zoningError = null,
   connectHref = "#connect",
-  onGetQuotes,
 }: ResultsCardProps) {
   const [program, setProgram] = useState<ProgramTab>("adu");
   const lat = geocodeResult?.lat ?? null;
@@ -133,6 +161,7 @@ export function ResultsCard({
   const mapblklot = report?.mapblklot ?? null;
   const isJurisdictionContext =
     report?.analysisScope === "jurisdiction_context";
+  const jurisdictionLabel = formatJurisdiction(geocodeResult);
 
   const briefing = useMemo(() => {
     if (!geocodeResult) return null;
@@ -172,7 +201,7 @@ export function ResultsCard({
     <div className="animate-in fade-in slide-in-from-bottom-4 space-y-6 duration-700 fill-mode-both sm:space-y-8">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:items-stretch lg:gap-8">
         <div className="relative flex flex-col overflow-hidden rounded-card border border-border bg-card shadow-elevated lg:col-span-2 lg:max-h-[min(720px,calc(100vh-8rem))] lg:border-r-0">
-          <div className="flex-1 space-y-6 overflow-y-auto p-8">
+          <div className="flex-1 space-y-6 overflow-y-auto p-8 pb-28">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="font-label text-muted-foreground">
@@ -186,11 +215,25 @@ export function ResultsCard({
                     APN / mapblklot {mapblklot}
                   </p>
                 ) : null}
+                {jurisdictionLabel ? (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {jurisdictionLabel}
+                  </p>
+                ) : null}
               </div>
               {report ? (
                 <EligibilityBadge status={report.overall} size="lg" />
               ) : null}
             </div>
+
+            {zoningError && !report ? (
+              <p
+                role="alert"
+                className="rounded-input border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs leading-relaxed text-rose-700"
+              >
+                {zoningError}
+              </p>
+            ) : null}
 
             {isJurisdictionContext ? (
               <p className="rounded-input border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-900">
@@ -203,6 +246,20 @@ export function ResultsCard({
 
             <div className="flex items-center justify-between border-b border-border py-3.5">
               <span className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <MapPin
+                  size={16}
+                  className="text-muted-foreground"
+                  aria-hidden="true"
+                />
+                Jurisdiction
+              </span>
+              <span className="text-right text-sm font-normal text-foreground">
+                {jurisdictionLabel ?? "—"}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between border-b border-border py-3.5">
+              <span className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                 <Building2
                   size={16}
                   className="text-muted-foreground"
@@ -211,7 +268,20 @@ export function ResultsCard({
                 Base Zoning
               </span>
               <span className="rounded-input border border-border bg-muted px-2.5 py-1 font-mono text-xs font-normal text-foreground">
-                {report?.zoning ?? "—"}
+                {isJurisdictionContext
+                  ? "Not verified"
+                  : (report?.zoning ?? "—")}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between border-b border-border py-3.5">
+              <span className="text-sm font-medium text-muted-foreground">
+                Lot area
+              </span>
+              <span className="text-sm font-normal text-foreground">
+                {report?.lotSizeSqFt != null && report.lotSizeSqFt > 0
+                  ? `${report.lotSizeSqFt.toLocaleString()} sq ft`
+                  : "Not verified"}
               </span>
             </div>
 
@@ -235,6 +305,7 @@ export function ResultsCard({
                 icon={Trees}
                 detected={Boolean(report?.overlays.coastalZone)}
                 detectedClassName="text-amber-600"
+                undetermined={isJurisdictionContext}
               />
               <OverlayRow
                 label="Fire Hazard"
@@ -243,12 +314,21 @@ export function ResultsCard({
                   report?.overlays.fireHazard || report?.overlays.vhfhsz,
                 )}
                 detectedClassName="text-rose-600"
+                undetermined={isJurisdictionContext}
               />
               <OverlayRow
                 label="Historic District"
                 icon={Landmark}
                 detected={Boolean(report?.overlays.historicDistrict)}
                 detectedClassName="text-amber-600"
+                undetermined={isJurisdictionContext}
+              />
+              <OverlayRow
+                label="Tiny-home overlay"
+                icon={Home}
+                detected={Boolean(report?.overlays.tinyHomeFriendly)}
+                detectedClassName="text-emerald-600"
+                undetermined={isJurisdictionContext}
               />
             </div>
 
@@ -287,7 +367,7 @@ export function ResultsCard({
                   <ExpandableSection
                     title="Statutory compliance checklist"
                     description="Lot facts cross-checked against cited code sections"
-                    defaultOpen={false}
+                    defaultOpen
                     variant="muted"
                     contentClassName="p-0 sm:p-0"
                   >
@@ -304,21 +384,12 @@ export function ResultsCard({
           </div>
 
           {geocodeResult ? (
-            <div className="sticky bottom-0 z-10 flex flex-col gap-2 border-t border-border bg-card p-6 sm:flex-row sm:items-center">
-              {onGetQuotes ? (
-                <Button
-                  type="button"
-                  onClick={onGetQuotes}
-                  className="h-11 min-h-[44px] flex-1 rounded-button bg-primary text-primary-foreground hover:bg-primary/90"
-                >
-                  Get Quotes
-                </Button>
-              ) : null}
+            <div className="flex shrink-0 flex-col gap-2 border-t border-border bg-card p-6 sm:flex-row sm:items-center">
               <Link
                 href={connectHref}
                 className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-button border border-border bg-card px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted"
               >
-                Connect &amp; quotes
+                Request builder intro
                 <ArrowRight size={16} aria-hidden="true" />
               </Link>
             </div>
@@ -340,6 +411,9 @@ export function ResultsCard({
       {briefing && !isLoading ? (
         <>
           <ResultsBriefingSection summary={briefing.summary} />
+          {briefing.sizeStructure ? (
+            <TinyHomeSizeStructure briefing={briefing.sizeStructure} />
+          ) : null}
           <ExpandableSection
             title="Requirements & application steps"
             description="California application checklist, county/city notes, and SF buyer guides"

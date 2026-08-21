@@ -11,7 +11,16 @@ type StatutoryComplianceChecklistProps = {
 };
 
 function RuleIcon({ evaluation }: { evaluation: StatutoryEvaluation }) {
-  if (evaluation.passed) {
+  if (evaluation.outcome === "unverified") {
+    return (
+      <AlertTriangle
+        className="mt-0.5 shrink-0 text-amber-500"
+        size={18}
+        aria-hidden="true"
+      />
+    );
+  }
+  if (evaluation.outcome === "pass") {
     return (
       <CheckCircle2
         className="mt-0.5 shrink-0 text-emerald-600"
@@ -64,7 +73,9 @@ export function StatutoryComplianceChecklist({
             Zoning Code
           </span>
           <span className="mt-1 block text-sm font-medium text-foreground">
-            {report.zoning}
+            {report.analysisScope === "jurisdiction_context"
+              ? "Not verified"
+              : report.zoning}
           </span>
         </div>
         <div>

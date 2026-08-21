@@ -20,6 +20,10 @@ import {
   sfPilotReceiptSources,
 } from "@/lib/regulations/sf-source-catalog";
 import { SRC } from "@/lib/regulations/sources";
+import {
+  buildSizeStructureBriefing,
+  CA_SIZE_STRUCTURE_SUMMARY_CLAIM,
+} from "@/lib/regulations/size-structure";
 import { getStateProfile } from "@/lib/regulations/states/registry";
 import type {
   CitedClaim,
@@ -36,7 +40,17 @@ export function isSanFranciscoPlace(place: string): boolean {
   return p === "san francisco" || p === "city and county of san francisco";
 }
 
-function lotSummary(report: ZoningReport | null): CitedClaim {
+function lotSummary(
+  report: ZoningReport | null,
+  zoningError?: string | null,
+): CitedClaim {
+  if (zoningError) {
+    return {
+      text: `The parcel report could not be loaded for this search (${zoningError}). County and city requirements below may still apply, but rerun the check or confirm with local Planning/Building before relying on eligibility badges.`,
+      sources: [SRC.hcdAdu, SRC.hcdTinyHomesIb, SRC.govChapter13],
+    };
+  }
+
   if (report?.analysisScope === "jurisdiction_context") {
     switch (report.overall) {
       case "eligible":
@@ -113,10 +127,7 @@ export type ComposeBriefingInput = {
 export function composeResultsBriefing(
   input: ComposeBriefingInput,
 ): ResultsBriefing {
-  const { geocode, report } = input;
-  // zoningError is accepted for API compatibility; lot copy uses a fixed
-  // jurisdiction-context claim when report is null (avoids dumping raw API text).
-  void input.zoningError;
+  const { geocode, report, zoningError } = input;
   const issuedAt = input.issuedAt ?? new Date().toISOString();
   const profile = getStateProfile(geocode.region);
   const isCalifornia = profile.code === "CA" && profile.published;
@@ -136,8 +147,9 @@ export function composeResultsBriefing(
   const summary: CitedClaim[] =
     isCalifornia && profile.published
       ? [
+          lotSummary(report, zoningError),
           ...profile.useDoctrine.slice(0, 2),
-          lotSummary(report),
+          CA_SIZE_STRUCTURE_SUMMARY_CLAIM,
           {
             text: "Do not skip the land-use and building permit process. Unpermitted placement can lead to fines and code enforcement. For site-specific advice, consult local Planning / Building or a California-licensed land-use attorney.",
             sources: [SRC.hcdAdu, SRC.sfPlanning, SRC.sfDbi],
@@ -171,6 +183,9 @@ export function composeResultsBriefing(
       ? composeLocationRequirements({ geocode, report })
       : [];
 
+  const sizeStructure =
+    isCalifornia && profile.published ? buildSizeStructureBriefing() : null;
+
   const receipt: SearchReceipt = {
     issuedAt,
     formattedAddress: geocode.formattedAddress,
@@ -191,6 +206,7 @@ export function composeResultsBriefing(
     author: REGULATIONS_AGENT,
     summary,
     requirements,
+    sizeStructure,
     checklist,
     outline,
     guideLinks,

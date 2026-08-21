@@ -18,8 +18,7 @@ const zoning = [SRC.datasfZoning, SRC.sfPim] as const;
 
 export const SF_THOW_META: GuideMeta = {
   slug: "tiny-home-on-wheels-san-francisco",
-  title:
-    "Is a Tiny Home on Wheels Legal in San Francisco? Rules, Permits, and Loopholes.",
+  title: "Is a Tiny Home on Wheels Legal in San Francisco? Rules and Permits.",
   description:
     "San Francisco THOW / park-model pathways, state ADU floors, and hard limits — with official sources.",
   eyebrow: "San Francisco · THOW zoning",

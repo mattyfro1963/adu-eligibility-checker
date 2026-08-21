@@ -1,15 +1,14 @@
 import { SAMPLE_REPORTS } from "@/lib/content/sample-reports";
-import type { GeocodeResult } from "@/lib/types/gis";
 import { cn } from "@/lib/utils";
 
 interface SampleReportButtonsProps {
-  onSelect: (result: GeocodeResult) => void;
+  onSelectQuery: (query: string) => void;
   disabled?: boolean;
   className?: string;
 }
 
 export function SampleReportButtons({
-  onSelect,
+  onSelectQuery,
   disabled = false,
   className,
 }: SampleReportButtonsProps) {
@@ -19,7 +18,7 @@ export function SampleReportButtons({
         id="sample-reports-label"
         className="font-label text-[11px] uppercase tracking-[0.12em] text-muted-foreground"
       >
-        Sample reports
+        Try an address
       </p>
       <div
         className="flex flex-wrap gap-2"
@@ -31,9 +30,9 @@ export function SampleReportButtons({
             key={sample.id}
             type="button"
             disabled={disabled}
-            onClick={() => onSelect(sample.geocodeResult)}
+            onClick={() => onSelectQuery(sample.query)}
             className="min-h-[44px] rounded-[10px] border border-border bg-card px-4 py-2 font-label text-[11px] tracking-[0.08em] text-foreground uppercase transition-colors hover:border-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 disabled:cursor-not-allowed disabled:opacity-40"
-            aria-label={`Load sample report: ${sample.label} (${sample.description})`}
+            aria-label={`Search ${sample.label}: ${sample.query}`}
           >
             {sample.label}
           </button>

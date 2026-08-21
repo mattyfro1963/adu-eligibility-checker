@@ -11,6 +11,11 @@ import {
   requirementsFromJurisdictionNote,
   resolveJurisdictionGuide,
 } from "@/lib/content/resolve-jurisdiction";
+import {
+  CA_CHAPTER13_SIZE_CLAIM,
+  CA_CRC_SIZE_CLAIM,
+  CA_STRUCTURE_PATH_CLAIM,
+} from "@/lib/regulations/size-structure";
 import { SRC } from "@/lib/regulations/sources";
 import type { CitedClaim, SourceRef } from "@/lib/regulations/types";
 import type { GeocodeResult } from "@/lib/types/gis";
@@ -76,22 +81,28 @@ function statewideFloor(): LocationRequirement[] {
       applies: "always",
       jurisdictionLabel: "California",
       sources: aduSources,
+      tinyHomeExplanation: CA_CHAPTER13_SIZE_CLAIM,
+    },
+    {
+      id: "ca-size-structure",
+      category: "building_path",
+      title: "Size and structure paths for proposed tiny homes",
+      applies: "always",
+      jurisdictionLabel: "California",
+      sources: [...cbcSources, ...classSources],
       tinyHomeExplanation: claim(
-        "When the unit is treated as a residential ADU, Government Code Chapter 13 sets a statewide floor for ministerial review and size — locals cannot undercut those floors, but your city or county still decides which zones allow ADUs and what development standards apply.",
-        aduSources,
+        `${CA_CRC_SIZE_CLAIM.text} ${CA_STRUCTURE_PATH_CLAIM.text}`,
+        [...cbcSources, ...classSources],
       ),
     },
     {
       id: "ca-cbc-appendix-aq",
       category: "building_path",
       title: `${CBC_BASELINE.appendix} / CRC habitable-room minima`,
-      applies: "likely",
+      applies: "always",
       jurisdictionLabel: "California",
       sources: cbcSources,
-      tinyHomeExplanation: claim(
-        `Many jurisdictions follow the ${CBC_BASELINE.codeYear} California Building / Residential Code (${CBC_BASELINE.appendix} where adopted). Typical permanent-dwelling minima include a ceiling height of ${CBC_BASELINE.ceilingHeight}, one habitable room of at least ${CBC_BASELINE.primaryRoomSqFt} sq ft, and at least ${CBC_BASELINE.additionalRoomSqFt} sq ft for each additional habitable room — confirm local adoption and amendments.`,
-        cbcSources,
-      ),
+      tinyHomeExplanation: CA_CRC_SIZE_CLAIM,
     },
     {
       id: "ca-ansi-park-model",
@@ -189,7 +200,7 @@ function jurisdictionRequirements(
 function lotZoningRequirements(
   report: ZoningReport | null,
 ): LocationRequirement[] {
-  if (!report) return [];
+  if (!report || report.analysisScope === "jurisdiction_context") return [];
 
   const zoneSources: SourceRef[] = [
     SRC.datasfZoning,
@@ -215,7 +226,7 @@ function lotZoningRequirements(
 function overlayRequirements(
   report: ZoningReport | null,
 ): LocationRequirement[] {
-  if (!report) return [];
+  if (!report || report.analysisScope === "jurisdiction_context") return [];
   const { overlays } = report;
   const out: LocationRequirement[] = [];
 

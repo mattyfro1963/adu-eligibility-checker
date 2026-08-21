@@ -49,13 +49,14 @@ export function useAddressSearch({
   const [isSearching, setIsSearching] = useState(false);
   const [isResolving, setIsResolving] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const abortRef = useRef<AbortController | null>(null);
+  const suggestAbortRef = useRef<AbortController | null>(null);
+  const resolveAbortRef = useRef<AbortController | null>(null);
 
   const fetchSuggestions = useCallback(
     async (value: string) => {
-      abortRef.current?.abort();
+      suggestAbortRef.current?.abort();
       const controller = new AbortController();
-      abortRef.current = controller;
+      suggestAbortRef.current = controller;
       setIsSearching(true);
 
       try {
@@ -79,7 +80,7 @@ export function useAddressSearch({
         onError?.("Failed to fetch address suggestions");
         setSuggestions([]);
       } finally {
-        if (!controller.signal.aborted) {
+        if (suggestAbortRef.current === controller) {
           setIsSearching(false);
         }
       }
@@ -88,6 +89,9 @@ export function useAddressSearch({
   );
 
   useEffect(() => {
+    if (isResolving) {
+      return;
+    }
     const trimmed = query.trim();
     if (trimmed.length < MIN_QUERY_LENGTH) {
       return;
@@ -100,13 +104,13 @@ export function useAddressSearch({
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [query, fetchSuggestions]);
+  }, [query, fetchSuggestions, isResolving]);
 
   const handleQueryChange = useCallback((value: string) => {
     setQuery(value);
     setIsOpen(true);
     if (value.trim().length < MIN_QUERY_LENGTH) {
-      abortRef.current?.abort();
+      suggestAbortRef.current?.abort();
       setSuggestions([]);
       setIsSearching(false);
     }
@@ -128,11 +132,14 @@ export function useAddressSearch({
       if (!trimmed) return;
 
       setQuery(trimmed);
-      abortRef.current?.abort();
+      suggestAbortRef.current?.abort();
+      resolveAbortRef.current?.abort();
       const controller = new AbortController();
-      abortRef.current = controller;
+      resolveAbortRef.current = controller;
       setIsSearching(true);
       setIsResolving(true);
+      setIsOpen(false);
+      setSuggestions([]);
 
       try {
         const res = await fetch(geocodeUrl(trimmed), {
@@ -156,7 +163,7 @@ export function useAddressSearch({
         }
         onError?.("Failed to geocode address");
       } finally {
-        if (!controller.signal.aborted) {
+        if (resolveAbortRef.current === controller) {
           setIsSearching(false);
           setIsResolving(false);
         }

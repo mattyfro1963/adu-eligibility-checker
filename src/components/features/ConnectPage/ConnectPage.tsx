@@ -103,7 +103,7 @@ export function ConnectPage() {
       <PageHeader
         eyebrow="Builder match · Lead routing"
         title="Connect with ADU and tiny-home builders"
-        description="Share your project details after an address search. We compile nearby mock contractors for quotes and route high-intent leads to partner builders. Informational matching only — not a permit or marketplace guarantee."
+        description="Share project details after an address search. We route high-intent leads to partner builders. Informational matching only — not a permit or marketplace guarantee."
       />
 
       {!geocodeResult ? (

@@ -118,7 +118,7 @@ export const AFFILIATE_PARTNERS: AffiliatePartner[] = [
     name: "Iron Eagle Trailers",
     category: "trailer_chassis",
     blurb:
-      "Custom and stock trailer frames marketed toward tiny-house builds — an alternate pathway when foundation ADU timing is blocked.",
+      "Custom and stock trailer frames often researched for tiny-house builds — confirm local rules before purchase.",
     publicUrl: "https://ironeagletrailers.com/",
     trackingId: "",
     intents: ["eligible", "restricted"],

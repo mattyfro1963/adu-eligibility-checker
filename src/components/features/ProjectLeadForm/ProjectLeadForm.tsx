@@ -108,8 +108,8 @@ export function ProjectLeadForm({
           <div className="min-w-0">
             <h2 className="text-lg font-normal tracking-tight text-foreground">
               {isComplex
-                ? "Complex site — match with builders"
-                : "Project details for builder match"}
+                ? "Complex site — request a builder intro"
+                : "Project details for a builder intro"}
             </h2>
             <p className="mt-1 text-sm font-light break-words text-muted-foreground">
               {isComplex ? (
@@ -122,8 +122,8 @@ export function ProjectLeadForm({
                 <>
                   Tell us about the project at{" "}
                   <span className="font-medium text-foreground">{address}</span>
-                  . We&apos;ll compile nearby contractors for quotes — not a
-                  permit or legal determination.
+                  . We&apos;ll follow up with a builder intro — not a permit or
+                  legal determination.
                 </>
               )}
             </p>
@@ -143,7 +143,7 @@ export function ProjectLeadForm({
               onChange={(e) => setName(e.target.value)}
               placeholder="Your name"
               className="h-11 rounded-[10px] border-border bg-card"
-              aria-label="Full name for builder match"
+              aria-label="Full name for builder intro"
               disabled={isSubmitting}
             />
           </div>
@@ -157,7 +157,7 @@ export function ProjectLeadForm({
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
               className="h-11 rounded-[10px] border-border bg-card"
-              aria-label="Email for builder match"
+              aria-label="Email for builder intro"
               disabled={isSubmitting}
             />
           </div>
@@ -172,7 +172,7 @@ export function ProjectLeadForm({
             onChange={(e) => setPhone(e.target.value)}
             placeholder="(415) 555-0100"
             className="h-11 rounded-[10px] border-border bg-card"
-            aria-label="Phone for builder match"
+            aria-label="Phone for builder intro"
             disabled={isSubmitting}
           />
         </div>
@@ -241,10 +241,10 @@ export function ProjectLeadForm({
           {isSubmitting ? (
             <>
               <Loader2 className="animate-spin" aria-hidden="true" />
-              Matching contractors…
+              Submitting…
             </>
           ) : (
-            "Find contractors"
+            "Request builder intro"
           )}
         </Button>
       </form>

@@ -50,6 +50,28 @@ export const CBC_BASELINE = {
   appendix: "Appendix AQ (Tiny Houses)",
 } as const;
 
+/** Canonical size and structure numbers for search results and /regulations. */
+export const TINY_HOME_SIZE_STRUCTURE = {
+  ...CBC_BASELINE,
+  /** Gov. Code Chapter 13 — locals cannot cap ADU size below this (not a construction minimum). */
+  aduMinisterialSqFt: 850,
+  aduMinisterialMultiBedSqFt: 1000,
+  jaduMaxSqFt: 500,
+  impactFeeExemptSqFt: 750,
+  /** Typical park-trailer / THOW living-area range cited in county guides. */
+  parkTrailerTypicalSqFtRange: "150–400",
+  structurePaths: {
+    foundation:
+      "Foundation-mounted site-built or factory-built dwellings follow CBC/CRC occupancy and habitability standards.",
+    thow:
+      "Chassis-mounted THOWs and park trailers (commonly ANSI A119.5) are recreational / park-trailer classes unless a local ordinance expressly authorizes dwelling or ADU use — with highway movement limits and skirting or residential appearance where required.",
+    factoryBuilt:
+      "Factory-built housing (modular) is built to the California Building Standards Code with HCD oversight — not the same path as HUD Code manufactured homes.",
+    hudManufactured:
+      "HUD Code manufactured homes (24 CFR 3280) carry a HUD label and follow a separate federal path from modular / site-built dwellings.",
+  },
+} as const;
+
 export const GUIDE_INTRO = {
   title: "Tiny Home Regulations in California",
   subtitle: "County guide for park models, THOWs, and ADU pathways",

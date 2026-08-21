@@ -20,35 +20,35 @@ export const SEARCH_TOPIC_CARDS: SearchTopicCard[] = [
     links: [
       {
         label: "County requirements by address",
-        href: "/regulations",
-      },
-      {
-        label: "THOW vs foundation pathways",
-        href: "/guides/wheels-vs-foundation",
+        href: "/regulations#county-guides",
       },
       {
         label: "Statewide ADU statute floor",
-        href: "/regulations",
+        href: "/regulations#overview",
+      },
+      {
+        label: "Park models and THOW classification",
+        href: "/regulations#park-models",
       },
     ],
     viewAllHref: "/regulations",
     viewAllLabel: "View all regulations",
   },
   {
-    id: "sb9",
-    title: "SB 9 & zoning",
+    id: "sf-guides",
+    title: "San Francisco guides",
     links: [
       {
-        label: "Single-family district requirements",
-        href: "/regulations",
+        label: "THOW legality in San Francisco",
+        href: "/guides/tiny-home-on-wheels-san-francisco",
       },
       {
-        label: "Fire and historic overlay warnings",
-        href: "/regulations",
+        label: "Tiny-home cost matrix",
+        href: "/guides/tiny-home-cost-matrix",
       },
       {
-        label: "San Francisco lot GIS coverage",
-        href: "/",
+        label: "Financing wheels vs foundation",
+        href: "/guides/wheels-vs-foundation",
       },
     ],
     viewAllHref: "/guides",
@@ -59,19 +59,19 @@ export const SEARCH_TOPIC_CARDS: SearchTopicCard[] = [
     title: "Permits & next steps",
     links: [
       {
-        label: "Application checklist after search",
-        href: "/",
-      },
-      {
-        label: "Connect with a specialist",
-        href: "/#connect",
-      },
-      {
         label: "Partner build-out resources",
         href: "/partners",
       },
+      {
+        label: "Premium planning tools",
+        href: "/premium",
+      },
+      {
+        label: "Search an address, then request a builder intro",
+        href: "/",
+      },
     ],
-    viewAllHref: "/#connect",
-    viewAllLabel: "View connect",
+    viewAllHref: "/partners",
+    viewAllLabel: "View partners",
   },
 ];

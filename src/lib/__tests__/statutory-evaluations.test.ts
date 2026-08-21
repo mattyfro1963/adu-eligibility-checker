@@ -16,7 +16,7 @@ describe("buildStatutoryEvaluations", () => {
     const report = evaluateEligibility(facts);
     const evaluations = buildStatutoryEvaluations(facts, report);
     const historic = evaluations.find((item) => item.ruleId === "SB9-R2");
-    expect(historic?.passed).toBe(false);
+    expect(historic?.outcome).toBe("fail");
     expect(historic?.severity).toBe("blocking");
   });
 
@@ -25,17 +25,34 @@ describe("buildStatutoryEvaluations", () => {
     const report = evaluateEligibility(facts);
     const evaluations = buildStatutoryEvaluations(facts, report);
     const fire = evaluations.find((item) => item.ruleId === "ADU-R2");
-    expect(fire?.passed).toBe(false);
+    expect(fire?.outcome).toBe("fail");
     expect(fire?.severity).toBe("caution");
   });
 
-  it("includes lot-size rule that passes when lot size is unknown", () => {
+  it("marks lot-size rule unverified when lot size is unknown", () => {
     const facts = parcel("addr-r1-clean");
     const withoutLot: Parcel = { ...facts, lotSizeSqFt: null };
     const report = evaluateEligibility(withoutLot);
     const lotRule = buildStatutoryEvaluations(withoutLot, report).find(
       (item) => item.ruleId === "SB9-R5",
     );
-    expect(lotRule?.passed).toBe(true);
+    expect(lotRule?.outcome).toBe("unverified");
+  });
+
+  it("does not treat unverified zoning as a failed district", () => {
+    const facts = parcel("addr-r1-clean");
+    const report = evaluateEligibility(facts);
+    report.analysisScope = "jurisdiction_context";
+    report.zoning = "Not verified";
+    const evaluations = buildStatutoryEvaluations(facts, report);
+    expect(evaluations.find((item) => item.ruleId === "ADU-R1")?.outcome).toBe(
+      "unverified",
+    );
+    expect(evaluations.find((item) => item.ruleId === "SB9-R1")?.outcome).toBe(
+      "unverified",
+    );
+    expect(evaluations.find((item) => item.ruleId === "ADU-R2")?.outcome).toBe(
+      "unverified",
+    );
   });
 });

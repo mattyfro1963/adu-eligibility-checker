@@ -8,9 +8,10 @@ export function SiteFooter() {
         <nav aria-label="Resources">
           <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
             {FOOTER_NAV.map((item) => (
-              <li key={item.href}>
+              <li key={item.label}>
                 <Link
                   href={item.href}
+                  title={item.description}
                   className="inline-flex min-h-[44px] items-center text-xs font-label tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground"
                 >
                   {item.label}
