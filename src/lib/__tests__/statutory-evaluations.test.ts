@@ -33,10 +33,29 @@ describe("buildStatutoryEvaluations", () => {
     const facts = parcel("addr-r1-clean");
     const withoutLot: Parcel = { ...facts, lotSizeSqFt: null };
     const report = evaluateEligibility(withoutLot);
+    expect(report.sb9?.status).toBe("warning");
     const lotRule = buildStatutoryEvaluations(withoutLot, report).find(
       (item) => item.ruleId === "SB9-R5",
     );
     expect(lotRule?.outcome).toBe("unverified");
+  });
+
+  it("marks overlay rules unverified when overlaysVerified is false", () => {
+    const facts: Parcel = {
+      ...parcel("addr-r1-clean"),
+      overlaysVerified: false,
+    };
+    const report = evaluateEligibility(facts);
+    const evaluations = buildStatutoryEvaluations(facts, report);
+    expect(evaluations.find((item) => item.ruleId === "SB9-R2")?.outcome).toBe(
+      "unverified",
+    );
+    expect(evaluations.find((item) => item.ruleId === "SB9-R3")?.outcome).toBe(
+      "unverified",
+    );
+    expect(evaluations.find((item) => item.ruleId === "ADU-R2")?.outcome).toBe(
+      "unverified",
+    );
   });
 
   it("does not treat unverified zoning as a failed district", () => {

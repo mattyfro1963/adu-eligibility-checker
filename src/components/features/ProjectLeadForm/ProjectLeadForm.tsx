@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Hammer, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LegalConsentNote } from "@/components/features/LegalConsentNote/LegalConsentNote";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type {
@@ -233,20 +234,23 @@ export function ProjectLeadForm({
           </div>
         </div>
 
-        <Button
-          type="submit"
-          disabled={isSubmitting}
-          className="h-11 w-full rounded-[10px] shadow-editorial sm:w-auto sm:self-end"
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="animate-spin" aria-hidden="true" />
-              Submitting…
-            </>
-          ) : (
-            "Request builder intro"
-          )}
-        </Button>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <LegalConsentNote />
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="h-11 w-full rounded-[10px] shadow-editorial sm:w-auto sm:self-end"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="animate-spin" aria-hidden="true" />
+                Submitting…
+              </>
+            ) : (
+              "Request builder intro"
+            )}
+          </Button>
+        </div>
       </form>
     </section>
   );

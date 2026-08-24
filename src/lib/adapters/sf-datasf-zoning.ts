@@ -218,6 +218,7 @@ export function buildSfDatasfParcel(
     lng,
     zoning: normalizeVendorZoningCode(zoning, "sf-datasf"),
     overlays: emptyOverlays(),
+    overlaysVerified: false,
     mapblklot: null,
     zoningDistrictName: meta?.districtName ?? null,
     zoningSourceUrl: meta?.sourceUrl ?? null,

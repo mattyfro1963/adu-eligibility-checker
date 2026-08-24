@@ -1,8 +1,8 @@
 /**
  * Schematic site geometry for the static map overlay.
  * Not a survey and not GIS — lot polygons are approximate from area + a
- * coordinate seed. Zoning is a separate district envelope for applicability.
- * Zero React; no Turf.
+ * coordinate seed. Zoning eligibility uses separate district point-in-polygon
+ * at the geocode (adapters), not this schematic. Zero React; no Turf.
  */
 
 export type MapPoint = { x: number; y: number };

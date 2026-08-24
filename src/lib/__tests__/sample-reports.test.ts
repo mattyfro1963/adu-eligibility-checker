@@ -35,20 +35,21 @@ describe("SAMPLE_REPORTS catalog", () => {
     }
   });
 
-  it("lists two lot-GIS eligible, seven jurisdiction warnings, and three restricted chips", () => {
+  it("lists nine warning chips (lot-GIS honesty + jurisdiction) and three restricted", () => {
     const eligible = SAMPLE_REPORTS.filter((s) => s.tone === "eligible");
     const warning = SAMPLE_REPORTS.filter((s) => s.tone === "warning");
     const restricted = SAMPLE_REPORTS.filter((s) => s.tone === "restricted");
-    expect(eligible).toHaveLength(2);
-    expect(warning).toHaveLength(7);
+    expect(eligible).toHaveLength(0);
+    expect(warning).toHaveLength(9);
     expect(restricted).toHaveLength(3);
-    expect(eligible.every((s) => /San Francisco/.test(s.label))).toBe(true);
     expect(warning.map((s) => s.id).sort()).toEqual(
       [
         "irvine",
         "long-beach",
         "los-angeles",
         "oakland-piedmont",
+        "parkside",
+        "richmond",
         "sacramento",
         "san-diego",
         "san-jose",

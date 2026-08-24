@@ -31,27 +31,38 @@ export const RESOURCE_NAV: SiteNavItem[] = [
     label: "Premium",
     description: "Downloadable planning tools",
   },
-  {
-    href: "/",
-    label: "Connect",
-    description: "Search an address first, then request a builder intro",
-  },
 ];
 
 /** Compact header links — checker home is the wordmark, not a duplicate nav item. */
-export const HEADER_NAV: SiteNavItem[] = RESOURCE_NAV.filter(
-  (item) => item.href !== "/",
-);
+export const HEADER_NAV: SiteNavItem[] = RESOURCE_NAV;
+
+/** Legal links — footer only; also linked from lead forms. */
+export const LEGAL_NAV: SiteNavItem[] = [
+  {
+    href: "/privacy",
+    label: "Privacy",
+    description: "Privacy Policy",
+  },
+  {
+    href: "/terms",
+    label: "Terms",
+    description: "Terms of Use",
+  },
+];
 
 /** @deprecated Use RESOURCE_NAV — kept for any lingering imports during migration. */
 export const PRIMARY_NAV: SiteNavItem[] = [
-  { href: "/", label: "Checker", description: "ADU & SB 9 parcel eligibility" },
+  {
+    href: "/",
+    label: "Checker",
+    description: "THOW lot eligibility (CA / OR / WA)",
+  },
   ...RESOURCE_NAV,
 ];
 
 export const SECONDARY_NAV: SiteNavItem[] = [];
 
-export const FOOTER_NAV: SiteNavItem[] = RESOURCE_NAV;
+export const FOOTER_NAV: SiteNavItem[] = [...RESOURCE_NAV, ...LEGAL_NAV];
 
 export function isActiveNavPath(pathname: string, href: string): boolean {
   if (href === "/") {

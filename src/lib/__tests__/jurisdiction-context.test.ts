@@ -3,8 +3,10 @@ import { composeResultsBriefing } from "@/lib/regulations/compose-briefing";
 import {
   evaluateJurisdictionContext,
   inferAduPostureFromNote,
+  inferPlacementPostureFromNote,
 } from "@/lib/rules/jurisdiction-context";
 import { resolveJurisdictionGuide } from "@/lib/content/resolve-jurisdiction";
+import { THOW_SUMMARY_BY_STATUS } from "@/lib/rules/thow-summary";
 import type { CitedClaim } from "@/lib/regulations/types";
 import type { GeocodeResult } from "@/lib/types/gis";
 
@@ -44,32 +46,34 @@ const humboldtGeocode: GeocodeResult = {
 };
 
 describe("evaluateJurisdictionContext", () => {
-  it("Oakland without lot GIS → ADU eligible, SB 9 warning, overall warning", () => {
+  it("Oakland without lot GIS → express THOW placement; SB 9 warning; THOW Yellow (transport/cert)", () => {
     const report = evaluateJurisdictionContext(oaklandGeocode);
 
     expect(report.analysisScope).toBe("jurisdiction_context");
     expect(report.zoning).toBe("Not verified");
     expect(report.adu.status).toBe("eligible");
-    expect(report.sb9.status).toBe("warning");
-    expect(report.overall).toBe("warning");
+    expect(report.sb9?.status).toBe("warning");
+    expect(report.dimensions.placement.status).toBe("eligible");
+    expect(report.thowOverall).toBe("warning");
+    expect(report.overall).toBe(report.thowOverall);
+    expect(report.thowSummary.text).toBe(THOW_SUMMARY_BY_STATUS.warning.text);
     expect(report.adu.reasons[0]?.text).toMatch(/Oakland/i);
-    expect(report.adu.reasons.some((r) => /Oakland/i.test(r.text))).toBe(true);
     expect(
       report.adu.reasons.some((r) =>
         /Lot-level zoning was not verified/i.test(r.text),
       ),
     ).toBe(true);
     expectCited(report.adu.reasons);
-    expectCited(report.sb9.reasons);
+    expectCited(report.sb9?.reasons ?? []);
   });
 
-  it("rural Humboldt County → ADU eligible from county guidance, SB 9 warning", () => {
+  it("rural Humboldt County → ADU eligible from county guidance; THOW Yellow", () => {
     const report = evaluateJurisdictionContext(humboldtGeocode);
 
     expect(report.analysisScope).toBe("jurisdiction_context");
     expect(report.adu.status).toBe("eligible");
-    expect(report.sb9.status).toBe("warning");
-    expect(report.overall).toBe("warning");
+    expect(report.sb9?.status).toBe("warning");
+    expect(report.thowOverall).toBe("warning");
     expect(
       report.adu.reasons.some((r) => /Humboldt County/i.test(r.text)),
     ).toBe(true);
@@ -90,7 +94,7 @@ describe("evaluateJurisdictionContext", () => {
       lng: -120.95,
     });
     expect(report.adu.status).toBe("warning");
-    expect(report.overall).toBe("warning");
+    expect(report.thowOverall).toBe("warning");
   });
 
   it("unknown county → ADU warning with fallback copy", () => {
@@ -105,13 +109,22 @@ describe("evaluateJurisdictionContext", () => {
     });
 
     expect(report.adu.status).toBe("warning");
-    expect(report.sb9.status).toBe("warning");
-    expect(report.overall).toBe("warning");
+    expect(report.sb9?.status).toBe("warning");
+    expect(report.thowOverall).toBe("warning");
     expect(
       report.adu.reasons.some((r) =>
-        /does not yet have structured local guidance/i.test(r.text),
+        /No structured local ADU|does not yet have structured local guidance/i.test(
+          r.text,
+        ),
       ),
     ).toBe(true);
+  });
+
+  it("Oakland placement posture is express THOW path", () => {
+    const resolved = resolveJurisdictionGuide("Oakland", "Alameda");
+    const posture = inferPlacementPostureFromNote(resolved.city);
+    expect(posture.express).toBe(true);
+    expect(posture.ban).toBe(false);
   });
 });
 

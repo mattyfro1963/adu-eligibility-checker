@@ -102,7 +102,7 @@ export function ConnectPage() {
     <PageShell>
       <PageHeader
         eyebrow="Builder match · Lead routing"
-        title="Connect with ADU and tiny-home builders"
+        title="Connect with THOW and tiny-home builders"
         description="Share project details after an address search. We route high-intent leads to partner builders. Informational matching only — not a permit or marketplace guarantee."
       />
 

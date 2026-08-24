@@ -19,6 +19,7 @@ import {
   PageSection,
   PageShell,
 } from "@/components/features/PageShell/PageShell";
+import { LegalConsentNote } from "@/components/features/LegalConsentNote/LegalConsentNote";
 import { Button } from "@/components/ui/button";
 import { ExpandableSection } from "@/components/ui/expandable-section";
 import { Input } from "@/components/ui/input";
@@ -229,9 +230,12 @@ function WaitlistForm({
       </div>
 
       <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-xs leading-relaxed text-muted-foreground">
-          Waitlist only — no payment is collected here.
-        </p>
+        <div className="space-y-1">
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Waitlist only — no payment is collected here.
+          </p>
+          <LegalConsentNote />
+        </div>
         <Button
           type="submit"
           disabled={isSubmitting}

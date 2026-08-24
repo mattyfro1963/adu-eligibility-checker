@@ -11,6 +11,11 @@ import {
   buildApproximateSiteGeoJSON,
   type ApproximateSiteGeoJSON,
 } from "@/lib/map/approximate-site";
+import {
+  mapZoneColor,
+  readMapPaintTokens,
+  type MapPaintTokens,
+} from "@/lib/map/map-tokens";
 import type {
   EligibilityStatus,
   ZoningAnalysisScope,
@@ -18,13 +23,6 @@ import type {
 
 const MIN_ZOOM = 13;
 const MAX_ZOOM = 20;
-
-const ZONE_COLOR: Record<EligibilityStatus | "unverified", string> = {
-  eligible: "#059669",
-  warning: "#d97706",
-  restricted: "#e11d48",
-  unverified: "#6b7280",
-};
 
 if (typeof window !== "undefined") {
   // GL JS requires a pk.* client token, but session auth XHR bypasses
@@ -67,19 +65,21 @@ function proxyMapboxRequest(
 }
 
 function zonePaintColor(
-  status: EligibilityStatus | null,
-  analysisVerified: boolean,
+  tokens: MapPaintTokens,
+  _status: EligibilityStatus | null,
+  _analysisVerified: boolean,
 ): string {
-  if (!analysisVerified || !status) {
-    return ZONE_COLOR.unverified;
-  }
-  return ZONE_COLOR[status];
+  // Schematic envelopes stay neutral — eligibility color lives on the pin/badge.
+  void _status;
+  void _analysisVerified;
+  return mapZoneColor(tokens, "unverified");
 }
 
 function applySiteLayers(
   map: mapboxgl.Map,
   site: ApproximateSiteGeoJSON,
   color: string,
+  tokens: MapPaintTokens,
 ) {
   const zoningSource = map.getSource("site-zoning") as
     | GeoJSONSource
@@ -90,11 +90,16 @@ function applySiteLayers(
     zoningSource.setData(site.zoning);
     lotSource?.setData(site.lot);
     map.setPaintProperty("site-zoning-fill", "fill-color", color);
+    map.setPaintProperty(
+      "site-zoning-fill",
+      "fill-opacity",
+      tokens.zoneFillOpacity,
+    );
     map.setPaintProperty("site-zoning-line", "line-color", color);
     map.setPaintProperty(
       "site-lot-line",
       "line-dasharray",
-      site.verified ? [1, 0] : [2, 1.5],
+      [2, 1.5],
     );
     return;
   }
@@ -114,7 +119,7 @@ function applySiteLayers(
     source: "site-zoning",
     paint: {
       "fill-color": color,
-      "fill-opacity": 0.16,
+      "fill-opacity": tokens.zoneFillOpacity,
     },
   });
   map.addLayer({
@@ -132,7 +137,7 @@ function applySiteLayers(
     type: "fill",
     source: "site-lot",
     paint: {
-      "fill-color": "#ffffff",
+      "fill-color": tokens.lotFill,
       "fill-opacity": 0.18,
     },
   });
@@ -141,9 +146,9 @@ function applySiteLayers(
     type: "line",
     source: "site-lot",
     paint: {
-      "line-color": "#111827",
+      "line-color": tokens.lotStroke,
       "line-width": 2,
-      ...(site.verified ? {} : { "line-dasharray": [2, 1.5] }),
+      "line-dasharray": [2, 1.5],
     },
   });
 }
@@ -192,7 +197,6 @@ export function InteractiveSiteMap({
   const lotVerified =
     analysisScope === "lot_zoning" && lotSizeSqFt != null && lotSizeSqFt > 0;
   const analysisVerified = analysisScope === "lot_zoning";
-  const color = zonePaintColor(status, analysisVerified);
   const site = useMemo(
     () =>
       buildApproximateSiteGeoJSON({
@@ -210,6 +214,9 @@ export function InteractiveSiteMap({
     if (!container) {
       return;
     }
+
+    const tokens = readMapPaintTokens(container);
+    const color = zonePaintColor(tokens, status, analysisVerified);
 
     const map = new mapboxgl.Map({
       container,
@@ -239,7 +246,7 @@ export function InteractiveSiteMap({
 
     const onLoad = () => {
       map.resize();
-      applySiteLayers(map, site, color);
+      applySiteLayers(map, site, color, tokens);
     };
     map.on("load", onLoad);
 
@@ -280,8 +287,10 @@ export function InteractiveSiteMap({
     if (!map?.isStyleLoaded()) {
       return;
     }
-    applySiteLayers(map, site, color);
-  }, [site, color]);
+    const tokens = readMapPaintTokens(containerRef.current);
+    const color = zonePaintColor(tokens, status, analysisVerified);
+    applySiteLayers(map, site, color, tokens);
+  }, [site, status, analysisVerified]);
 
   function zoomBy(delta: number) {
     const map = mapRef.current;

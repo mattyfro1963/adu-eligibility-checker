@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { buildConnectRedirectPath } from "@/lib/content/connect-url";
 
 export const metadata: Metadata = {
-  title: "Connect — doihave.space",
+  title: "Connect",
   description:
     "Redirects to the checker with builder intro and specialist lead forms after you search an address.",
 };

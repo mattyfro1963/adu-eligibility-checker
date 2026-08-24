@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import { ArrowRight, Home, Landmark, ShieldAlert, Trees } from "lucide-react";
 import { AddressMapPreview } from "@/components/features/AddressMapPreview/AddressMapPreview";
@@ -20,11 +20,8 @@ import { ExpandableSection } from "@/components/ui/expandable-section";
 import { composeResultsBriefing } from "@/lib/regulations/compose-briefing";
 import { formatParcelAddress } from "@/lib/address/format-parcel-address";
 import { buildStatutoryEvaluations } from "@/lib/rules/statutory-evaluations";
-import { cn } from "@/lib/utils";
 import type { GeocodeResult } from "@/lib/types/gis";
 import type { Parcel, ZoningReport } from "@/lib/types/zoning";
-
-type ProgramTab = "adu" | "sb9";
 
 function formatJurisdiction(geocode: GeocodeResult | null): string | null {
   if (!geocode) return null;
@@ -54,6 +51,16 @@ interface ResultsCardProps {
   zoningError?: string | null;
   /** In-page anchor to builder intro on `/`. */
   connectHref?: string;
+  /** Retry zoning fetch after transport failure. */
+  onRetry?: () => void;
+}
+
+function providerDisplayName(provider: string | null | undefined): string {
+  if (provider === "sf-datasf") return "San Francisco DataSF (California pilot)";
+  if (provider === "open-data") return "open zoning data";
+  if (provider === "regrid") return "Regrid";
+  if (provider) return provider;
+  return "lot GIS";
 }
 
 function OverlayRow({
@@ -90,54 +97,9 @@ function OverlayRow({
   );
 }
 
-function ProgramToggle({
-  value,
-  onChange,
-}: {
-  value: ProgramTab;
-  onChange: (next: ProgramTab) => void;
-}) {
-  return (
-    <div
-      role="tablist"
-      aria-label="Program detail"
-      className="grid grid-cols-2 gap-1 rounded-input border border-border bg-muted p-1"
-    >
-      {(
-        [
-          { id: "adu", label: "ADU" },
-          { id: "sb9", label: "SB 9" },
-        ] as const
-      ).map((tab) => {
-        const selected = value === tab.id;
-        return (
-          <button
-            key={tab.id}
-            type="button"
-            role="tab"
-            aria-selected={selected}
-            aria-controls={
-              tab.id === "adu" ? "program-detail-adu" : "program-detail-sb9"
-            }
-            onClick={() => onChange(tab.id)}
-            className={cn(
-              "inline-flex min-h-[44px] items-center justify-center rounded-pill px-2 text-caption font-medium transition-colors",
-              selected
-                ? "bg-card text-foreground shadow-editorial"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {tab.label}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
 /**
- * Evaluation dashboard: cinematic map + scrollable data panel, plus briefing.
- * Statute copy comes from lib/regulations + rules — no invented overlays.
+ * THOW lot-candidacy dashboard: overall Green/Yellow/Red, dimension panels,
+ * optional ADU pathway. Statute copy from lib/regulations + rules.
  */
 export function ResultsCard({
   report,
@@ -145,8 +107,8 @@ export function ResultsCard({
   isLoading = false,
   zoningError = null,
   connectHref = "#connect",
+  onRetry,
 }: ResultsCardProps) {
-  const [program, setProgram] = useState<ProgramTab>("adu");
   const lat = geocodeResult?.lat ?? null;
   const lng = geocodeResult?.lng ?? null;
   const address = geocodeResult
@@ -155,7 +117,10 @@ export function ResultsCard({
   const mapblklot = report?.mapblklot ?? null;
   const isJurisdictionContext =
     report?.analysisScope === "jurisdiction_context";
+  const overlaysUnchecked = report?.overlaysVerified !== true;
   const jurisdictionLabel = formatJurisdiction(geocodeResult);
+  const providerLabel = report?.zoningProvider?.trim() || null;
+  const overall = report?.thowOverall ?? report?.overall ?? null;
 
   const briefing = useMemo(() => {
     if (!geocodeResult) return null;
@@ -175,6 +140,7 @@ export function ResultsCard({
       lng: geocodeResult.lng,
       zoning: report.zoning,
       overlays: report.overlays,
+      overlaysVerified: report.overlaysVerified === true,
       lotSizeSqFt: report.lotSizeSqFt ?? null,
       mapblklot: report.mapblklot ?? null,
     };
@@ -198,7 +164,7 @@ export function ResultsCard({
           <AddressMapPreview
             lat={lat}
             lng={lng}
-            status={report?.overall ?? null}
+            status={overall}
             label={address}
             sublabel={mapCalloutSublabel}
             lotSizeSqFt={report?.lotSizeSqFt ?? null}
@@ -219,7 +185,10 @@ export function ResultsCard({
               report.lotSizeSqFt > 0
             }
             analysisVerified={!isJurisdictionContext && Boolean(report)}
-            status={report?.overall ?? null}
+            mapInteractive={
+              typeof document !== "undefined" &&
+              document.body.dataset.mapboxConfigured === "1"
+            }
           />
         </div>
 
@@ -227,8 +196,10 @@ export function ResultsCard({
           <div className="flex-1 space-y-6 overflow-y-auto p-5 pb-24 sm:p-8 sm:pb-28">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
-                <p className="font-label text-brand">Parcel evaluation</p>
-                <h3 className="font-heading mt-2 text-heading-sm leading-tight break-words text-foreground">
+                <p className="font-label text-luxury-taupe">
+                  THOW lot candidacy
+                </p>
+                <h3 className="font-heading mt-2 text-heading-sm leading-tight break-words text-text-luxury">
                   {address}
                 </h3>
                 {mapblklot ? (
@@ -242,26 +213,58 @@ export function ResultsCard({
                   </p>
                 ) : null}
               </div>
-              {report ? (
-                <EligibilityBadge status={report.overall} size="lg" />
-              ) : null}
+              {overall ? <EligibilityBadge status={overall} size="lg" /> : null}
             </div>
 
             {zoningError && !report ? (
-              <p
-                role="alert"
-                className="rounded-input border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs leading-relaxed text-rose-700"
-              >
-                {zoningError}
+              <div className="space-y-3">
+                <p
+                  role="alert"
+                  className="rounded-input border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs leading-relaxed text-rose-700"
+                >
+                  {zoningError}
+                </p>
+                {onRetry ? (
+                  <button
+                    type="button"
+                    onClick={onRetry}
+                    className="inline-flex min-h-[44px] w-full items-center justify-center rounded-button border border-border bg-card px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                  >
+                    Retry parcel check
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+
+            {report?.thowSummary ? (
+              <p className="text-sm leading-relaxed text-foreground">
+                {report.thowSummary.text}
+              </p>
+            ) : null}
+
+            {report ? (
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                Informational engine result — not legal advice, not a permit. A
+                THOW is not automatically an ADU. Confirm with local Planning and
+                Building before design or delivery.
               </p>
             ) : null}
 
             {isJurisdictionContext ? (
               <p className="rounded-input border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-900">
-                Lot zoning was not verified for this coordinate. Eligibility
-                below reflects published county/city guidance plus the statewide
-                ADU floor — confirm base district and overlays with local
-                Planning/Building.
+                Lot zoning was not verified for this coordinate. THOW candidacy
+                below reflects published county/city guidance plus state
+                profiles — confirm base district, utilities, and occupancy with
+                local Planning/Building.
+              </p>
+            ) : report ? (
+              <p className="rounded-input border border-border bg-muted/50 px-3 py-2 text-xs leading-relaxed text-muted-foreground">
+                Lot-level district from {providerDisplayName(providerLabel)}.
+                Overlay layers{" "}
+                {overlaysUnchecked
+                  ? "were not verified for this parcel"
+                  : "were checked against mapped facts"}
+                . Statewide statute floors still require local confirmation.
               </p>
             ) : null}
 
@@ -300,6 +303,14 @@ export function ResultsCard({
               <p className="text-xs text-amber-700">
                 Analysis scope: jurisdiction context — lot GIS not verified.
               </p>
+            ) : report ? (
+              <p className="text-xs text-muted-foreground">
+                Analysis scope: lot zoning
+                {providerLabel
+                  ? ` · ${providerDisplayName(providerLabel)}`
+                  : ""}
+                {overlaysUnchecked ? " · overlays not verified" : ""}.
+              </p>
             ) : null}
 
             <div>
@@ -311,7 +322,7 @@ export function ResultsCard({
                 icon={Trees}
                 detected={Boolean(report?.overlays.coastalZone)}
                 detectedClassName="text-amber-600"
-                undetermined={isJurisdictionContext}
+                undetermined={isJurisdictionContext || overlaysUnchecked}
               />
               <OverlayRow
                 label="Fire Hazard"
@@ -320,67 +331,93 @@ export function ResultsCard({
                   report?.overlays.fireHazard || report?.overlays.vhfhsz,
                 )}
                 detectedClassName="text-rose-600"
-                undetermined={isJurisdictionContext}
+                undetermined={isJurisdictionContext || overlaysUnchecked}
               />
               <OverlayRow
                 label="Historic District"
                 icon={Landmark}
                 detected={Boolean(report?.overlays.historicDistrict)}
                 detectedClassName="text-amber-600"
-                undetermined={isJurisdictionContext}
+                undetermined={isJurisdictionContext || overlaysUnchecked}
               />
               <OverlayRow
                 label="Tiny-home overlay"
                 icon={Home}
                 detected={Boolean(report?.overlays.tinyHomeFriendly)}
                 detectedClassName="text-emerald-600"
-                undetermined={isJurisdictionContext}
+                undetermined={isJurisdictionContext || overlaysUnchecked}
               />
             </div>
 
             {report ? (
               <div className="space-y-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-label text-muted-foreground">
-                    Programs
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                    ADU <EligibilityBadge status={report.adu.status} />
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                    SB 9 <EligibilityBadge status={report.sb9.status} />
-                  </span>
+                <p className="font-label text-muted-foreground">
+                  THOW dimensions
+                </p>
+                <RuleDetail
+                  result={report.dimensions.placement}
+                  category="Placement"
+                  title="Local THOW / park-model path"
+                />
+                <RuleDetail
+                  result={report.dimensions.certification}
+                  category="Certification"
+                  title="Certification & size fit"
+                />
+                <RuleDetail
+                  result={report.dimensions.transport}
+                  category="Transport"
+                  title="Delivery & route logistics"
+                />
+                <RuleDetail
+                  result={report.dimensions.lotReadiness}
+                  category="Lot readiness"
+                  title="Utilities & occupancy readiness"
+                />
+
+                <div className="rounded-xl border border-border bg-muted/30 p-1">
+                  <RuleDetail
+                    result={report.adu}
+                    category="ADU pathway"
+                    title="Optional ADU path — not automatic"
+                  />
+                  <p className="px-5 pb-4 text-xs leading-relaxed text-muted-foreground sm:px-6">
+                    Possible if local THOW-as-ADU or foundation conversion — not
+                    automatic. ADU status does not alone set THOW Green/Yellow/Red.
+                  </p>
                 </div>
-                <ProgramToggle value={program} onChange={setProgram} />
-                {program === "adu" ? (
-                  <div role="tabpanel" id="program-detail-adu">
-                    <RuleDetail
-                      result={report.adu}
-                      category="ADU"
-                      title="ADU Eligibility"
-                    />
-                  </div>
-                ) : (
-                  <div role="tabpanel" id="program-detail-sb9">
+
+                {report.sb9 ? (
+                  <ExpandableSection
+                    title="Other pathways (SB 9)"
+                    description="California lot-split / duplex context — orthogonal to wheeled THOW placement"
+                    defaultOpen={false}
+                    variant="muted"
+                  >
                     <RuleDetail
                       result={report.sb9}
                       category="SB 9"
                       title="SB 9 Lot Split / Duplex"
                     />
-                  </div>
-                )}
+                  </ExpandableSection>
+                ) : null}
+
                 {statutoryEvaluations.length > 0 ? (
                   <ExpandableSection
                     title="Statutory compliance checklist"
-                    description="Lot facts cross-checked against cited code sections"
-                    defaultOpen
+                    description={
+                      isJurisdictionContext || overlaysUnchecked
+                        ? "Statute checks — verified where lot facts ran; otherwise marked unverified"
+                        : "Lot facts checked against cited code sections where data was available"
+                    }
+                    defaultOpen={false}
                     variant="muted"
                     contentClassName="p-0 sm:p-0"
                   >
                     <StatutoryComplianceChecklist
                       report={report}
                       evaluations={statutoryEvaluations}
-                      program={program}
+                      program="adu"
                     />
                   </ExpandableSection>
                 ) : null}
@@ -389,15 +426,35 @@ export function ResultsCard({
             ) : null}
           </div>
 
-          {geocodeResult ? (
+          {geocodeResult && report && overall ? (
             <div className="flex shrink-0 flex-col gap-2 border-t border-border bg-card p-4 sm:flex-row sm:items-center sm:p-6">
-              <Link
-                href={connectHref}
-                className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-button border border-border bg-card px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-              >
-                Request builder intro
-                <ArrowRight size={16} aria-hidden="true" />
-              </Link>
+              {overall === "eligible" ? (
+                <Link
+                  href={connectHref}
+                  className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-button border border-border bg-card px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                >
+                  Request builder intro
+                  <ArrowRight size={16} aria-hidden="true" />
+                </Link>
+              ) : null}
+              {overall === "warning" ? (
+                <Link
+                  href={connectHref}
+                  className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-button border border-amber-300 bg-amber-50 px-4 text-sm font-medium text-amber-950 transition-colors hover:bg-amber-100"
+                >
+                  Request specialist review
+                  <ArrowRight size={16} aria-hidden="true" />
+                </Link>
+              ) : null}
+              {overall === "restricted" ? (
+                <Link
+                  href={connectHref}
+                  className="inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-button border border-rose-300 bg-rose-50 px-4 text-sm font-medium text-rose-900 transition-colors hover:bg-rose-100"
+                >
+                  Request specialist compliance review
+                  <ArrowRight size={16} aria-hidden="true" />
+                </Link>
+              ) : null}
             </div>
           ) : null}
         </div>
@@ -411,7 +468,7 @@ export function ResultsCard({
           ) : null}
           <ExpandableSection
             title="Requirements & application steps"
-            description="California application checklist, county/city notes, and SF buyer guides"
+            description="Application checklist, county/city notes, and local guides"
             defaultOpen
           >
             <div className="space-y-6">
@@ -426,10 +483,14 @@ export function ResultsCard({
         </>
       ) : null}
 
-      {briefing && !isLoading && briefing.isCalifornia ? (
+      {briefing && !isLoading && briefing.outline.length > 0 ? (
         <ExpandableSection
-          title="California building paths"
-          description="Statewide context — state floor first, then local code"
+          title={
+            briefing.isCalifornia
+              ? "California building paths"
+              : `${briefing.region} building paths`
+          }
+          description="Statewide context — confirm local code before delivery"
           defaultOpen={false}
         >
           <CaliforniaOutline sections={briefing.outline} embedded />

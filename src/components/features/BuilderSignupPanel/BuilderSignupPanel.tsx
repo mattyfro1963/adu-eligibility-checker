@@ -4,6 +4,7 @@ import { useState } from "react";
 import { BriefcaseBusiness, Loader2 } from "lucide-react";
 import { ExpandableSection } from "@/components/ui/expandable-section";
 import { Button } from "@/components/ui/button";
+import { LegalConsentNote } from "@/components/features/LegalConsentNote/LegalConsentNote";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -163,6 +164,7 @@ export function BuilderSignupPanel({ onSubmit }: BuilderSignupPanelProps) {
               {error}
             </p>
           ) : null}
+          <LegalConsentNote />
           <Button
             type="submit"
             disabled={isSubmitting}

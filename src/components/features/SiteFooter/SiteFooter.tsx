@@ -4,10 +4,7 @@ import { FOOTER_NAV } from "@/lib/content/site-nav";
 const SHORT_DISCLAIMER =
   "Informational only — not legal advice. Confirm requirements with your local planning and building departments.";
 
-const DEMO_DISCLAIMER =
-  "For demo purposes only. Informational only — not legal advice. Confirm requirements with your local planning and building departments.";
-
-export function SiteFooter({ demo = false }: { demo?: boolean }) {
+export function SiteFooter() {
   return (
     <footer className="mt-auto border-t border-border bg-muted text-foreground">
       <div className="mx-auto max-w-layout px-4 py-6 sm:px-6 sm:py-8">
@@ -28,7 +25,7 @@ export function SiteFooter({ demo = false }: { demo?: boolean }) {
         </nav>
 
         <p className="mt-6 text-center text-[11px] leading-relaxed text-muted-foreground">
-          {demo ? DEMO_DISCLAIMER : SHORT_DISCLAIMER}
+          {SHORT_DISCLAIMER}
         </p>
       </div>
     </footer>

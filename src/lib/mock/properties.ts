@@ -23,6 +23,7 @@ export const mockProperties: Record<string, Parcel> = {
       historicDistrict: false,
       coastalZone: false,
     },
+    overlaysVerified: true,
   },
   "addr-r1-tiny": {
     addressId: "addr-r1-tiny",
@@ -38,6 +39,7 @@ export const mockProperties: Record<string, Parcel> = {
       historicDistrict: false,
       coastalZone: false,
     },
+    overlaysVerified: true,
   },
   "addr-r1-fire": {
     addressId: "addr-r1-fire",
@@ -53,6 +55,7 @@ export const mockProperties: Record<string, Parcel> = {
       historicDistrict: false,
       coastalZone: false,
     },
+    overlaysVerified: true,
   },
   "addr-r1-historic": {
     addressId: "addr-r1-historic",
@@ -68,6 +71,7 @@ export const mockProperties: Record<string, Parcel> = {
       historicDistrict: true,
       coastalZone: false,
     },
+    overlaysVerified: true,
   },
   "addr-r1-small-lot": {
     addressId: "addr-r1-small-lot",
@@ -83,6 +87,7 @@ export const mockProperties: Record<string, Parcel> = {
       historicDistrict: false,
       coastalZone: false,
     },
+    overlaysVerified: true,
   },
   "addr-c2": {
     addressId: "addr-c2",
@@ -98,6 +103,7 @@ export const mockProperties: Record<string, Parcel> = {
       historicDistrict: false,
       coastalZone: false,
     },
+    overlaysVerified: true,
   },
   "addr-r1-coastal": {
     addressId: "addr-r1-coastal",
@@ -113,6 +119,7 @@ export const mockProperties: Record<string, Parcel> = {
       historicDistrict: false,
       coastalZone: true,
     },
+    overlaysVerified: true,
   },
 };
 

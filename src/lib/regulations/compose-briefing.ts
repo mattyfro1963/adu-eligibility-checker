@@ -1,7 +1,6 @@
 /**
  * Owns all visitor-facing search result copy for the regulations expert agent.
- * Selects pre-written CitedClaims from the CA profile — never generates statute
- * prose and never fetches gov hosts.
+ * Selects pre-written CitedClaims — never generates statute prose and never fetches gov hosts.
  */
 
 import {
@@ -41,17 +40,18 @@ import type {
 } from "@/lib/regulations/types";
 import type { GeocodeResult } from "@/lib/types/gis";
 import type { EligibilityStatus, ZoningReport } from "@/lib/types/zoning";
+import { UNSUPPORTED_STATE_THOW_COPY } from "@/lib/rules/thow-summary";
 
 export { isSanFranciscoPlace } from "@/lib/content/resolve-jurisdiction";
 
 function statusWord(status: EligibilityStatus): string {
   switch (status) {
     case "eligible":
-      return "Eligible";
+      return "Green";
     case "warning":
-      return "Warning";
+      return "Yellow";
     case "restricted":
-      return "Restricted";
+      return "Red";
     default: {
       const _exhaustive: never = status;
       return _exhaustive;
@@ -60,7 +60,10 @@ function statusWord(status: EligibilityStatus): string {
 }
 
 function placeLabel(geocode: GeocodeResult): string {
-  return geocode.place.trim() || geocode.county.trim() || "this California";
+  const place = geocode.place.trim() || geocode.county.trim();
+  if (place) return place;
+  const region = geocode.region.trim() || "Cascadia";
+  return `this ${region}`;
 }
 
 function districtSources(report: ZoningReport, sfPlace: boolean): SourceRef[] {
@@ -87,23 +90,20 @@ function lotSummary(
   const place = placeLabel(geocode);
   const local = jurisdictionSourceRefs(geocode);
   const sfPlace = isSanFranciscoPlace(geocode.place);
+  const thowSources = [SRC.hcdTinyHomesIb, SRC.noahDwelling, SRC.hcdAdu];
 
   if (zoningError) {
     return {
-      text: `The parcel report could not be loaded for this search (${zoningError}). County and city requirements below may still apply, but rerun the check or confirm with local Planning/Building before relying on eligibility badges.`,
-      sources: [SRC.hcdAdu, SRC.hcdTinyHomesIb, SRC.govChapter13],
+      text: `The parcel report could not be loaded for this search (${zoningError}). County and city requirements below may still apply, but rerun the check or confirm with local Planning/Building before relying on THOW candidacy badges.`,
+      sources: [...thowSources],
     };
   }
 
   if (report?.analysisScope === "jurisdiction_context") {
+    const dims = report.dimensions;
     return {
-      text: `For this ${place} address, lot zoning was not verified. Published city/county guidance plus the statewide ADU floor apply — ADU is ${statusWord(report.adu.status)}; SB 9 is ${statusWord(report.sb9.status)}. Confirm base district, THOW rules, and permits with local Planning/Building.`,
-      sources: uniqueSourceRefs([
-        ...local,
-        SRC.hcdAdu,
-        SRC.govChapter13,
-        SRC.hcdTinyHomesIb,
-      ]),
+      text: `For this ${place} address, lot zoning was not verified. THOW lot candidacy is ${statusWord(report.thowOverall ?? report.overall)} — placement ${statusWord(dims.placement.status)}, certification ${statusWord(dims.certification.status)}, transport ${statusWord(dims.transport.status)}, lot readiness ${statusWord(dims.lotReadiness.status)}. ADU pathway is ${statusWord(report.adu.status)} (optional — not automatic from wheeled placement). Confirm base district, utility hookups, and permits with local Planning/Building.`,
+      sources: uniqueSourceRefs([...local, ...thowSources]),
     };
   }
 
@@ -115,25 +115,23 @@ function lotSummary(
       readable && readable.toLowerCase() !== report.zoning.trim().toLowerCase()
         ? `${report.zoning} — ${readable}`
         : report.zoning;
+    const overlayBit =
+      report.overlaysVerified === true
+        ? "Overlay facts were checked for this lot."
+        : "Overlay layers were not verified for this lot — treat Clear/absent flags as unchecked.";
     return {
-      text: `On this ${place} lot (${zoneBit}), ADU is ${statusWord(report.adu.status)} and SB 9 is ${statusWord(report.sb9.status)}. Confirm primary use, local development standards, and permits with Planning/Building before you place or occupy a unit.`,
+      text: `On this ${place} lot (${zoneBit}), THOW candidacy is ${statusWord(report.thowOverall ?? report.overall)}. ${overlayBit} ADU pathway is ${statusWord(report.adu.status)} — possible if local THOW-as-ADU or foundation conversion, not automatic. Confirm primary use, district standards, utilities, and delivery route with Planning/Building before you place or occupy a unit.`,
       sources: uniqueSourceRefs([
         ...districtSources(report, sfPlace),
-        SRC.govChapter13,
-        SRC.hcdAdu,
+        ...thowSources,
         ...(sfPlace ? [SRC.sfPlanningAdu] : local),
       ]),
     };
   }
 
   return {
-    text: `Lot-level zoning is not available for this coordinate (${place}) in the current coverage set. County and city tiny-home requirements below still apply, plus the statewide ADU floor — confirm this address with your city or county planning department before buying or placing a unit.`,
-    sources: uniqueSourceRefs([
-      ...local,
-      SRC.hcdAdu,
-      SRC.hcdTinyHomesIb,
-      SRC.govChapter13,
-    ]),
+    text: `Lot-level zoning is not available for this coordinate (${place}) in the current coverage set. County and city tiny-home requirements below still apply — confirm this address with your city or county planning department before buying or placing a unit.`,
+    sources: uniqueSourceRefs([...local, ...thowSources]),
   };
 }
 
@@ -157,6 +155,7 @@ export function composeResultsBriefing(
   const issuedAt = input.issuedAt ?? new Date().toISOString();
   const profile = getStateProfile(geocode.region);
   const isCalifornia = profile.code === "CA" && profile.published;
+  const isPublished = profile.published;
   const sfPlace = isSanFranciscoPlace(geocode.place);
   const local = jurisdictionSourceRefs(geocode);
   const analysisScope =
@@ -166,40 +165,38 @@ export function composeResultsBriefing(
       : ("jurisdiction_context" as const));
 
   const unpublishedSummary: CitedClaim = {
-    text: "Regulations for this state are not published in this checker yet. Do not assume California ADU or THOW rules apply outside California.",
-    sources: [SRC.hcdAdu],
+    text: UNSUPPORTED_STATE_THOW_COPY,
+    sources: [SRC.hcdTinyHomesIb, SRC.noahDwelling],
   };
 
   const permitClaim: CitedClaim = {
-    text: "Do not skip the land-use and building permit process. Unpermitted placement can lead to fines and code enforcement. For site-specific advice, consult local Planning / Building or a California-licensed land-use attorney.",
+    text: isCalifornia
+      ? "Do not skip the land-use and building permit process. Unpermitted placement can lead to fines and code enforcement. For site-specific advice, consult local Planning / Building or a California-licensed land-use attorney."
+      : "Do not skip the land-use and building permit process. Unpermitted placement can lead to fines and code enforcement. For site-specific advice, consult local Planning / Building or a licensed land-use professional in this state.",
     sources: uniqueSourceRefs(
       sfPlace
         ? [SRC.hcdAdu, SRC.sfPlanning, SRC.sfDbi]
-        : [SRC.hcdAdu, SRC.hcdTinyHomesIb, ...local],
+        : [SRC.hcdTinyHomesIb, SRC.noahDwelling, ...local],
     ),
   };
 
-  // Unpublished states: only the not-published notice — never CA lot / SF agency claims.
-  const summary: CitedClaim[] =
-    isCalifornia && profile.published
-      ? [
-          lotSummary(report, geocode, zoningError),
-          ...profile.useDoctrine.slice(0, 2),
-          CA_CRC_SIZE_CLAIM,
-          CA_CHAPTER13_SIZE_CLAIM,
-          permitClaim,
-        ]
-      : [unpublishedSummary];
+  const thowSummaryClaim: CitedClaim | null = report?.thowSummary ?? null;
 
-  // One CA checklist for all California searches (SF PIM items remain in outline/guides).
-  const checklist =
-    isCalifornia && profile.published ? profile.caChecklist : [];
+  const summary: CitedClaim[] = !isPublished
+    ? [unpublishedSummary]
+    : [
+        ...(thowSummaryClaim ? [thowSummaryClaim] : []),
+        lotSummary(report, geocode, zoningError),
+        ...profile.useDoctrine.slice(0, 2),
+        ...(isCalifornia ? [CA_CRC_SIZE_CLAIM, CA_CHAPTER13_SIZE_CLAIM] : []),
+        permitClaim,
+      ];
 
-  const outline = isCalifornia && profile.published ? profile.outline : [];
+  const checklist = isPublished ? profile.caChecklist : [];
+  const outline = isPublished ? profile.outline : [];
 
-  // SF buyer guides only for City of San Francisco place matches.
   const guideLinks: GuideLinkRef[] =
-    isCalifornia && profile.published && sfPlace
+    isCalifornia && sfPlace
       ? GUIDE_LINKS.map((link) => ({
           slug: link.slug,
           title: link.title,
@@ -223,15 +220,14 @@ export function composeResultsBriefing(
       : caStatewideReceiptSources()),
     ...local,
     ...districtUrl,
+    SRC.noahDwelling,
   ]);
 
-  const requirements: LocationRequirement[] =
-    isCalifornia && profile.published
-      ? composeLocationRequirements({ geocode, report })
-      : [];
+  const requirements: LocationRequirement[] = isCalifornia
+    ? composeLocationRequirements({ geocode, report })
+    : [];
 
-  const sizeStructure =
-    isCalifornia && profile.published ? buildSizeStructureBriefing() : null;
+  const sizeStructure = isCalifornia ? buildSizeStructureBriefing() : null;
 
   const receipt: SearchReceipt = {
     issuedAt,

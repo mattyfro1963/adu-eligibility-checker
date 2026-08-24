@@ -1,9 +1,11 @@
 /**
- * Fifty-state registry. Only California is published in this pass;
+ * Fifty-state registry. California, Oregon, and Washington are published;
  * other states return { published: false } so we never invent ordinances.
  */
 
 import { CA_PROFILE } from "@/lib/regulations/states/ca";
+import { OR_PROFILE } from "@/lib/regulations/states/or";
+import { WA_PROFILE } from "@/lib/regulations/states/wa";
 import type { StateProfile } from "@/lib/regulations/types";
 
 const US_STATE_NAMES: Record<string, string> = {
@@ -60,6 +62,12 @@ const US_STATE_NAMES: Record<string, string> = {
   DC: "District of Columbia",
 };
 
+const PUBLISHED: Record<string, Extract<StateProfile, { published: true }>> = {
+  CA: CA_PROFILE,
+  OR: OR_PROFILE,
+  WA: WA_PROFILE,
+};
+
 function unpublished(
   code: string,
 ): Extract<StateProfile, { published: false }> {
@@ -73,7 +81,7 @@ function unpublished(
 const REGISTRY: Record<string, StateProfile> = Object.fromEntries(
   Object.keys(US_STATE_NAMES).map((code) => [
     code,
-    code === "CA" ? CA_PROFILE : unpublished(code),
+    PUBLISHED[code] ?? unpublished(code),
   ]),
 );
 

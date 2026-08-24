@@ -12,32 +12,34 @@ const STATUS_LABEL: Record<EligibilityStatus, string> = {
 };
 
 const STATUS_RING: Record<EligibilityStatus, string> = {
-  eligible: "bg-emerald-600/30",
-  warning: "bg-amber-500/30",
-  restricted: "bg-rose-600/30",
+  eligible: "bg-status-eligible/30",
+  warning: "bg-status-warning/30",
+  restricted: "bg-status-restricted/30",
 };
 
 const STATUS_ACCENT: Record<EligibilityStatus, string> = {
-  eligible: "text-emerald-600",
-  warning: "text-amber-500",
-  restricted: "text-rose-600",
+  eligible: "text-status-eligible-fg",
+  warning: "text-status-warning-fg",
+  restricted: "text-status-restricted-fg",
 };
 
 type FeaturePinProps = {
-  status?: EligibilityStatus;
+  /** When null/undefined, pin is neutral — never defaults to Eligible. */
+  status?: EligibilityStatus | null;
   label?: string;
   /** When false, pin renders without popover interaction (e.g. analysis backdrop). */
   interactive?: boolean;
 };
 
 export function FeaturePin({
-  status = "eligible",
+  status = null,
   label,
   interactive = true,
 }: FeaturePinProps) {
   const [open, setOpen] = useState(false);
   const popoverId = useId();
-  const statusLabel = STATUS_LABEL[status];
+  const resolved = status ?? null;
+  const statusLabel = resolved ? STATUS_LABEL[resolved] : "Lookup point";
   const hasLabel = Boolean(label?.trim());
 
   return (
@@ -46,13 +48,18 @@ export function FeaturePin({
         <div
           id={popoverId}
           role="dialog"
-          aria-label={`${statusLabel} parcel: ${label}`}
+          aria-label={`${statusLabel} geocoded location: ${label}`}
           className="pointer-events-auto absolute bottom-full z-30 mb-3 w-[min(18rem,calc(100vw-2rem))] rounded-xl border border-border bg-card shadow-elevated"
         >
           <div className="flex items-start gap-2 border-b border-border px-3 py-2.5">
             <div className="min-w-0 flex-1">
               <p
-                className={cn("font-label text-[10px]", STATUS_ACCENT[status])}
+                className={cn(
+                  "font-label text-[10px]",
+                  resolved
+                    ? STATUS_ACCENT[resolved]
+                    : "text-muted-foreground",
+                )}
               >
                 {statusLabel}
               </p>
@@ -84,8 +91,8 @@ export function FeaturePin({
         aria-controls={interactive && hasLabel ? popoverId : undefined}
         aria-label={
           hasLabel
-            ? `${statusLabel} parcel at ${label}. ${interactive ? "Show details" : ""}`
-            : `${statusLabel} parcel location`
+            ? `${statusLabel} lookup point for ${label}. ${interactive ? "Show details" : ""}`
+            : `${statusLabel} geocoded location`
         }
         className={cn(
           "group/pin relative flex min-h-[44px] min-w-[44px] flex-col items-center justify-end",
@@ -95,14 +102,14 @@ export function FeaturePin({
         <span
           className={cn(
             "absolute -inset-2 rounded-full opacity-50",
-            STATUS_RING[status],
+            resolved ? STATUS_RING[resolved] : "bg-muted-foreground/20",
           )}
           aria-hidden="true"
         />
         <span
           className={cn(
-            "relative flex size-9 items-center justify-center rounded-full border border-white/90 bg-white/95 shadow-[0_6px_18px_rgb(44_40_37_/_0.16)]",
-            STATUS_ACCENT[status],
+            "relative flex size-9 items-center justify-center rounded-full border border-white/90 bg-white/95 shadow-[0_6px_18px_var(--map-pin-shadow)]",
+            resolved ? STATUS_ACCENT[resolved] : "text-muted-foreground",
           )}
         >
           <MapPin size={18} strokeWidth={2.1} aria-hidden="true" />

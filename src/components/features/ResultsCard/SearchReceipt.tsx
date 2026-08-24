@@ -85,7 +85,7 @@ export function SearchReceiptCard({
 
       <div className="mt-5 border-t border-border pt-4">
         <p className="mb-2 text-[10px] font-normal tracking-widest text-muted-foreground uppercase">
-          Sources used for this lot
+          Sources used for this search
         </p>
         <ul className="flex flex-wrap gap-x-3 gap-y-2">
           {receipt.sourcesUsed.map((source) => (

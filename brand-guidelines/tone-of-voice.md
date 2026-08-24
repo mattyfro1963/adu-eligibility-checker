@@ -53,21 +53,26 @@ UTM and outbound links use `utm_source=doihave.space`. Affiliate links use `rel=
 
 ## Visual voice (for copywriters coordinating with design)
 
-Canonical tokens live in `src/app/globals.css` (not legacy README color notes).
+Canonical tokens live in `src/app/globals.css` (not legacy README color notes). The primary checker (`/`) is a calm luxury base — cream canvas, charcoal type, muted taupe secondary — with the map visually leading. Vermilion is a sparse accent (links, small marks), not page or CTA energy. Status emerald / amber / rose is eligibility-only.
 
 | Element | Spec |
 |---------|------|
-| Brand accent | Vermilion `#fc4a2b` |
-| Status — eligible | Emerald `#059669` |
-| Status — warning | Amber `#f59e0b` |
-| Status — restricted | Rose `#e11d48` |
+| Checker canvas | `--surface-luxury` / `--luxury-cream` |
+| Body / secondary type | `--text-secondary` · luxury headings `--text-luxury` / `--luxury-charcoal` |
+| Muted / captions | `--text-tertiary` · taupe eyebrows `--luxury-taupe` |
+| Default actions | `--action-primary` (charcoal/ink) — not vermilion |
+| Brand accent (sparse) | `--text-brand` / `--action-brand` vermilion `#fc4a2b` |
+| Status — eligible | `--status-eligible` (+ `-fg` / `-muted` / `-border`) |
+| Status — warning | `--status-warning` family (`#f59e0b`) |
+| Status — restricted | `--status-restricted` |
+| Map overlays | `--map-lot-*`, `--map-zone-*`, `--map-hatch` |
 | Headings | Söhn |
 | Eyebrow labels | IBM Plex Mono, 11px, uppercase, wide tracking |
 | Pull quotes / editorial display | Söhn |
 
-**Eyebrow pattern:** short uppercase mono labels — e.g. "Parcel evaluation", "Builder match · Lead routing", "State of California · ADU & SB 9".
+**Eyebrow pattern:** short uppercase mono labels — e.g. "Parcel evaluation", "Builder match · Lead routing", "State of California · ADU & SB 9". Prefer taupe/luxury over vermilion on the checker.
 
-**Layout feel:** editorial/pro — max width ~1200px, rounded cards, subtle shadows. Not SaaS dashboard noise.
+**Layout feel:** editorial/pro — max width ~1200px, cream map-forward surfaces, subtle shadows. Not SaaS dashboard noise.
 
 ## Outcome-colored CTAs
 

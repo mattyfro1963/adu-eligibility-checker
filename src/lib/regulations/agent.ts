@@ -18,16 +18,18 @@ const AUTHOR_PREFIX = `Authored by the ${REGULATIONS_AGENT.name}.`;
 
 /** Visitor-facing attribution line (optional last-reviewed suffix). */
 export function regulationsAgentAttribution(lastReviewed?: string): string {
+  const corpusNote =
+    "Pre-written cited briefing — not generative AI legal advice.";
   if (lastReviewed) {
-    return `${AUTHOR_PREFIX} Last reviewed ${lastReviewed}.`;
+    return `${AUTHOR_PREFIX} Last reviewed ${lastReviewed}. ${corpusNote}`;
   }
-  return AUTHOR_PREFIX;
+  return `${AUTHOR_PREFIX} ${corpusNote}`;
 }
 
 /** Shared disclaimer tail for receipts, guides, and the county directory. */
 export function formatRegulationsDisclaimer(extra?: string): string {
   const lead =
-    "Informational only — not legal advice, not a permit, and not a substitute for your local planning & building department or a licensed land-use attorney.";
+    "Informational only — not legal advice, not a permit, and not a substitute for your local planning & building department or a licensed land-use attorney. Briefings select pre-authored cited claims; they are not live generative conclusions.";
   const body = extra ? `${lead} ${extra}` : lead;
   return `${body} ${AUTHOR_PREFIX}`;
 }

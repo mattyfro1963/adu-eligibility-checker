@@ -68,17 +68,24 @@ export async function GET(request: NextRequest) {
     );
 
     if (parcel && coverage === "lot") {
-      const report = evaluateEligibility(parcel);
+      const report = {
+        ...evaluateEligibility(parcel, { region }),
+        zoningProvider: provider,
+        coverage: "lot" as const,
+      };
       log.info(
         {
           addressId: report.addressId,
           zoning: report.zoning,
           overall: report.overall,
+          thowOverall: report.thowOverall,
           aduStatus: report.adu.status,
-          sb9Status: report.sb9.status,
+          placementStatus: report.dimensions.placement.status,
           coverage: "lot",
           provider,
           analysisScope: report.analysisScope,
+          overlaysVerified: report.overlaysVerified,
+          region,
         },
         "Zoning lookup succeeded",
       );
@@ -105,10 +112,12 @@ export async function GET(request: NextRequest) {
         lng: longitude,
         place,
         county,
+        region,
         coverage: "jurisdiction",
         overall: report.overall,
+        thowOverall: report.thowOverall,
         aduStatus: report.adu.status,
-        sb9Status: report.sb9.status,
+        placementStatus: report.dimensions.placement.status,
         analysisScope: report.analysisScope,
         status: 200,
       },

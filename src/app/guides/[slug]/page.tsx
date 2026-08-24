@@ -25,10 +25,10 @@ export async function generateMetadata({
   const { slug } = await params;
   const meta = getGuideMeta(slug);
   if (!meta) {
-    return { title: "Guide not found — doihave.space" };
+    return { title: "Guide not found" };
   }
   return {
-    title: `${meta.title} — doihave.space`,
+    title: `${meta.title}`,
     description: meta.description,
   };
 }

@@ -14,6 +14,7 @@ import {
   ProjectLeadForm,
   type ProjectLeadFormValues,
 } from "@/components/features/ProjectLeadForm/ProjectLeadForm";
+import { AFFILIATE_DISCLOSURE } from "@/lib/content/affiliates";
 import { CONNECT_SECTION_ID } from "@/lib/content/connect-url";
 import type { GeocodeResult } from "@/lib/types/gis";
 import type { ProjectLeadPayload } from "@/lib/types/leads";
@@ -40,24 +41,59 @@ const PARTNERS_COPY: Record<
   },
   restricted: {
     sentence:
-      "Alternate-pathway manufacturer links are listed on the partners directory, below expert review.",
+      "Alternate-pathway manufacturer links are listed on the partners directory, below specialist review.",
     link: "Browse partners",
+  },
+};
+
+const SECTION_COPY: Record<
+  EligibilityStatus | "default",
+  { title: string; description: string; eyebrow: string }
+> = {
+  eligible: {
+    title: "Request a builder intro",
+    description:
+      "Share project details after your THOW lot check. We route high-intent leads to partner builders. Informational matching only — not a permit or marketplace guarantee.",
+    eyebrow: "Builder match · Lead routing",
+  },
+  warning: {
+    title: "Request specialist review",
+    description:
+      "This lot needs local confirmation before delivery. Share details for specialist review — informational matching only, not legal representation.",
+    eyebrow: "Specialist review · Lead routing",
+  },
+  restricted: {
+    title: "Request specialist compliance review",
+    description:
+      "THOW lot candidacy is Red on this check. Request specialist review of pathways that may still apply — not legal representation or a permit guarantee.",
+    eyebrow: "Compliance review · Lead routing",
+  },
+  default: {
+    title: "Request a builder intro",
+    description:
+      "Share project details after your THOW lot check. We route high-intent leads to partner builders. Informational matching only — not a permit or marketplace guarantee.",
+    eyebrow: "Builder match · Lead routing",
   },
 };
 
 function PartnersLink({ intent }: { intent: EligibilityStatus }) {
   const copy = PARTNERS_COPY[intent];
   return (
-    <p className="text-sm leading-relaxed text-muted-foreground">
-      {copy.sentence}{" "}
-      <Link
-        href="/partners"
-        className="font-medium text-foreground underline-offset-2 hover:underline"
-      >
-        {copy.link}
-      </Link>
-      .
-    </p>
+    <div className="space-y-2">
+      <p className="text-sm leading-relaxed text-muted-foreground">
+        {copy.sentence}{" "}
+        <Link
+          href="/partners"
+          className="font-medium text-foreground underline-offset-2 hover:underline"
+        >
+          {copy.link}
+        </Link>
+        .
+      </p>
+      <p className="text-xs leading-relaxed text-muted-foreground">
+        {AFFILIATE_DISCLOSURE}
+      </p>
+    </div>
   );
 }
 
@@ -72,6 +108,14 @@ export function ConnectSection({
   const [submittedName, setSubmittedName] = useState<string | null>(null);
   const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const sectionKey =
+    overallStatus === "eligible" ||
+    overallStatus === "warning" ||
+    overallStatus === "restricted"
+      ? overallStatus
+      : "default";
+  const section = SECTION_COPY[sectionKey];
 
   const handleProjectSubmit = useCallback(
     async (values: ProjectLeadFormValues) => {
@@ -125,13 +169,13 @@ export function ConnectSection({
   return (
     <PageSection
       id={CONNECT_SECTION_ID}
-      title="Request a builder intro"
-      description="Share project details after your parcel check. We route high-intent leads to partner builders. Informational matching only — not a permit or marketplace guarantee."
+      title={section.title}
+      description={section.description}
       className="scroll-mt-32 space-y-8 sm:scroll-mt-28 sm:space-y-12"
     >
       <PageBody className="space-y-8 sm:space-y-10">
         <p className="text-center font-label text-[11px] tracking-[0.14em] text-brand uppercase">
-          Builder intro · Lead routing
+          {section.eyebrow}
         </p>
 
         {error ? (
@@ -154,6 +198,18 @@ export function ConnectSection({
               Thank you, {submittedName}. We&apos;ll follow up at{" "}
               {submittedEmail} about {geocodeResult.formattedAddress}.
             </p>
+            {overallStatus === "eligible" ? (
+              <p className="mt-3 text-sm text-muted-foreground">
+                Meanwhile, you can{" "}
+                <Link
+                  href="/partners"
+                  className="font-medium text-foreground underline-offset-2 hover:underline"
+                >
+                  browse partners
+                </Link>{" "}
+                for build-out resources.
+              </p>
+            ) : null}
           </section>
         ) : (
           <>
@@ -215,9 +271,9 @@ export function ConnectSection({
 
         <PageAside>
           <p>
-            Builder intros are informational only — not a permit guarantee or
-            legal advice. Confirm licensing, scope, and local requirements
-            directly with each contractor.
+            Lead routing is informational only — not a permit guarantee, legal
+            advice, or licensed representation. Confirm licensing, scope, and
+            local requirements directly with each contractor or specialist.
           </p>
         </PageAside>
       </PageBody>

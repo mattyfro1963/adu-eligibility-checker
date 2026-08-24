@@ -9,7 +9,10 @@ import { getOpenDataParcel } from "@/lib/adapters/open-data-zoning";
 import { getRegridParcel } from "@/lib/adapters/regrid-zoning";
 import { getSfDatasfParcel } from "@/lib/adapters/sf-datasf-zoning";
 import { getSynthesizedParcelAt } from "@/lib/adapters/mock-geocoder";
-import { lookupOverlays } from "@/lib/adapters/zoning-overlays";
+import {
+  lookupOverlays,
+  overlaysAreVerifiedByLookup,
+} from "@/lib/adapters/zoning-overlays";
 import type { Parcel } from "@/lib/types/zoning";
 
 export type ZoningCoverage = "lot" | "none";
@@ -33,7 +36,10 @@ export async function lookupParcel(
   const synthesized = getSynthesizedParcelAt(lat, lng);
   if (synthesized) {
     return {
-      parcel: synthesized,
+      parcel: {
+        ...synthesized,
+        overlaysVerified: synthesized.overlaysVerified ?? true,
+      },
       coverage: "lot",
       provider: "open-data",
     };
@@ -43,7 +49,11 @@ export async function lookupParcel(
   if (sf) {
     const overlays = await lookupOverlays(lat, lng);
     return {
-      parcel: { ...sf, overlays },
+      parcel: {
+        ...sf,
+        overlays,
+        overlaysVerified: overlaysAreVerifiedByLookup(),
+      },
       coverage: "lot",
       provider: "sf-datasf",
     };
@@ -53,7 +63,11 @@ export async function lookupParcel(
   if (openData) {
     const overlays = await lookupOverlays(lat, lng);
     return {
-      parcel: { ...openData, overlays },
+      parcel: {
+        ...openData,
+        overlays,
+        overlaysVerified: overlaysAreVerifiedByLookup(),
+      },
       coverage: "lot",
       provider: "open-data",
     };
@@ -62,7 +76,11 @@ export async function lookupParcel(
   const regrid = await getRegridParcel(lat, lng, formattedAddress);
   if (regrid) {
     return {
-      parcel: regrid,
+      parcel: {
+        ...regrid,
+        overlaysVerified:
+          regrid.overlaysVerified ?? overlaysAreVerifiedByLookup(),
+      },
       coverage: "lot",
       provider: "regrid",
     };

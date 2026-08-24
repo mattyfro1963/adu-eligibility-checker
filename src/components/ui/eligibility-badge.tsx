@@ -13,28 +13,28 @@ const statusConfig: Record<
   }
 > = {
   eligible: {
-    label: "Eligible",
+    label: "Green",
     icon: CheckCircle2,
     className:
-      "border-emerald-600/35 bg-emerald-600/10 text-emerald-600 [a]:hover:bg-emerald-600/15",
+      "border-status-eligible-border bg-status-eligible-muted text-status-eligible-fg [a]:hover:bg-status-eligible-muted",
   },
   warning: {
-    label: "Warning",
+    label: "Yellow",
     icon: AlertTriangle,
     className:
-      "border-amber-500/35 bg-amber-500/10 text-amber-500 [a]:hover:bg-amber-500/15",
+      "border-status-warning-border bg-status-warning-muted text-status-warning-fg [a]:hover:bg-status-warning-muted",
   },
   restricted: {
-    label: "Restricted",
+    label: "Red",
     icon: XCircle,
     className:
-      "border-rose-600/35 bg-rose-600/10 text-rose-600 [a]:hover:bg-rose-600/15",
+      "border-status-restricted-border bg-status-restricted-muted text-status-restricted-fg [a]:hover:bg-status-restricted-muted",
   },
 };
 
 /**
- * Thin eligibility status badge over shadcn Badge.
- * Chromatic emerald / amber / rose — eligibility/stat context only.
+ * THOW lot-candidacy badge: Green / Yellow / Red over shadcn Badge.
+ * Status tokens only — emerald / amber / rose reserved for eligibility context.
  */
 export function EligibilityBadge({
   status,
@@ -59,7 +59,7 @@ export function EligibilityBadge({
         config.className,
         className,
       )}
-      aria-label={`Status: ${config.label}`}
+      aria-label={`THOW candidacy: ${config.label}`}
     >
       <Icon
         className={size === "lg" ? "size-[18px]!" : "size-3.5!"}

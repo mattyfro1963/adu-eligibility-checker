@@ -3,11 +3,71 @@
 @import "shadcn/tailwind.css";
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-eligible: #059669;
-  --color-warning: #f59e0b;
-  --color-restricted: #e11d48;
+  /* Surfaces */
+  --color-surface-page: var(--surface-page);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-brand: var(--surface-brand);
+  --color-surface-luxury: var(--surface-luxury);
+  --color-border-default: var(--border-default);
+  --color-border-strong: var(--border-strong);
+
+  /* Typography color roles */
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-text-inverse: var(--text-inverse);
+  --color-text-brand: var(--text-brand);
+  --color-text-luxury: var(--text-luxury);
+
+  /* Actions — primary is charcoal/ink; brand (vermilion) is sparse accent */
+  --color-action-primary: var(--action-primary);
+  --color-action-primary-fg: var(--action-primary-fg);
+  --color-action-brand: var(--action-brand);
+  --color-action-brand-hover: var(--action-brand-hover);
+  --color-action-brand-fg: var(--action-brand-fg);
+  --color-action-secondary: var(--action-secondary);
+  --color-action-secondary-fg: var(--action-secondary-fg);
+  --color-action-destructive: var(--action-destructive);
+  --color-action-destructive-fg: var(--action-destructive-fg);
+
+  /* Result status (soft / border / fg) */
+  --color-status-eligible: var(--status-eligible);
+  --color-status-eligible-fg: var(--status-eligible-fg);
+  --color-status-eligible-muted: var(--status-eligible-muted);
+  --color-status-eligible-border: var(--status-eligible-border);
+  --color-status-warning: var(--status-warning);
+  --color-status-warning-fg: var(--status-warning-fg);
+  --color-status-warning-muted: var(--status-warning-muted);
+  --color-status-warning-border: var(--status-warning-border);
+  --color-status-restricted: var(--status-restricted);
+  --color-status-restricted-fg: var(--status-restricted-fg);
+  --color-status-restricted-muted: var(--status-restricted-muted);
+  --color-status-restricted-border: var(--status-restricted-border);
+
+  /* Backward-compatible status aliases */
+  --color-eligible: var(--status-eligible);
+  --color-warning: var(--status-warning);
+  --color-restricted: var(--status-restricted);
+
+  /* Map overlays */
+  --color-map-lot-fill: var(--map-lot-fill);
+  --color-map-lot-stroke: var(--map-lot-stroke);
+  --color-map-envelope-fill: var(--map-envelope-fill);
+  --color-map-envelope-stroke: var(--map-envelope-stroke);
+  --color-map-zone-eligible: var(--map-zone-eligible);
+  --color-map-zone-warning: var(--map-zone-warning);
+  --color-map-zone-restricted: var(--map-zone-restricted);
+  --color-map-zone-unverified: var(--map-zone-unverified);
+  --color-map-hatch: var(--map-hatch);
+  --color-map-pin-shadow: var(--map-pin-shadow);
+
+  /* Luxury brand (earth) + sparse vermilion aliases */
+  --color-luxury-cream: var(--luxury-cream);
+  --color-luxury-taupe: var(--luxury-taupe);
+  --color-luxury-charcoal: var(--luxury-charcoal);
+  --color-luxury-wood: var(--luxury-wood);
   --color-brand: var(--vermilion-flame);
   --color-brand-strong: var(--ember-pulse);
   --color-brand-soft: var(--coral-blush);
@@ -16,6 +76,7 @@
   --color-brand-taupe: var(--brand-taupe);
   --color-brand-charcoal: var(--brand-charcoal);
   --color-brand-wood: var(--brand-wood);
+
   --font-sans: var(--font-sohn), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-ibm-plex-mono), ui-monospace, "SFMono-Regular", Menlo,
     monospace;
@@ -50,6 +111,8 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
   --radius-sm: 1.5px;
   --radius-md: 6px;
   --radius-lg: 10px;
@@ -63,11 +126,12 @@
   --shadow-subtle: var(--shadow-subtle);
   --shadow-xl: var(--shadow-xl);
   --shadow-elevated: var(--shadow-elevated);
+  --shadow-luxury-elevated: var(--luxury-elevated-shadow);
 }
 
 /* Ballpark-derived tokens — vermilion accent, slate neutrals, Söhn stack */
 :root {
-  /* Brand palette */
+  /* Brand palette (vermilion = sparse accent, not page energy) */
   --vermilion-flame: #fc4a2b;
   --ember-pulse: #ea3718;
   --tangerine-signal: #f97316;
@@ -76,7 +140,7 @@
   --apricot-wash: #ffedd5;
   --coral-wash-gradient: #ff7e67;
 
-  /* Modern Earthy Minimalist (embed widget) */
+  /* Modern Earthy Minimalist — primary luxury base for the checker */
   --brand-cream: #f7f3ed;
   --brand-taupe: #9a8f82;
   --brand-charcoal: #2c2825;
@@ -93,31 +157,118 @@
   --mist-gray: #f2f3f5;
   --ash-border: #e6e8eb;
 
-  /* Semantic surfaces */
+  /* —— Semantic surfaces —— */
+  --surface-page: var(--paper-white);
+  --surface-elevated: var(--paper-white);
+  --surface-sunken: var(--fog-whisper);
+  --surface-muted: var(--mist-gray);
+  --surface-brand: var(--peach-mist);
+  --surface-luxury: var(--brand-cream);
+  --border-default: var(--ash-border);
+  --border-strong: color-mix(in srgb, var(--slate-700) 28%, var(--ash-border));
+
+  /* —— Typography color roles —— */
+  --text-primary: var(--ink-black);
+  --text-secondary: var(--slate-600);
+  --text-tertiary: var(--slate-500);
+  --text-inverse: var(--paper-white);
+  --text-brand: var(--vermilion-flame);
+  --text-luxury: var(--brand-charcoal);
+
+  /* —— Actions (default CTA = charcoal; vermilion reserved for sparse accents) —— */
+  --action-primary: var(--brand-charcoal);
+  --action-primary-fg: var(--paper-white);
+  --action-brand: var(--vermilion-flame);
+  --action-brand-hover: var(--ember-pulse);
+  --action-brand-fg: var(--paper-white);
+  --action-secondary: var(--mist-gray);
+  --action-secondary-fg: var(--slate-900);
+  --action-destructive: #e11d48;
+  --action-destructive-fg: var(--paper-white);
+
+  /* —— Result status (unified warning on #f59e0b family) —— */
+  --status-eligible: #059669;
+  --status-eligible-fg: #059669;
+  --status-eligible-muted: color-mix(
+    in srgb,
+    var(--status-eligible) 12%,
+    var(--paper-white)
+  );
+  --status-eligible-border: color-mix(
+    in srgb,
+    var(--status-eligible) 35%,
+    transparent
+  );
+  --status-warning: #f59e0b;
+  --status-warning-fg: #d97706;
+  --status-warning-muted: color-mix(
+    in srgb,
+    var(--status-warning) 14%,
+    var(--paper-white)
+  );
+  --status-warning-border: color-mix(
+    in srgb,
+    var(--status-warning) 40%,
+    transparent
+  );
+  --status-restricted: #e11d48;
+  --status-restricted-fg: #e11d48;
+  --status-restricted-muted: color-mix(
+    in srgb,
+    var(--status-restricted) 12%,
+    var(--paper-white)
+  );
+  --status-restricted-border: color-mix(
+    in srgb,
+    var(--status-restricted) 35%,
+    transparent
+  );
+
+  /* —— Map overlays —— */
+  --map-lot-fill: #ffffff;
+  --map-lot-stroke: #111827;
+  --map-envelope-fill: #6b7280;
+  --map-envelope-stroke: #6b7280;
+  --map-zone-eligible: var(--status-eligible);
+  --map-zone-warning: var(--status-warning);
+  --map-zone-restricted: var(--status-restricted);
+  --map-zone-unverified: #6b7280;
+  --map-zone-fill-opacity: 0.16;
+  --map-hatch: #6b7280;
+  --map-pin-shadow: rgb(44 40 37 / 0.16);
+
+  /* —— Luxury brand roles —— */
+  --luxury-cream: var(--brand-cream);
+  --luxury-taupe: var(--brand-taupe);
+  --luxury-charcoal: var(--brand-charcoal);
+  --luxury-wood: var(--brand-wood);
+  --luxury-elevated-shadow: var(--shadow-elevated);
+
+  /* shadcn semantic surfaces (aligned to action roles; no visual redesign) */
   --background: var(--paper-white);
   --foreground: var(--ink-black);
   --card: var(--paper-white);
   --card-foreground: var(--ink-black);
   --popover: var(--paper-white);
   --popover-foreground: var(--ink-black);
-  --primary: var(--ink-black);
-  --primary-foreground: var(--paper-white);
-  --secondary: var(--mist-gray);
-  --secondary-foreground: var(--slate-900);
+  --primary: var(--action-primary);
+  --primary-foreground: var(--action-primary-fg);
+  --secondary: var(--action-secondary);
+  --secondary-foreground: var(--action-secondary-fg);
   --muted: var(--fog-whisper);
   --muted-foreground: var(--slate-500);
   --accent: var(--peach-mist);
   --accent-foreground: var(--ink-black);
-  --destructive: #e11d48;
-  --border: var(--ash-border);
+  --destructive: var(--action-destructive);
+  --border: var(--border-default);
   --input: var(--ash-border);
   --ring: color-mix(in srgb, var(--vermilion-flame) 45%, transparent);
 
   --chart-1: var(--ink-black);
   --chart-2: var(--slate-500);
-  --chart-3: #059669;
-  --chart-4: #f59e0b;
-  --chart-5: #e11d48;
+  --chart-3: var(--status-eligible);
+  --chart-4: var(--status-warning);
+  --chart-5: var(--status-restricted);
 
   /* Layout */
   --layout-page-max: 1200px;
@@ -153,7 +304,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background font-sans text-slate-600;
+    @apply bg-background font-sans text-text-secondary;
     font-size: 1rem;
     line-height: 1.6;
     letter-spacing: -0.02em;
@@ -169,7 +320,7 @@
   h6 {
     font-family: var(--font-heading);
     font-weight: 700;
-    color: var(--ink-black);
+    color: var(--text-primary);
     letter-spacing: -0.035em;
   }
 }
@@ -180,13 +331,13 @@
     font-weight: 800;
     letter-spacing: -0.035em;
     line-height: 1;
-    color: var(--ink-black);
+    color: var(--text-primary);
   }
   .font-heading {
     font-family: var(--font-heading);
     font-weight: 700;
     letter-spacing: -0.03em;
-    color: var(--ink-black);
+    color: var(--text-primary);
   }
   .font-label {
     font-family: var(--font-mono);
@@ -194,15 +345,16 @@
     font-weight: 600;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: var(--slate-500);
+    color: var(--text-tertiary);
   }
   .font-quote {
     font-family: var(--font-quote);
     font-weight: 400;
     letter-spacing: -0.01em;
   }
+  /* Sparse vermilion accent — links / small marks, not dominant CTA energy */
   .text-brand {
-    color: var(--vermilion-flame);
+    color: var(--text-brand);
   }
   .bg-brand-gradient {
     background: linear-gradient(
@@ -297,6 +449,15 @@
   }
   .rule-grid {
     @apply divide-x divide-border border border-border;
+  }
+  .map-hatch-swatch {
+    background: repeating-linear-gradient(
+      -48deg,
+      transparent,
+      transparent 2px,
+      color-mix(in srgb, var(--map-hatch) 35%, transparent) 2px,
+      color-mix(in srgb, var(--map-hatch) 35%, transparent) 3px
+    );
   }
 }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { AddressSearch } from "@/components/features/AddressSearch/AddressSearch";
 import { AnalysisInterstitial } from "@/components/features/AnalysisInterstitial/AnalysisInterstitial";
@@ -27,11 +28,22 @@ function parseZoningPayload(data: unknown): ZoningApiSuccess | null {
     const coverage = (data as { coverage?: unknown }).coverage;
     if (coverage !== "lot" && coverage !== "jurisdiction") return null;
     const report = (data as { report?: unknown }).report;
+    const providerRaw = (data as { provider?: unknown }).provider;
+    const provider =
+      typeof providerRaw === "string"
+        ? providerRaw
+        : providerRaw === null
+          ? null
+          : undefined;
     if (report === null) {
-      return { report: null, coverage };
+      return { report: null, coverage, provider: provider ?? null };
     }
     if (report && typeof report === "object" && "overall" in report) {
-      return { report: report as ZoningReport, coverage };
+      return {
+        report: report as ZoningReport,
+        coverage,
+        provider: provider ?? null,
+      };
     }
     return null;
   }
@@ -54,6 +66,7 @@ export function HomePageClient() {
   const [report, setReport] = useState<ZoningReport | null>(null);
   const [isZoningLoading, setIsZoningLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [wantsConnect, setWantsConnect] = useState(false);
   const zoningAbortRef = useRef<AbortController | null>(null);
   const appliedQueryKeyRef = useRef<string | null>(null);
 
@@ -97,6 +110,9 @@ export function HomePageClient() {
         setReport({
           ...parsed.report,
           formattedAddress: result.formattedAddress,
+          coverage: parsed.coverage,
+          zoningProvider:
+            parsed.provider ?? parsed.report.zoningProvider ?? null,
         });
       } else {
         setReport(null);
@@ -119,6 +135,22 @@ export function HomePageClient() {
     setError(message);
   }, []);
 
+  const handleNewSearch = useCallback(() => {
+    zoningAbortRef.current?.abort();
+    setGeocodeResult(null);
+    setReport(null);
+    setError(null);
+    setIsZoningLoading(false);
+    setWantsConnect(false);
+    appliedQueryKeyRef.current = null;
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.search = "";
+      url.hash = "";
+      window.history.replaceState({}, "", url.pathname);
+    }
+  }, []);
+
   const queryKey = searchParams.toString();
   useEffect(() => {
     if (!queryPrefill || queryKey === appliedQueryKeyRef.current) {
@@ -128,13 +160,23 @@ export function HomePageClient() {
     void handleResolved(queryPrefill);
   }, [queryKey, queryPrefill, handleResolved]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.location.hash.replace("#", "") === CONNECT_SECTION_ID) {
+      setWantsConnect(true);
+    }
+  }, []);
+
   const showInterstitial = Boolean(geocodeResult) && isZoningLoading;
   const showDashboard = Boolean(geocodeResult) && !isZoningLoading;
   const connectOverallStatus = report?.overall ?? queryStatus;
   const compact = Boolean(geocodeResult);
+  const showConnect =
+    showDashboard && Boolean(geocodeResult) && Boolean(report) && !error;
+  const showConnectPrompt = wantsConnect && !geocodeResult && !isZoningLoading;
 
   useEffect(() => {
-    if (!showDashboard || typeof window === "undefined") {
+    if (!showConnect || typeof window === "undefined") {
       return;
     }
     if (window.location.hash.replace("#", "") !== CONNECT_SECTION_ID) {
@@ -142,21 +184,32 @@ export function HomePageClient() {
     }
     const target = document.getElementById(CONNECT_SECTION_ID);
     target?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, [showDashboard, geocodeResult?.addressId]);
+  }, [showConnect, geocodeResult?.addressId]);
 
   return (
     <main
       id="main-content"
       tabIndex={-1}
-      className="mx-auto w-full max-w-layout flex-1 space-y-8 px-4 py-6 sm:space-y-12 sm:px-6 sm:py-12"
+      className="mx-auto w-full max-w-layout flex-1 scroll-mt-4 space-y-8 bg-surface-luxury px-4 py-6 text-text-luxury sm:space-y-12 sm:px-6 sm:py-12"
     >
       <div className="search-enter space-y-6 sm:space-y-8">
+        {showConnectPrompt ? (
+          <p
+            role="status"
+            className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-950"
+          >
+            Search a California address first — builder intro and specialist
+            review forms appear after your parcel check.
+          </p>
+        ) : null}
+
         <AddressSearch
           onResolved={handleResolved}
           onError={handleSearchError}
           error={error}
           compact={compact}
           showSampleReports={!geocodeResult}
+          onNewSearch={geocodeResult ? handleNewSearch : undefined}
         />
 
         {showInterstitial && geocodeResult ? (
@@ -175,14 +228,50 @@ export function HomePageClient() {
               isLoading={false}
               zoningError={error}
               connectHref={`#${CONNECT_SECTION_ID}`}
+              onRetry={() => void handleResolved(geocodeResult)}
             />
-            <ConnectSection
-              geocodeResult={geocodeResult}
-              overallStatus={connectOverallStatus}
-            />
+            {showConnect ? (
+              <ConnectSection
+                geocodeResult={geocodeResult}
+                overallStatus={connectOverallStatus}
+              />
+            ) : null}
           </>
         ) : null}
       </div>
+
+      <footer className="border-t border-border pt-6 text-center text-[11px] leading-relaxed text-muted-foreground">
+        <p>
+          Informational only — not legal advice. Confirm with local planning
+          and building departments.
+        </p>
+        <p className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+          <Link
+            href="/privacy"
+            className="underline-offset-2 hover:text-foreground hover:underline"
+          >
+            Privacy
+          </Link>
+          <Link
+            href="/terms"
+            className="underline-offset-2 hover:text-foreground hover:underline"
+          >
+            Terms
+          </Link>
+          <Link
+            href="/guides"
+            className="underline-offset-2 hover:text-foreground hover:underline"
+          >
+            Guides
+          </Link>
+          <Link
+            href="/regulations"
+            className="underline-offset-2 hover:text-foreground hover:underline"
+          >
+            Regulations
+          </Link>
+        </p>
+      </footer>
     </main>
   );
 }

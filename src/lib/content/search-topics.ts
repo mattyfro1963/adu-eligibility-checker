@@ -15,20 +15,20 @@ export type SearchTopicCard = {
 
 export const SEARCH_TOPIC_CARDS: SearchTopicCard[] = [
   {
-    id: "adu",
-    title: "ADU & tiny homes",
+    id: "thow",
+    title: "THOW & park models",
     links: [
       {
         label: "County requirements by address",
         href: "/regulations#county-guides",
       },
       {
-        label: "Statewide ADU statute floor",
-        href: "/regulations#overview",
+        label: "Certification & size expectations",
+        href: "/regulations#park-models",
       },
       {
-        label: "Park models and THOW classification",
-        href: "/regulations#park-models",
+        label: "Optional ADU pathway (not automatic)",
+        href: "/regulations#overview",
       },
     ],
     viewAllHref: "/regulations",

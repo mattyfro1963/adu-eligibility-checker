@@ -25,13 +25,13 @@ export const SAMPLE_REPORTS: readonly SampleReport[] = [
     id: "parkside",
     label: "Parkside, San Francisco, CA",
     query: "2000 16th Avenue, San Francisco, CA",
-    tone: "eligible",
+    tone: "warning",
   },
   {
     id: "richmond",
     label: "Richmond District, San Francisco, CA",
     query: "250 32nd Avenue, San Francisco, CA",
-    tone: "eligible",
+    tone: "warning",
   },
   {
     id: "los-angeles",

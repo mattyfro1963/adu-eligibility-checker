@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { AlertTriangle, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LegalConsentNote } from "@/components/features/LegalConsentNote/LegalConsentNote";
 import { buildConnectHref as buildConnectDeepLink } from "@/lib/content/connect-url";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -250,6 +251,7 @@ export function LeadFallbackForm({
           </div>
 
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+            <LegalConsentNote className="flex-1 text-xs leading-relaxed text-muted-foreground" />
             <Button
               type="submit"
               disabled={isSubmitting}
@@ -274,17 +276,17 @@ export function LeadFallbackForm({
         </div>
         <div className="min-w-0 space-y-2">
           <h2 className="text-lg font-normal tracking-tight text-foreground">
-            Restricted — expert compliance review
+            Restricted — specialist compliance review
           </h2>
           <p className="text-sm font-medium break-words text-muted-foreground">
             This parcel is restricted for at least one program in the
             diagnostics above. Review those engine reasons with a local
-            compliance expert — this form does not invent new statute.
+            compliance specialist — this form does not invent new statute.
           </p>
           <p className="text-sm font-light break-words text-muted-foreground">
             You may still have a lawful pathway, such as a permanent-foundation
-            ADU. Local experts audit complex lots and route referrals through
-            our review queue.
+            ADU. Specialists audit complex lots and route referrals through
+            our review queue — not licensed legal representation.
           </p>
         </div>
       </div>
@@ -391,22 +393,20 @@ export function LeadFallbackForm({
         </div>
 
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          {!embedded ? (
-            <p className="text-xs text-muted-foreground">
-              Or{" "}
-              <Link
-                href={connectHref}
-                className="font-medium text-foreground underline-offset-2 hover:underline"
-              >
-                continue to builder match below
-              </Link>
-            </p>
-          ) : (
-            <span
-              className="text-xs text-muted-foreground"
-              aria-hidden="true"
-            />
-          )}
+          <div className="space-y-1">
+            <LegalConsentNote className="text-xs leading-relaxed text-muted-foreground" />
+            {!embedded ? (
+              <p className="text-xs text-muted-foreground">
+                Or{" "}
+                <Link
+                  href={connectHref}
+                  className="font-medium text-foreground underline-offset-2 hover:underline"
+                >
+                  continue to builder match below
+                </Link>
+              </p>
+            ) : null}
+          </div>
           <Button
             type="submit"
             disabled={isSubmitting}

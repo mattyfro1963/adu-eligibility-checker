@@ -62,6 +62,26 @@ export const SRC = {
     label: "HCD IB 2016-01 — Tiny Homes",
     href: "https://www.hcd.ca.gov/sites/default/files/docs/building-standards/ib-2016-01.pdf",
   },
+  noahDwelling: {
+    label: "NOAH Certified — Dwelling Standard",
+    href: "https://noahcertified.org/noah-standard/dwelling/#c8",
+  },
+  rvia: {
+    label: "RVIA — Standards & Certification",
+    href: "https://www.rvia.org/",
+  },
+  waDotOversize: {
+    label: "WSDOT — Oversize / Overweight Permits",
+    href: "https://wsdot.wa.gov/travel/commercial-vehicles/commercial-vehicle-permits",
+  },
+  orDotOversize: {
+    label: "ODOT — Over-Dimension Permits",
+    href: "https://www.oregon.gov/odot/mct/pages/over-dimension.aspx",
+  },
+  caDotOversize: {
+    label: "Caltrans — Oversize / Overweight Permits",
+    href: "https://dot.ca.gov/programs/traffic-operations/transportation-permits",
+  },
   cbscBulletin2601: {
     label: "CBSC Information Bulletin 26-01",
     href: "https://www.dgs.ca.gov/-/media/Divisions/BSC/06-News/Information-Bulletins/2026/BSC-Information-Bulletin-26-01-Errata.pdf",

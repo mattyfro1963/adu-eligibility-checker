@@ -66,6 +66,7 @@ export async function getOpenDataParcel(
         lng,
         zoning: normalizeVendorZoningCode(zoning, "open-data"),
         overlays: emptyOverlays(),
+        overlaysVerified: false,
         mapblklot: null,
       };
     }

@@ -1,6 +1,14 @@
-# ADU Eligibility Checker — Architecture
+# Tiny Home on Wheels Lot Eligibility Checker — Architecture
 
 Canonical reference for folder theory, the decision engine, page wiring, and security hygiene. Keep aligned with `.cursorrules`, `.cursor/rules/architecture.mdc`, and `README.md`.
+
+## Product framing
+
+**Public name:** Tiny Home on Wheels Lot Eligibility Checker
+**Published states:** California, Oregon, Washington
+**Primary result:** Green / Yellow / Red THOW lot candidacy across placement, certification, transport, and lot readiness.
+**ADU:** Optional pathway only — never imply THOW equals ADU.
+**SB 9:** Other pathways / regulations — not primary overall.
 
 ## Folder Theory
 
@@ -10,14 +18,14 @@ Next.js framework contract only — network, caching, SSR. Not a place for statu
 
 - `route.ts` stays thin (traffic cop): validate → adapter/rules → JSON, plus `setTimeout` for `loading.tsx` / `Spinner`.
 - `error.tsx` is `"use client"`.
-- `page.tsx` is the **client composition root** (`"use client"` required for `useState`). It must **import** `AddressSearch`, `ValueProps`, `LandingHeroMedia`, `AnalysisInterstitial`, `ResultsCard`, `LeadFallbackForm`, `PartnerOffers`, and `GetQuotesModal` — never paste those components' markup or fetch logic into the page. It owns only cross-component state and the zoning fetch that glues them together. No statute `if`/`else` in the page (that lives in `src/lib/rules`).
+- `page.tsx` is the **client composition root** (`"use client"` required for `useState`). It must **import** feature components — never paste markup or fetch logic into the page. No statute `if`/`else` in the page (that lives in `src/lib/rules`).
 
 ### 2. Component-intensive (`src/components/`)
 
 Visual representation and client interaction. Split generic `ui/` from domain `features/`.
 
 - **No `index.ts` barrels in `ui/` or `features/`.** Use `AddressSearch/AddressSearch.tsx` (not `index.tsx`).
-- Named exports. Tailwind only: `emerald-600` Eligible, `amber-500` Warning, `rose-600` Restricted. Primary CTA token `#0066CC`.
+- Named exports. Green / Yellow / Red map to `eligible` / `warning` / `restricted` (emerald / amber / rose).
 - Icons only from `lucide-react`.
 - Complex state in colocated hooks (`useAddressSearch.ts`).
 
@@ -25,86 +33,55 @@ Visual representation and client interaction. Split generic `ui/` from domain `f
 
 Heart of the app. **Zero React.** Portable to a Node CLI or worker.
 
-- **Engine (`lib/rules/`):** Split ADU (Gov. Code Chapter 13 / § 66314) from SB 9 (§ 65852.21). Real `if`/`else` on parcel **facts**. Do not store Eligible/Warning/Restricted on mock parcels. `lib/rules/index.ts` orchestrates unified `ZoningReport`. Reasons are `CitedClaim[]` with official source URLs.
-- **Mocks and adapters (`lib/mock/` + `lib/adapters/`):** Routes call a `Geocoder` adapter for addresses. Lot zoning uses `zoning-lookup.ts` (multi-provider: SF DataSF GeoJSON, optional `public/data/zoning/*.geojson` packs, Regrid when `REGRID_API_KEY` is set). **Turf/GeoJSON only in adapters** — never in `lib/rules/` or UI.
-- **Leads (`lib/leads/` + `lib/mock/contractors.ts`):** Haversine contractor matching and webhook dispatch for `/api/lead` and `/api/builder-signup`. Zero React; no database in v1.
-- **Regulations expert (`lib/regulations/` + `lib/content/guides/` + `ca-tiny-home-regulations.ts`):** All law/regulation visitor copy is authored by `REGULATIONS_AGENT` in `lib/regulations/agent.ts`. `composeLocationRequirements` + `resolveJurisdictionGuide` attach county/city tiny-home requirements. Components render only; never invent statute prose in UI.
-- **Affiliates (`lib/content/affiliates.ts` + `lib/affiliates/track.ts`):** Partner catalog and disclosure live under `lib/content/` (commercial/editorial — never in `lib/regulations/` or `CitedClaim`). Pure `buildAffiliateHref` in `lib/affiliates/track.ts` appends utm + `sid` (and optional `ref`) at search time. Zero React.
+- **Engine (`lib/rules/`):** THOW dimensions drive `thowOverall` / `overall`. ADU (`adu-standard.ts`) is an optional pathway. SB 9 remains computed but demoted from primary chrome. Real `if`/`else` on parcel **facts**. Reasons are `CitedClaim[]` with official source URLs.
+- **Mocks and adapters (`lib/mock/` + `lib/adapters/`):** Geocoder for CA/OR/WA addresses. Lot zoning via `zoning-lookup.ts`. **Turf/GeoJSON only in adapters**.
+- **Regulations expert (`lib/regulations/`):** State profiles publish CA/OR/WA. Components render only.
+- **Affiliates (`lib/content/affiliates.ts`):** Commercial/editorial — never in `lib/regulations/` or `CitedClaim`.
 
 ## Decision Engine Logic
 
-Monitor `src/lib/rules/*.ts`. The engine must contain **actual branching**, not a map of address → canned status.
+**Overall reducer:** any dimension `restricted` → Red; else any `warning` → Yellow; else Green. **ADU status does not alone set overall.**
 
-**Inputs (facts only):** `zoning`, `tinyHomeFriendly`, `fireHazard` / `vhfhsz`, `historicDistrict`, `coastalZone`.
+### Dimensions
 
-**Outputs:** per-program `EligibilityResult` plus `reasons[]` (statute-cited). Overall badge: `restricted` if both programs restricted; else `warning` if either is warning or one restricted; else `eligible`.
+- **Placement** (`placement.ts`): express THOW/PMRV/RV path can support Green; generic ADU floor alone does not; ban / non-residential → Red.
+- **Certification** (`certification.ts`): ≤400 sq ft; NOAH / ANSI A119.5 / RVIA / unknown.
+- **Transport** (`transport.ts`): route-qualified logistics only — never blanket “no pilot car.”
+- **Lot readiness** (`lot-readiness.ts`): utilities / occupancy; unverified → Yellow.
 
-### ADU — `adu-standard.ts` (Gov. Code Chapter 13 / § 66314)
+### ADU pathway — `adu-standard.ts` (Gov. Code Chapter 13)
 
-1. **Single-family / residential zoning (hard stop).** Not residential → `restricted`.
-2. **Fire hazard overlay (warning).** `vhfhsz` or `fireHazard` → `warning`.
-3. **Tiny Home friendly overlay.** `tinyHomeFriendly` → eligible + note.
-4. **Historic district (warning).** Objective design standards under Chapter 13.
-5. **Coastal zone (warning).** Coastal Act / CDP may apply.
-6. **Default.** Qualifying residential → `eligible`.
+Kept. THOW-as-ADU only where local ordinance says so. Does not feed `thowOverall`.
 
-### SB 9 — `sb9-eligibility.ts` (Gov. Code § 65852.21)
+### SB 9 — `sb9-eligibility.ts`
 
-1. **Single-family zoning (hard stop).** Not R-1/RS → `restricted`.
-2. **Historic district (hard stop).** → `restricted`.
-3. **Fire hazard / VHFHSZ (hard stop).** → `restricted` (stricter than ADU).
-4. **Coastal zone (warning).**
-5. **Default.** → `eligible`.
+Other pathways only; not primary ResultsCard chrome.
 
 ### Forbidden in the engine
 
 - Status copied from mock JSON.
-- `if (address === "123 Main")` demo branches.
+- Address-demo branches.
 - Empty functions always returning `eligible`.
 - React, fetch, or Mapbox inside `src/lib/rules/`.
 
 ## Page Wiring (`src/app/page.tsx`)
 
-`/` is the embeddable checker widget: no site header/footer (`SiteChrome` hides them on `/` only). State: `geocodeResult`, `report`, `isZoningLoading`, `error`.
+Flow: idle `AddressSearch` → `/api/zoning` → `AnalysisInterstitial` → `ResultsCard` (THOW dimensions + ADU pathway). Connect CTAs key on `overall` (= `thowOverall`).
 
-Flow: idle `AddressSearch` (serif headline, no ValueProps/demos) → `onResolved` → `/api/zoning?lat=&lng=` → `AnalysisInterstitial` while loading → `ResultsCard` (map, overlays, ADU/SB 9 reasons, briefing, citations). Optional outline link to `/connect`. Monetization (partners, leads, Get Quotes) lives on `/connect` and `/partners`, not on the widget.
+## Cascadia coverage
 
-Forbidden: pasted AddressSearch markup, rule engine branches, `evaluateEligibility` on client.
+| Scope | Provider |
+|-------|----------|
+| CA / OR / WA default | Mapbox geocode + `evaluateJurisdictionContext` |
+| SF lot GIS | `sf-datasf-zoning` |
+| Optional packs / Regrid | `open-data-zoning` / `regrid-zoning` |
 
-## California zoning providers
+Unsupported states return Red with locked copy. `coverage: "jurisdiction"` is normal — not an error.
 
-| Jurisdiction / scope | Provider | Data | Cost |
-|----------------------|----------|------|------|
-| **All CA counties (default)** | Mapbox geocode + `evaluateJurisdictionContext` | `COUNTY_GUIDES` corpus | Free |
-| San Francisco lot GIS | `sf-datasf-zoning` | `public/data/pilot-zoning.geojson` (DataSF, PDDL) | Free |
-| Optional county/city packs | `open-data-zoning` | `public/data/zoning/{jurisdiction}.geojson` | Free where licensed |
-| Statewide lot GIS (optional) | `regrid-zoning` | Regrid API | Paid — `REGRID_ENABLED=true` |
-| Overlays (fire/coastal/historic) | `zoning-overlays` | Stub → local snapshots later | — |
+## Outcome Monetization
 
-`/api/zoning` returns `{ report, coverage: "lot" | "jurisdiction", provider }` with **200** always for valid CA coordinates. `coverage: "jurisdiction"` is the expected free path for most addresses — not an error.
-
-## SF Buyer Guides (`src/lib/content/guides/` + `/guides`)
-
-Zero-React corpus: THOW zoning, cost matrix (crane, trenching `$1,000–$5,000+`, permits), wheels-vs-foundation, `GUIDE_LINKS`. Thin routes in `src/app/guides/`; UI in `src/components/features/Guides/`. Briefings attach `guideLinks` only when `place` is San Francisco. No live municipal fee APIs.
-
-## Outcome Monetization (bifurcated CTAs)
-
-On `/connect` and `/partners` (not on the `/` widget):
-
-| `overall` | Primary | Secondary | Hide |
-|-----------|---------|-----------|------|
-| `eligible` | `PartnerOffers` build-out grid | Link to `/partners` | Expert / rose lead form |
-| `warning` | Soft specialist lead (amber) | Narrow `PartnerOffers` (optional research) | Rose restricted CTA; full product shop above lead |
-| `restricted` | `LeadFallbackForm` → `/api/lead` | Compact alternate-pathway offers below form | Product shop grid above the expert form |
-
-Catalog + `AFFILIATE_DISCLOSURE` in `src/lib/content/affiliates.ts`; href assembly in `src/lib/affiliates/track.ts` (`searchId` at submission). Outbound links: `rel="sponsored noopener noreferrer"`. Leads optionally forward via `LEAD_WEBHOOK_URL` (server-only). No visitor-facing commission amounts; partners labeled as curated resources, not endorsements.
-
-## Security and Git Hygiene
-
-- `.cursorignore`: `.env*`, `.next/`, `node_modules/`, `*.pem`, `*.key`, `coverage/`, `*.log`.
-- `.env.example` defines `NEXT_PUBLIC_API_URL`, optional Mapbox/Sentry, `LEAD_WEBHOOK_URL` / `BUILDER_WEBHOOK_URL`, and `NEXT_PUBLIC_AFFILIATE_*` placeholders. Never commit `.env`.
-- `src/lib/env.ts` Zod-validates at build/start. Mock-required: `NEXT_PUBLIC_API_URL`. Mapbox optional for geocode. Regrid optional and off by default (`REGRID_ENABLED`).
+Bifurcate by `overall` (= `thowOverall`): Green → builder intro; Yellow → specialist review; Red → expert compliance form.
 
 ## Binding Placement Rules
 
-Forbidden: second root `app/`; reusable UI in `src/app/` or `src/lib/`; React in `src/lib/`; statute logic in components; feature/ui `index.ts` barrels; extra `*.css` besides `src/app/globals.css`.
+Forbidden: second root `app/`; reusable UI in `src/app/` or `src/lib/`; React in `src/lib/`; statute logic in components; feature/ui barrels; extra CSS besides `globals.css`.

@@ -54,7 +54,7 @@ describe("SB9 lot-size rule", () => {
     const base = parcel("addr-r1-clean");
     const smallLot: Parcel = { ...base, lotSizeSqFt: 950 };
     const report = evaluateEligibility(smallLot);
-    expect(report.sb9.status).toBe("restricted");
+    expect(report.sb9?.status).toBe("restricted");
     expect(report.unitCapacity?.maxAllowableUnits).toBe(2);
   });
 });

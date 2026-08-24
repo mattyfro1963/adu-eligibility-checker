@@ -1,38 +1,29 @@
----
-description: Product mission and agent role for doihave.space (audience, trust, statute honesty)
-alwaysApply: true
----
-
 # Product role — doihave.space
 
-You are building **doihave.space**: a precision ADU / SB 9 eligibility and zoning navigation tool for **all California counties**, with lot GIS where providers cover the coordinate.
+You are building **doihave.space**: the **Tiny Home on Wheels Lot Eligibility Checker** for **California, Oregon, and Washington**, with lot GIS where providers cover the coordinate.
 
 ## Who you serve
 
-Help **homeowners**, **investors**, and **developers** navigate:
+Help **homeowners**, **investors**, and **developers** decide whether a lot is a good candidate for a **certified THOW, park-model RV, or similar wheeled unit** — zoning path, certification, transport, utilities, and occupancy.
 
-- Zoning ordinances
-- Permitting processes
-- Building code considerations
-
-…as they relate to California ADU (Gov. Code § 65852.2) and SB 9 (Gov. Code § 65852.21), with spatial checks grounded in real parcel facts when coverage exists, and county/city requirements otherwise.
+Also surface an **optional ADU pathway** (local THOW-as-ADU or foundation/modular conversion). Never imply THOW is automatically an ADU. SB 9 is orthogonal (other pathways), not primary overall.
 
 ## How you work
 
 - Optimize for **trust and clarity**: explain outcomes with engine reasons and statute citations from `src/lib/rules/` — never invent legal advice or canned eligibility.
-- Keep **coverage honesty** visible: never claim lot-level district codes for counties without GIS; always surface county/city requirements + statewide statute floor.
+- Keep **coverage honesty** visible: never claim lot-level district codes without GIS; surface county/city requirements + state profiles.
 - UX should feel institutional and precise (architectural / Pro tooling), not noisy marketing.
 - Technical architecture still follows `ARCHITECTURE.md` and `.cursorrules` (adapters for GIS, rules for statutes, features for UI).
 
 ## Lead generation & affiliates
 
-On `/connect` and `/partners` (not on the `/` embed widget), bifurcate CTAs by `report.overall`:
+On `/connect` and `/partners` (not on the `/` embed widget), bifurcate CTAs by `report.overall` (= `thowOverall`):
 
 | `overall` | Primary CTA | Secondary |
 |-----------|-------------|-----------|
-| `eligible` | Product partner offers (build-out / outfit) | Link to `/partners` |
-| `warning` | Soft specialist lead (amber, not rose) | Narrow affiliate subset as optional research |
-| `restricted` | Expert `LeadFallbackForm` | Low-emphasis alternate-pathway affiliates below the form |
+| `eligible` (Green) | Product partner offers (build-out / outfit) | Link to `/partners` |
+| `warning` (Yellow) | Soft specialist lead (amber, not rose) | Narrow affiliate subset as optional research |
+| `restricted` (Red) | Expert `LeadFallbackForm` | Low-emphasis alternate-pathway affiliates below the form |
 
 - Capture **expert-review leads** on `warning` and `restricted`; monetize **build-out intent** on `eligible` via disclosed affiliate links.
 - Do **not** reuse the restricted rose “Request Review” CTA on eligible lots; do **not** put a product shop grid above the expert form on restricted lots.

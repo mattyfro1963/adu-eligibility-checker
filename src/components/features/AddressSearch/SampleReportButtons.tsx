@@ -6,17 +6,17 @@ import { cn } from "@/lib/utils";
 
 const TONE_CLASS: Record<SampleReportTone, string> = {
   eligible:
-    "border-emerald-300 bg-emerald-50 text-emerald-950 hover:border-emerald-500 hover:bg-emerald-100",
+    "border-status-eligible-border bg-status-eligible-muted text-text-luxury hover:border-status-eligible hover:bg-status-eligible-muted",
   warning:
-    "border-amber-400 bg-amber-50 text-amber-950 hover:border-amber-500 hover:bg-amber-100",
+    "border-status-warning-border bg-status-warning-muted text-text-luxury hover:border-status-warning hover:bg-status-warning-muted",
   restricted:
-    "border-rose-300 bg-rose-50 text-rose-950 hover:border-rose-400 hover:bg-rose-100",
+    "border-status-restricted-border bg-status-restricted-muted text-text-luxury hover:border-status-restricted hover:bg-status-restricted-muted",
 };
 
 const TONE_BAR: Record<SampleReportTone, string> = {
-  eligible: "bg-emerald-500",
-  warning: "bg-amber-500",
-  restricted: "bg-rose-500",
+  eligible: "bg-status-eligible",
+  warning: "bg-status-warning",
+  restricted: "bg-status-restricted",
 };
 
 const TONE_LEGEND: ReadonlyArray<{
@@ -24,16 +24,15 @@ const TONE_LEGEND: ReadonlyArray<{
   label: string;
   note: string;
 }> = [
-  { tone: "eligible", label: "Eligible", note: "ADU and SB 9 both eligible" },
   {
     tone: "warning",
     label: "Warning",
-    note: "Mixed outcome or unverified lot",
+    note: "Mixed outcome or unverified lot — live engine decides",
   },
   {
     tone: "restricted",
     label: "Restricted",
-    note: "ADU and SB 9 both restricted",
+    note: "Hard stop on at least one program",
   },
 ];
 

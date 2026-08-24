@@ -1,8 +1,3 @@
----
-description: Folder Theory, decision engine spec, and placement rules for ADU Eligibility Checker
-alwaysApply: true
----
-
 # Architecture Rules
 
 Read `ARCHITECTURE.md` for the full canonical spec. Key constraints:
@@ -17,13 +12,14 @@ Read `ARCHITECTURE.md` for the full canonical spec. Key constraints:
 
 Real `if`/`else` on parcel facts. Never canned status on mock data.
 
-- **ADU** (`adu-standard.ts`, § 65852.2): residential check → fire warning → tiny-home note → historic warning → coastal warning → default eligible.
-- **SB 9** (`sb9-eligibility.ts`, § 65852.21): SF-only → historic stop → fire stop → coastal warning → default eligible.
-- **Overall**: both restricted → restricted; else any warning or one restricted → warning; else eligible.
+- **THOW overall** from four dimensions only: placement, certification, transport, lotReadiness (`computeThowOverall`). `overall` === `thowOverall` (Green/Yellow/Red).
+- **ADU pathway** (`adu-standard.ts`, Chapter 13): optional; does **not** alone set THOW overall. Never imply THOW equals ADU.
+- **SB 9** (`sb9-eligibility.ts`): other pathways only — not primary chrome.
+- Published states: CA / OR / WA; others → unsupported Red copy.
 
 ## Page Wiring
 
-`/` is the embeddable widget (no site header/footer). `page.tsx` imports `AddressSearch`, `AnalysisInterstitial`, `ResultsCard`. State: `geocodeResult`, `report`, `isZoningLoading`, `error`. Flow: search → `/api/zoning` (`coverage: lot|none`) → interstitial → ResultsCard (map + requirements + engine reasons). Uncovered counties are not errors. Monetization CTAs live on `/connect` and `/partners`, not on `/`. No `evaluateEligibility` on client.
+`/` is the embeddable widget (no site header/footer). `page.tsx` imports `AddressSearch`, `AnalysisInterstitial`, `ResultsCard`. State: `geocodeResult`, `report`, `isZoningLoading`, `error`. Flow: search → `/api/zoning` → interstitial → ResultsCard (THOW dimensions + ADU pathway). Connect CTAs key on `overall` (= `thowOverall`). No `evaluateEligibility` on client.
 
 ## Forbidden
 

@@ -2,10 +2,15 @@ import { env } from "@/lib/env";
 import { mapboxRequestHeaders } from "@/lib/adapters/mapbox-headers";
 import type { GeocodeResult } from "@/lib/types/gis";
 
-/** California bounding box: minLng, minLat, maxLng, maxLat. */
-const CALIFORNIA_BBOX: [number, number, number, number] = [
-  -124.482003, 32.528832, -114.131211, 42.009518,
+/**
+ * Cascadia bounding box (CA / OR / WA): minLng, minLat, maxLng, maxLat.
+ * Slightly padded; region short_code filter is the source of truth.
+ */
+const CASCADIA_BBOX: [number, number, number, number] = [
+  -124.9, 32.5, -116.4, 49.05,
 ];
+
+const PUBLISHED_REGION_CODES = new Set(["US-CA", "US-OR", "US-WA"]);
 
 interface MapboxContextItem {
   id: string;
@@ -107,7 +112,7 @@ export class MapboxUpstreamError extends Error {
  * SDK) so we can send a Referer header — URL-restricted public tokens are
  * rejected with 403 on referer-less server-side requests otherwise.
  *
- * Statewide CA only: bbox + country=US; no SF proximity bias.
+ * Cascadia (CA/OR/WA): bbox + country=US; no SF proximity bias.
  */
 function buildForwardGeocodeUrl(query: string, accessToken: string): string {
   const url = new URL(
@@ -116,16 +121,19 @@ function buildForwardGeocodeUrl(query: string, accessToken: string): string {
   url.searchParams.set("access_token", accessToken);
   url.searchParams.set("country", "US");
   url.searchParams.set("types", "address");
-  url.searchParams.set("bbox", CALIFORNIA_BBOX.join(","));
+  url.searchParams.set("bbox", CASCADIA_BBOX.join(","));
   url.searchParams.set("limit", "5");
   url.searchParams.set("autocomplete", "true");
   return url.toString();
 }
 
-/** Bbox can leak into NV/OR/AZ; keep only features whose region is California. */
-function isCaliforniaAddress(feature: MapboxAddressFeature): boolean {
+/** Keep only features in published Cascadia states. */
+function isCascadiaAddress(feature: MapboxAddressFeature): boolean {
   return (feature.context ?? []).some(
-    (item) => item.id.startsWith("region") && item.short_code === "US-CA",
+    (item) =>
+      item.id.startsWith("region") &&
+      typeof item.short_code === "string" &&
+      PUBLISHED_REGION_CODES.has(item.short_code),
   );
 }
 
@@ -180,13 +188,13 @@ async function forwardGeocodeAddresses(
   }
 
   return (body.features ?? [])
-    .filter(isCaliforniaAddress)
+    .filter(isCascadiaAddress)
     .map(toGeocodeResult)
     .filter((result): result is GeocodeResult => result !== null);
 }
 
 /**
- * CA-only address geocoding. Does not implement `getParcel` — zoning stays
+ * CA / OR / WA address geocoding. Does not implement `getParcel` — zoning stays
  * on the zoning lookup facade.
  */
 export const mapboxGeocoder = {

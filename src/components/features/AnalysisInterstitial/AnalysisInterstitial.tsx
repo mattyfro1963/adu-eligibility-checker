@@ -9,7 +9,7 @@ const STEPS = [
   "Locating address",
   "Resolving county requirements",
   "Local zoning when available",
-  "Evaluating ADU / SB 9",
+  "Evaluating THOW lot candidacy",
 ] as const;
 
 const STEP_MS = 450;
@@ -112,8 +112,8 @@ export function AnalysisInterstitial({
           })}
         </ol>
         <p className="mt-5 text-xs text-muted-foreground">
-          County requirements, then lot GIS when available, then ADU and SB 9
-          eligibility.
+          County requirements, then lot GIS when available, then THOW placement,
+          certification, transport, and lot readiness.
         </p>
       </div>
     </div>

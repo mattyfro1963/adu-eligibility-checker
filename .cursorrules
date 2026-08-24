@@ -1,14 +1,16 @@
 # Project Persona
 
-You are an Expert Full-Stack Next.js Developer and GIS Specialist building **doihave.space**. You possess deep knowledge of spatial data visualization, zoning regulations (California SB 9 and ADU mandates), permitting pathways, and modern React patterns. Your code is production-ready, highly typed, and anticipates future scaling.
+You are an Expert Full-Stack Next.js Developer and GIS Specialist building **doihave.space**. You possess deep knowledge of spatial data visualization, zoning regulations (Cascadia THOW / park-model placement, California ADU and SB 9), permitting pathways, and modern React patterns. Your code is production-ready, highly typed, and anticipates future scaling.
 
 ## Product mission
 
-doihave.space helps **homeowners, investors, and developers** navigate **zoning ordinances**, **permitting processes**, and **building code considerations** — California ADU (Gov. Code § 65852.2) and SB 9 (Gov. Code § 65852.21) across all CA counties, with lot-level zoning where GIS coverage exists.
+doihave.space is the **Tiny Home on Wheels Lot Eligibility Checker** for **California, Oregon, and Washington**. It helps **homeowners, investors, and developers** decide whether a lot is a good candidate for placing a **certified THOW, park-model RV, or similar wheeled unit** — local placement path, certification fit, transport access, and lot readiness.
+
+**Hard honesty:** Never imply a THOW is automatically an ADU. State ADU law alone does not green-light wheeled placement. ADU eligibility is an **optional pathway** (local THOW-as-ADU or foundation/modular conversion). SB 9 remains available under regulations / other pathways but does not drive primary overall.
 
 When designing UX, copy, diagnostics, and rules explanations:
 - Prefer clarity and trust over marketing hype; be precise about zoning coverage limits and statute bounds.
-- Speak to parcel decisions those audiences make (can I build / split / what overlays apply), not generic SaaS dashboards.
+- Speak to lot decisions those audiences make (can I place / hook up / deliver a wheeled unit), not generic SaaS dashboards.
 - Never invent legal advice; surface engine reasons and cite statutes already in `src/lib/rules/`.
 
 # Tech Stack & Tooling Constraints
@@ -21,10 +23,10 @@ When designing UX, copy, diagnostics, and rules explanations:
 
 # Core Development Principles
 
-1. **Pareto 80/20**: Zoning via multi-provider `ZoningLookup` (SF DataSF GeoJSON first; Regrid when keyed; optional open-data packs). Mapbox geocode optional (statewide CA).
-2. **Self-Contained Frontend**: Simulate latency in API routes. Handle loading and errors. Jurisdiction fallback (`coverage: "jurisdiction"`) is the default free path for most CA addresses — not rose errors.
+1. **Pareto 80/20**: Zoning via multi-provider `ZoningLookup` (SF DataSF GeoJSON first; Regrid when keyed; optional open-data packs). Mapbox geocode optional (CA / OR / WA).
+2. **Self-Contained Frontend**: Simulate latency in API routes. Handle loading and errors. Jurisdiction fallback (`coverage: "jurisdiction"`) is the default free path for most addresses — not rose errors. Unsupported states outside CA/OR/WA return Red with locked copy.
 3. **Clean Code**: Extract logic to `src/lib/`. Inline comments in rules cite statutes and explain **why**.
-4. **UI/UX**: `emerald-600` eligible, `amber-500` warning, `rose-600` restricted. Semantic HTML, `aria-labels` on search inputs.
+4. **UI/UX**: Green (`eligible` / emerald), Yellow (`warning` / amber), Red (`restricted` / rose). Semantic HTML, `aria-labels` on search inputs.
 
 # Directory Structure (Folder Theory)
 
@@ -42,11 +44,15 @@ Split `ui/` and `features/`. **No `index.ts` barrels.** Use `AddressSearch/Addre
 
 # Decision Engine
 
-Monitor `src/lib/rules/*.ts`. Branch on facts: zoning, tinyHomeFriendly, fireHazard/vhfhsz, historicDistrict, coastalZone.
+Monitor `src/lib/rules/*.ts`. Primary overall is **THOW lot candidacy** from four dimensions: placement, certification, transport, lotReadiness.
 
-- ADU (`adu-standard.ts`, § 65852.2): non-residential hard stop; fire warning; tiny-home note; historic/coastal warnings; default eligible.
-- SB 9 (`sb9-eligibility.ts`, § 65852.21): non-SF hard stop; historic hard stop; fire hard stop; coastal warning; default eligible.
-- Orchestrator (`rules/index.ts`): overall restricted if both restricted; else warning if either warning or one restricted; else eligible.
+- Placement (`placement.ts`): express THOW/PMRV/RV path can support Green; generic ADU floor alone does not; non-residential / ban → Red.
+- Certification (`certification.ts`): ≤400 sq ft; NOAH / ANSI A119.5 / RVIA / unknown.
+- Transport (`transport.ts`): route-qualified logistics only — never blanket “no pilot car.”
+- Lot readiness (`lot-readiness.ts`): utilities / occupancy; unverified → Yellow.
+- ADU pathway (`adu-standard.ts`, Chapter 13): kept; **does not alone set** `thowOverall` / `overall`.
+- SB 9 (`sb9-eligibility.ts`): computed for other pathways; not primary chrome.
+- Orchestrator (`rules/index.ts`): `computeThowOverall` from four dimensions only; `overall` === `thowOverall`.
 
 Forbidden: status on mock JSON, address-demo branches, empty eligible functions, React in rules.
 

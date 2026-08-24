@@ -164,7 +164,9 @@ describe("SAMPLE_REPORTS parcel summaries", () => {
     );
   });
 
-  it("produces cited, city-accurate summaries whose chip tone matches the engine", async () => {
+  it(
+    "produces cited, city-accurate summaries whose chip tone matches the engine",
+    async () => {
     for (const sample of SAMPLE_REPORTS) {
       const { geocode, lookup, report, briefing } = await reportFor(sample.id);
       const summarySources = briefing.summary.flatMap((c) => c.sources);
@@ -174,7 +176,10 @@ describe("SAMPLE_REPORTS parcel summaries", () => {
       const sfOnSummary = !/San Francisco/i.test(sample.label)
         ? summarySources.filter((s) => SF_HOST.test(s.href))
         : [];
-      const lotHrefs = briefing.summary[0]?.sources.map((s) => s.href) ?? [];
+      const lotClaim = briefing.summary.find((c) =>
+        /^(On this |For this )/i.test(c.text),
+      );
+      const lotHrefs = lotClaim?.sources.map((s) => s.href) ?? [];
 
       expect(report.overall, `${sample.id} overall vs chip`).toBe(sample.tone);
       expect(
@@ -195,17 +200,18 @@ describe("SAMPLE_REPORTS parcel summaries", () => {
       expect(sfOnSummary, `${sample.id} no SF hosts on non-SF summary`).toEqual(
         [],
       );
-      expect(briefing.summary[0]?.text).toMatch(new RegExp(geocode.place, "i"));
-      expect(briefing.summary[0]?.text).not.toMatch(/United States/i);
-      expect(briefing.summary[0]?.text).not.toMatch(
+      // First summary claim is thowSummary (locked Green/Yellow/Red copy)
+      expect(briefing.summary[0]?.text).toMatch(
+        /Strong THOW candidate|Possible THOW candidate|Weak THOW candidate/,
+      );
+      expect(lotClaim, `${sample.id} lot/jurisdiction summary claim`).toBeDefined();
+      expect(lotClaim?.text).toMatch(new RegExp(geocode.place, "i"));
+      expect(lotClaim?.text).not.toMatch(/United States/i);
+      expect(lotClaim?.text).not.toMatch(
         /RESIDENTIAL-\s*HOUSE|ONE FAMILY-\s*DETACHED/,
       );
-      expect(briefing.summary[0]?.text).toMatch(
-        /ADU is (Eligible|Warning|Restricted)/,
-      );
-      expect(briefing.summary[0]?.text).toMatch(
-        /SB 9 is (Eligible|Warning|Restricted)/,
-      );
+      expect(lotClaim?.text).toMatch(/THOW/i);
+      expect(lotClaim?.text).toMatch(/ADU pathway/i);
       expect(briefing.receipt.formattedAddress).toBe(
         formatParcelAddress(geocode),
       );
@@ -241,5 +247,7 @@ describe("SAMPLE_REPORTS parcel summaries", () => {
         expect(localReqs.flatMap((r) => r.sources).length).toBeGreaterThan(0);
       }
     }
-  });
+  },
+    30_000,
+  );
 });

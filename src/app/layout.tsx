@@ -41,9 +41,33 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ADU & SB 9 Eligibility Checker",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_API_URL ?? "https://doihave.space",
+  ),
+  title: {
+    default:
+      "Tiny Home on Wheels Lot Eligibility Checker — doihave.space",
+    template: "%s — doihave.space",
+  },
   description:
-    "California ADU and SB 9 eligibility for every county — Mapbox geocode plus county requirements; SF lot GIS where available.",
+    "THOW / park-model lot screening for California, Oregon, and Washington — placement, certification, transport, and lot readiness. ADU is an optional pathway, not automatic. Informational only — confirm locally.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    siteName: "doihave.space",
+    title: "Tiny Home on Wheels Lot Eligibility Checker",
+    description:
+      "Screen CA/OR/WA lots for certified THOW or park-model placement — lot GIS where available, jurisdiction guidance elsewhere.",
+    images: [{ url: "/tiny-home-hero.png", alt: "doihave.space" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Tiny Home on Wheels Lot Eligibility Checker",
+    description:
+      "Cascadia THOW lot candidacy — placement, certification, transport, utilities. Informational parcel check.",
+    images: ["/tiny-home-hero.png"],
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

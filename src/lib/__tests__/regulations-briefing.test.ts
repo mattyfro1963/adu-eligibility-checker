@@ -41,13 +41,17 @@ const sfGeocode: GeocodeResult = {
 };
 
 describe("regulations registry", () => {
-  it("lists US states and publishes only California", () => {
+  it("lists US states and publishes Cascadia (CA / OR / WA)", () => {
     const codes = listStateCodes();
     expect(codes).toContain("CA");
     expect(codes.length).toBeGreaterThanOrEqual(50);
     expect(getStateProfile("CA").published).toBe(true);
+    expect(getStateProfile("OR").published).toBe(true);
+    expect(getStateProfile("WA").published).toBe(true);
     expect(getStateProfile("TX").published).toBe(false);
     expect(normalizeRegionCode("California")).toBe("CA");
+    expect(normalizeRegionCode("Oregon")).toBe("OR");
+    expect(normalizeRegionCode("Washington")).toBe("WA");
   });
 
   it("CA profile claims all carry official https sources", () => {
@@ -198,6 +202,17 @@ describe("composeLocationRequirements", () => {
         adu: { status: "eligible", reasons: [] },
         sb9: { status: "warning", reasons: [] },
         overall: "warning",
+        thowOverall: "warning",
+        thowSummary: {
+          text: "Possible THOW candidate, but not delivery-ready. Confirm the local placement path with Planning/Building, verify utility hookups, and complete a hauler route review before relying on this lot.",
+          sources: [],
+        },
+        dimensions: {
+          placement: { status: "warning", reasons: [] },
+          certification: { status: "warning", reasons: [] },
+          transport: { status: "warning", reasons: [] },
+          lotReadiness: { status: "warning", reasons: [] },
+        },
         analysisScope: "jurisdiction_context",
       },
     });
@@ -312,6 +327,17 @@ describe("composeResultsBriefing", () => {
         adu: { status: "eligible", reasons: [] },
         sb9: { status: "warning", reasons: [] },
         overall: "warning",
+        thowOverall: "warning",
+        thowSummary: {
+          text: "Possible THOW candidate, but not delivery-ready. Confirm the local placement path with Planning/Building, verify utility hookups, and complete a hauler route review before relying on this lot.",
+          sources: [{ label: "HCD", href: "https://www.hcd.ca.gov/" }],
+        },
+        dimensions: {
+          placement: { status: "warning", reasons: [] },
+          certification: { status: "warning", reasons: [] },
+          transport: { status: "warning", reasons: [] },
+          lotReadiness: { status: "warning", reasons: [] },
+        },
         analysisScope: "jurisdiction_context",
       },
     });
@@ -323,7 +349,9 @@ describe("composeResultsBriefing", () => {
         /sfplanning\.org|sf\.gov|data\.sfgov\.org/i.test(href),
       ),
     ).toBe(false);
-    expect(briefing.summary[0]?.text).toMatch(/Oakland/i);
+    expect(
+      briefing.summary.some((c) => /Oakland/i.test(c.text)),
+    ).toBe(true);
   });
 
   it("South San Francisco (no report) → CA checklist, not SF guides", () => {
@@ -365,6 +393,9 @@ describe("composeResultsBriefing", () => {
     expect(briefing.sizeStructure).toBeNull();
     expect(briefing.summary).toHaveLength(1);
     expect(briefing.summary[0]?.text).toMatch(/not published/i);
+    expect(briefing.summary[0]?.text).toMatch(
+      /California, Oregon, or Washington/i,
+    );
     expect(
       briefing.summary.some((c) => /California (lot|pilot)/i.test(c.text)),
     ).toBe(false);
@@ -523,15 +554,17 @@ describe("California visitor-facing branding", () => {
       path.join(componentsRoot, "AddressSearch/AddressSearch.tsx"),
       "utf8",
     );
-    expect(search).toMatch(/Enter a California address/);
+    expect(search).toMatch(/Enter a CA, OR, or WA address/);
+    expect(search).toMatch(/Tiny Home on Wheels Lot Eligibility Checker/);
 
     const results = readFileSync(
       path.join(componentsRoot, "ResultsCard/ResultsCard.tsx"),
       "utf8",
     );
-    expect(results).toMatch(/California application checklist/);
+    expect(results).toMatch(/Application checklist|Requirements & application/);
     expect(results).toMatch(/JurisdictionRequirements/);
     expect(results).toMatch(/TinyHomeSizeStructure/);
+    expect(results).toMatch(/THOW lot candidacy|ADU pathway/);
 
     const receipt = readFileSync(
       path.join(componentsRoot, "ResultsCard/SearchReceipt.tsx"),

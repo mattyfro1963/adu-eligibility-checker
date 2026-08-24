@@ -23,6 +23,12 @@ export interface Parcel {
   lng: number;
   zoning: string;
   overlays: Overlays;
+  /**
+   * True when overlay booleans were checked against GIS or authored demo facts.
+   * False/omit when the overlay stub (or jurisdiction fallback) left them unchecked —
+   * never treat false flags as verified “Clear.”
+   */
+  overlaysVerified?: boolean;
   /** Lot area in square feet when resolved from GIS or mock facts. */
   lotSizeSqFt?: number | null;
   /** SF assessor block/lot when resolved from a local parcel index. */
@@ -41,15 +47,46 @@ export interface UnitCapacity {
 /** How the report was produced — lot GIS vs jurisdiction corpus fallback. */
 export type ZoningAnalysisScope = "lot_zoning" | "jurisdiction_context";
 
+/** THOW lot-candidacy dimensions (primary chrome). ADU is a separate pathway. */
+export interface ThowDimensions {
+  placement: EligibilityResult;
+  certification: EligibilityResult;
+  transport: EligibilityResult;
+  lotReadiness: EligibilityResult;
+}
+
 export interface ZoningReport {
   addressId: string;
   formattedAddress: string;
   zoning: string;
   /** Parcel overlay facts for Target Acquired summary (not eligibility). */
   overlays: Overlays;
-  adu: EligibilityResult;
-  sb9: EligibilityResult;
+  /**
+   * Mirrors parcel.overlaysVerified — false when overlay layers were not queried.
+   * UI must show Not verified, not Clear, when this is false.
+   */
+  overlaysVerified?: boolean;
+  /**
+   * THOW lot candidacy (Green/Yellow/Red). Same value as `thowOverall`.
+   * Connect CTAs and map chrome key on this field.
+   */
   overall: EligibilityStatus;
+  /** Explicit THOW overall — always equal to `overall`. */
+  thowOverall: EligibilityStatus;
+  /** Canned Green/Yellow/Red summary for THOW lot candidacy. */
+  thowSummary: CitedClaim;
+  /** Placement, certification, transport, and lot-readiness gates. */
+  dimensions: ThowDimensions;
+  /**
+   * Optional ADU pathway (THOW-as-ADU or foundation/modular conversion).
+   * Never alone sets `thowOverall` / `overall`.
+   */
+  adu: EligibilityResult;
+  /**
+   * SB 9 remains computed for regulations / “other pathways” but is not
+   * primary chrome and does not set THOW overall.
+   */
+  sb9?: EligibilityResult;
   /** SF assessor block/lot when known. */
   mapblklot?: string | null;
   /** Defaults to lot_zoning when omitted (legacy responses). */
@@ -60,4 +97,10 @@ export interface ZoningReport {
   lotSizeSqFt?: number | null;
   zoningDistrictName?: string | null;
   zoningSourceUrl?: string | null;
+  /** Lot GIS provider when analysisScope is lot_zoning (sf-datasf, open-data, regrid). */
+  zoningProvider?: string | null;
+  /** API coverage envelope: lot GIS vs jurisdiction fallback. */
+  coverage?: "lot" | "jurisdiction";
+  /** USPS region when known (CA / OR / WA published). */
+  region?: string | null;
 }

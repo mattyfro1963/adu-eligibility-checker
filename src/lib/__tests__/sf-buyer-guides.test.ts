@@ -151,7 +151,8 @@ describe("affiliate catalog (eligible monetization data)", () => {
         /commission|payout|%\s*fee/,
       );
     }
-    expect(AFFILIATE_FTC_DISCLOSURE.toLowerCase()).toMatch(/affiliate/);
+    expect(AFFILIATE_FTC_DISCLOSURE.toLowerCase()).toMatch(/commission/);
+    expect(AFFILIATE_FTC_DISCLOSURE.toLowerCase()).toMatch(/featured resources/);
   });
 
   it("does not put commission rates in visitor-facing catalog strings", () => {

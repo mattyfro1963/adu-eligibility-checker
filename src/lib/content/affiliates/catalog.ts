@@ -4,6 +4,8 @@
  * Do not put commission rates or payout amounts in visitor-facing strings.
  */
 
+import { AFFILIATE_DISCLOSURE } from "@/lib/content/affiliates";
+
 export type AffiliateCategory =
   "blueprints" | "offGridHardware" | "turnkeyKits";
 
@@ -22,8 +24,8 @@ export type ResolvedAffiliateOffer = AffiliateOffer & {
   href: string | null;
 };
 
-export const AFFILIATE_FTC_DISCLOSURE =
-  "Some links may be affiliate links. If you buy through them, doihave.space may earn a commission at no extra cost to you. We only list products relevant to eligible build-out next steps — this is not an endorsement of any particular builder for your lot.";
+/** @deprecated Use AFFILIATE_DISCLOSURE — kept as alias for catalog consumers. */
+export const AFFILIATE_FTC_DISCLOSURE = AFFILIATE_DISCLOSURE;
 
 export const AFFILIATE_CATEGORY_LABELS: Record<AffiliateCategory, string> = {
   blueprints: "Blueprints & plans",

@@ -20,7 +20,7 @@ function primaryReasonText(
   program: "adu" | "sb9",
 ): string | undefined {
   const result = program === "adu" ? report.adu : report.sb9;
-  return result.reasons[0]?.text;
+  return result?.reasons[0]?.text;
 }
 
 /**
@@ -34,8 +34,17 @@ export function buildStatutoryEvaluations(
   const { zoning, overlays } = parcel;
   const lotSizeSqFt = report.lotSizeSqFt ?? parcel.lotSizeSqFt ?? null;
   const lotVerified = report.analysisScope !== "jurisdiction_context";
+  const overlaysVerified =
+    report.overlaysVerified === true || parcel.overlaysVerified === true;
   const unverifiedNote =
     "Lot GIS did not run for this coordinate — this check is unverified, not a pass or fail.";
+  const overlayUnverifiedNote =
+    "Overlay layers were not verified for this parcel — this check is unverified, not a pass or fail.";
+
+  function overlayOutcome(passed: boolean): StatutoryOutcome {
+    if (!lotVerified || !overlaysVerified) return "unverified";
+    return passed ? "pass" : "fail";
+  }
 
   const sb9Evaluations: StatutoryEvaluation[] = [
     {
@@ -54,34 +63,43 @@ export function buildStatutoryEvaluations(
       ruleId: "SB9-R2",
       program: "sb9",
       title: "Historic District Exclusion",
-      outcome: outcome(!overlays.historicDistrict, lotVerified),
+      outcome: overlayOutcome(!overlays.historicDistrict),
       severity: "blocking",
       citation: SRC.gov65852_21.label,
-      description: lotVerified
-        ? "Parcel must not be located within an established historic district or designated landmark."
-        : unverifiedNote,
+      description:
+        !lotVerified
+          ? unverifiedNote
+          : !overlaysVerified
+            ? overlayUnverifiedNote
+            : "Parcel must not be located within an established historic district or designated landmark.",
     },
     {
       ruleId: "SB9-R3",
       program: "sb9",
       title: "Fire Hazard Severity Zone",
-      outcome: outcome(!(overlays.vhfhsz || overlays.fireHazard), lotVerified),
+      outcome: overlayOutcome(!(overlays.vhfhsz || overlays.fireHazard)),
       severity: "blocking",
       citation: SRC.hcdSb9.label,
-      description: lotVerified
-        ? "Properties in Very High Fire Hazard Severity Zones are excluded from the SB 9 two-unit and lot-split path under this checker."
-        : unverifiedNote,
+      description:
+        !lotVerified
+          ? unverifiedNote
+          : !overlaysVerified
+            ? overlayUnverifiedNote
+            : "Properties in Very High Fire Hazard Severity Zones are excluded from the SB 9 two-unit and lot-split path under this checker.",
     },
     {
       ruleId: "SB9-R4",
       program: "sb9",
       title: "Coastal Zone Permit Review",
-      outcome: outcome(!overlays.coastalZone, lotVerified),
+      outcome: overlayOutcome(!overlays.coastalZone),
       severity: "caution",
       citation: "Cal. Pub. Res. Code § 30000",
-      description: lotVerified
-        ? "Properties within the Coastal Overlay Zone require Coastal Commission authorization."
-        : unverifiedNote,
+      description:
+        !lotVerified
+          ? unverifiedNote
+          : !overlaysVerified
+            ? overlayUnverifiedNote
+            : "Properties within the Coastal Overlay Zone require Coastal Commission authorization.",
     },
     {
       ruleId: "SB9-R5",
@@ -119,34 +137,43 @@ export function buildStatutoryEvaluations(
       ruleId: "ADU-R2",
       program: "adu",
       title: "Fire Hazard Overlay",
-      outcome: outcome(!(overlays.vhfhsz || overlays.fireHazard), lotVerified),
+      outcome: overlayOutcome(!(overlays.vhfhsz || overlays.fireHazard)),
       severity: "caution",
       citation: SRC.gov66314.label,
-      description: lotVerified
-        ? "Fire hazard overlays trigger objective safety standards but do not deny ministerial ADU rights by themselves."
-        : unverifiedNote,
+      description:
+        !lotVerified
+          ? unverifiedNote
+          : !overlaysVerified
+            ? overlayUnverifiedNote
+            : "Fire hazard overlays trigger objective safety standards but do not deny ministerial ADU rights by themselves.",
     },
     {
       ruleId: "ADU-R3",
       program: "adu",
       title: "Historic District Review",
-      outcome: outcome(!overlays.historicDistrict, lotVerified),
+      outcome: overlayOutcome(!overlays.historicDistrict),
       severity: "caution",
       citation: SRC.gov66314.label,
-      description: lotVerified
-        ? "Historic districts require objective design standards; ADU rights remain under Chapter 13."
-        : unverifiedNote,
+      description:
+        !lotVerified
+          ? unverifiedNote
+          : !overlaysVerified
+            ? overlayUnverifiedNote
+            : "Historic districts require objective design standards; ADU rights remain under Chapter 13.",
     },
     {
       ruleId: "ADU-R4",
       program: "adu",
       title: "Coastal Zone Permit Review",
-      outcome: outcome(!overlays.coastalZone, lotVerified),
+      outcome: overlayOutcome(!overlays.coastalZone),
       severity: "caution",
       citation: SRC.hcdFactSheets2026.label,
-      description: lotVerified
-        ? "Coastal Development Permit or Coastal Act review may apply in addition to ministerial ADU processing."
-        : unverifiedNote,
+      description:
+        !lotVerified
+          ? unverifiedNote
+          : !overlaysVerified
+            ? overlayUnverifiedNote
+            : "Coastal Development Permit or Coastal Act review may apply in addition to ministerial ADU processing.",
     },
   ];
 

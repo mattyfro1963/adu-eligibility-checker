@@ -14,6 +14,8 @@ interface AddressSearchProps {
   error?: string | null;
   showSampleReports?: boolean;
   compact?: boolean;
+  /** Clears results and returns to idle search. */
+  onNewSearch?: () => void;
   children?: ReactNode;
 }
 
@@ -35,6 +37,7 @@ export function AddressSearch({
   error = null,
   showSampleReports = true,
   compact = false,
+  onNewSearch,
   children,
 }: AddressSearchProps) {
   const {
@@ -70,6 +73,7 @@ export function AddressSearch({
   }, [setIsOpen]);
 
   const hasError = Boolean(error);
+  const errorId = "address-search-error";
 
   return (
     <section
@@ -78,20 +82,25 @@ export function AddressSearch({
         compact ? "space-y-4" : "mx-auto w-full max-w-3xl space-y-10",
       )}
     >
-      {!compact ? (
+      {compact ? (
+        <h1 className="sr-only">
+          Tiny Home on Wheels Lot Eligibility Checker — CA, OR, WA
+        </h1>
+      ) : (
         <header className="space-y-5 text-center">
-          <p className="font-label text-[11px] uppercase tracking-[0.14em] text-brand">
-            State of California · ADU &amp; SB 9
+          <p className="font-label text-[11px] uppercase tracking-[0.14em] text-luxury-taupe">
+            California · Oregon · Washington
           </p>
-          <h1 className="font-display text-[2rem] leading-[1.15] tracking-display text-balance text-foreground sm:text-4xl">
-            Can this California lot take an ADU or SB 9 split?
+          <h1 className="font-display text-[2rem] leading-[1.15] tracking-display text-balance text-text-luxury sm:text-4xl">
+            Tiny Home on Wheels Lot Eligibility Checker
           </h1>
-          <p className="mx-auto max-w-xl text-[15px] leading-relaxed text-muted-foreground sm:text-base">
-            Enter an address for engine eligibility, county requirements, and
-            tiny-home guidance — then confirm locally.
+          <p className="mx-auto max-w-xl text-[15px] leading-relaxed text-text-tertiary sm:text-base">
+            Screen a lot for certified THOW, park-model RV, or similar wheeled
+            placement — zoning path, certification, transport, and utilities.
+            ADU is an optional pathway, not automatic.
           </p>
         </header>
-      ) : null}
+      )}
 
       <div
         ref={containerRef}
@@ -100,6 +109,17 @@ export function AddressSearch({
         <label htmlFor="address-search" className="sr-only">
           Search property address
         </label>
+        {compact && onNewSearch ? (
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={onNewSearch}
+              className="inline-flex min-h-[44px] items-center text-xs font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+            >
+              Search another address
+            </button>
+          </div>
+        ) : null}
         <form
           id="search-form"
           onSubmit={(e) => {
@@ -127,17 +147,17 @@ export function AddressSearch({
                   setIsOpen(false);
                 }
               }}
-              placeholder="Enter a California address..."
+              placeholder="Enter a CA, OR, or WA address..."
               className={cn(
                 "h-full w-full bg-transparent pr-14 pl-5 text-body text-foreground placeholder:text-muted-foreground focus:outline-none",
                 compact ? "text-sm" : "text-base",
               )}
-              aria-label="Property address search"
               aria-autocomplete="list"
               aria-expanded={showList}
               aria-controls={listboxId}
               aria-haspopup="listbox"
               aria-invalid={hasError}
+              aria-describedby={hasError ? errorId : undefined}
               autoComplete="off"
               disabled={isResolving}
             />
@@ -169,7 +189,11 @@ export function AddressSearch({
         ) : null}
 
         {hasError ? (
-          <p role="alert" className="text-left text-caption text-rose-600">
+          <p
+            id={errorId}
+            role="alert"
+            className="text-left text-caption text-rose-600"
+          >
             {error}
           </p>
         ) : null}
