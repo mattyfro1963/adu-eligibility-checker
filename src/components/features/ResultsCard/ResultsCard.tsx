@@ -35,13 +35,17 @@ import { Button } from "@/components/ui/button";
 import { composeResultsBriefing } from "@/lib/regulations/compose-briefing";
 import { formatParcelAddress } from "@/lib/address/format-parcel-address";
 import {
+  isUnsupportedStateReport,
+  shouldShowResultsConnectCtas,
+} from "@/lib/results/coverage-chrome";
+import { overlayFactLabel } from "@/lib/results/overlay-facts";
+import {
   buildKeyFindings,
   providerDisplayName,
   type KeyFindingId,
 } from "@/lib/results/key-findings";
-import { buildStatutoryEvaluations } from "@/lib/rules/statutory-evaluations";
 import type { GeocodeResult } from "@/lib/types/gis";
-import type { Parcel, ZoningReport } from "@/lib/types/zoning";
+import type { EligibilityStatus, ZoningReport } from "@/lib/types/zoning";
 
 const KEY_FINDING_ICONS: Record<KeyFindingId, typeof Home> = {
   zoning: Home,
@@ -57,6 +61,9 @@ const KEY_FINDING_ICONS: Record<KeyFindingId, typeof Home> = {
   adu: Home,
   sb9: Split,
 };
+
+const CONNECT_CTA_CLASS =
+  "min-h-[44px] w-full bg-action-primary text-action-primary-fg hover:bg-action-primary/90";
 
 function formatJurisdiction(geocode: GeocodeResult | null): string | null {
   if (!geocode) return null;
@@ -90,6 +97,7 @@ interface ResultsCardProps {
   onRetry?: () => void;
   /** Inline “reading the lot” slot while zoning resolves. */
   reading?: ReactNode;
+  onConnectIntent?: () => void;
 }
 
 function OverlayRow({
@@ -106,11 +114,7 @@ function OverlayRow({
   /** When lot GIS did not run — do not imply overlays were verified clear. */
   undetermined?: boolean;
 }) {
-  const statusLabel = detected
-    ? "Detected"
-    : undetermined
-      ? "Not verified"
-      : "Clear";
+  const statusLabel = overlayFactLabel(detected, undetermined);
   return (
     <div className="flex items-center justify-between py-3.5">
       <span className="flex items-center gap-2 text-sm font-medium text-luxury-taupe">
@@ -131,6 +135,31 @@ function OverlayRow({
   );
 }
 
+function ConnectControl({
+  overall,
+  href,
+  onIntent,
+}: {
+  overall: EligibilityStatus;
+  href: string;
+  onIntent?: () => void;
+}) {
+  const label =
+    overall === "eligible"
+      ? "Outfit the lot"
+      : overall === "warning"
+        ? "Request specialist review"
+        : "Request compliance review";
+  return (
+    <Button asChild className={CONNECT_CTA_CLASS}>
+      <Link href={href} onClick={onIntent}>
+        {label}
+        <ArrowRight size={16} aria-hidden="true" />
+      </Link>
+    </Button>
+  );
+}
+
 /**
  * Lot readiness report: overall Green/Yellow/Red candidacy, dimension panels,
  * optional ADU pathway. Statute copy from lib/regulations + rules.
@@ -143,6 +172,7 @@ export function ResultsCard({
   connectHref = "#connect",
   onRetry,
   reading = null,
+  onConnectIntent,
 }: ResultsCardProps) {
   const lat = geocodeResult?.lat ?? null;
   const lng = geocodeResult?.lng ?? null;
@@ -156,6 +186,7 @@ export function ResultsCard({
   const jurisdictionLabel = formatJurisdiction(geocodeResult);
   const providerLabel = report?.zoningProvider?.trim() || null;
   const overall = report?.thowOverall ?? report?.overall ?? null;
+  const unsupported = report ? isUnsupportedStateReport(report) : false;
 
   const briefing = useMemo(() => {
     if (!geocodeResult) return null;
@@ -166,21 +197,7 @@ export function ResultsCard({
     });
   }, [geocodeResult, report, zoningError]);
 
-  const statutoryEvaluations = useMemo(() => {
-    if (!report || !geocodeResult) return [];
-    const parcel: Parcel = {
-      addressId: geocodeResult.addressId,
-      formattedAddress: report.formattedAddress,
-      lat: geocodeResult.lat,
-      lng: geocodeResult.lng,
-      zoning: report.zoning,
-      overlays: report.overlays,
-      overlaysVerified: report.overlaysVerified === true,
-      lotSizeSqFt: report.lotSizeSqFt ?? null,
-      mapblklot: report.mapblklot ?? null,
-    };
-    return buildStatutoryEvaluations(parcel, report);
-  }, [geocodeResult, report]);
+  const statutoryEvaluations = report?.statutoryEvaluations ?? [];
 
   const mapCalloutSublabel = useMemo(() => {
     if (mapblklot) return `APN / mapblklot ${mapblklot}`;
@@ -196,49 +213,33 @@ export function ResultsCard({
   const lotReadinessOpen = report?.dimensions.lotReadiness.status === "warning";
   const showReading = Boolean(reading) && !report && !zoningError;
   const showOutcome = Boolean(report) && !showReading;
+  const showConnectCtas =
+    showOutcome &&
+    Boolean(geocodeResult) &&
+    Boolean(overall) &&
+    shouldShowResultsConnectCtas(report);
 
   return (
     <div className="space-y-8 sm:space-y-10">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:items-stretch lg:gap-8">
-        <div
-          className="order-1 flex flex-col overflow-hidden rounded-xl border border-luxury-taupe/30 bg-luxury-charcoal lg:order-2 lg:col-span-3 lg:h-[min(640px,calc(100dvh-13rem))]"
-          role="region"
-          aria-label={`Map of ${address}. Site reading legend describes assessor parcel boundary and zoning district code.`}
-        >
-          <AddressMapPreview
-            lat={lat}
-            lng={lng}
-            status={overall}
-            label={address}
-            sublabel={mapCalloutSublabel}
-            lotSizeSqFt={report?.lotSizeSqFt ?? null}
-            parcelBoundary={report?.parcelBoundary ?? null}
-            zoning={isJurisdictionContext ? null : (report?.zoning ?? null)}
-            analysisScope={report?.analysisScope ?? null}
-            showSiteLayers
-            className="min-h-[280px] flex-1 rounded-none border-0 bg-luxury-charcoal sm:min-h-[360px] lg:min-h-0"
-          />
-          <MapSiteLegend
-            zoningLabel={
-              isJurisdictionContext
-                ? "Unverified"
-                : report?.zoning?.trim() || "Unverified"
-            }
-            lotVerified={
-              !isJurisdictionContext &&
-              report?.lotSizeSqFt != null &&
-              report.lotSizeSqFt > 0
-            }
-            boundaryVerified={
-              !isJurisdictionContext && report?.parcelBoundary != null
-            }
-            analysisVerified={!isJurisdictionContext && Boolean(report)}
-            lotSizeSqFt={report?.lotSizeSqFt ?? null}
-            mapInteractive
-          />
-        </div>
-
-        <div className="relative order-2 flex flex-col overflow-hidden rounded-xl border border-luxury-taupe/30 bg-card lg:order-1 lg:col-span-2 lg:max-h-[min(640px,calc(100dvh-13rem))]">
+        <div className="relative order-1 flex flex-col rounded-[20px] border border-slate-200 bg-card shadow-elevated lg:col-span-2 lg:max-h-[min(640px,calc(100dvh-13rem))]">
+          {showConnectCtas && overall ? (
+            <div className="sticky top-[3.75rem] z-10 space-y-3 border-b border-luxury-taupe/22 bg-card/95 px-6 py-4 backdrop-blur-sm sm:px-8">
+              <EligibilityBadge
+                status={overall}
+                size="lg"
+                className="badge-ease"
+              />
+              <p className="text-xs leading-relaxed text-luxury-taupe">
+                Informational screen — not a permit or entitlement.
+              </p>
+              <ConnectControl
+                overall={overall}
+                href={connectHref}
+                onIntent={onConnectIntent}
+              />
+            </div>
+          ) : null}
           <div className="flex-1 space-y-6 overflow-y-auto p-6 sm:p-8">
             <div className="min-w-0">
               <p className="font-label text-[11px] font-bold tracking-[0.18em] text-luxury-taupe">
@@ -282,14 +283,6 @@ export function ResultsCard({
               </div>
             ) : null}
 
-            {showOutcome && overall ? (
-              <EligibilityBadge
-                status={overall}
-                size="lg"
-                className="badge-ease"
-              />
-            ) : null}
-
             {showOutcome && report?.thowSummary ? (
               <>
                 <hr className="border-luxury-taupe/22" />
@@ -299,7 +292,12 @@ export function ResultsCard({
               </>
             ) : null}
 
-            {showOutcome && isJurisdictionContext ? (
+            {showOutcome && unsupported ? (
+              <p className="text-xs leading-relaxed text-luxury-taupe">
+                Coverage is not published for this state. Confirm local zoning
+                and occupancy before buying land or delivering a unit.
+              </p>
+            ) : showOutcome && isJurisdictionContext ? (
               <p className="text-xs leading-relaxed text-luxury-taupe">
                 Lot zoning was not verified for this coordinate. Candidacy
                 reflects published county/city guidance plus state profiles —
@@ -315,7 +313,7 @@ export function ResultsCard({
               </p>
             ) : null}
 
-            {showOutcome && report ? (
+            {showOutcome && report && !unsupported ? (
               <div>
                 <RuleDetail
                   result={report.dimensions.placement}
@@ -349,7 +347,7 @@ export function ResultsCard({
               </div>
             ) : null}
 
-            {showOutcome ? (
+            {showOutcome && !unsupported ? (
               <div className="space-y-4">
                 <p className="text-[13px] leading-relaxed text-luxury-wood">
                   ADU is an optional pathway, not automatic.
@@ -357,48 +355,47 @@ export function ResultsCard({
                 <p className="font-label text-[11px] tracking-[0.22em] text-luxury-taupe">
                   CA · OR · WA
                 </p>
-                {geocodeResult && overall ? (
-                  <div className="pt-1">
-                    {overall === "eligible" ? (
-                      <Button
-                        asChild
-                        className="min-h-[44px] w-full bg-action-primary text-action-primary-fg hover:bg-action-primary/90"
-                      >
-                        <Link href={connectHref}>
-                          Outfit the lot
-                          <ArrowRight size={16} aria-hidden="true" />
-                        </Link>
-                      </Button>
-                    ) : null}
-                    {overall === "warning" ? (
-                      <Button
-                        asChild
-                        variant="warning"
-                        className="min-h-[44px] w-full"
-                      >
-                        <Link href={connectHref}>
-                          Request specialist review
-                          <ArrowRight size={16} aria-hidden="true" />
-                        </Link>
-                      </Button>
-                    ) : null}
-                    {overall === "restricted" ? (
-                      <Button
-                        asChild
-                        variant="restricted"
-                        className="min-h-[44px] w-full"
-                      >
-                        <Link href={connectHref}>
-                          Request compliance review
-                          <ArrowRight size={16} aria-hidden="true" />
-                        </Link>
-                      </Button>
-                    ) : null}
-                  </div>
-                ) : null}
               </div>
             ) : null}
           </div>
+        </div>
+
+        <div
+          className="order-2 flex min-h-[280px] flex-col overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-elevated lg:col-span-3 lg:h-[min(640px,calc(100dvh-13rem))]"
+          role="region"
+          aria-label={`Map of ${address}. Site reading legend describes assessor parcel boundary and zoning district code.`}
+        >
+          <AddressMapPreview
+            lat={lat}
+            lng={lng}
+            status={overall}
+            label={address}
+            sublabel={mapCalloutSublabel}
+            lotSizeSqFt={report?.lotSizeSqFt ?? null}
+            parcelBoundary={report?.parcelBoundary ?? null}
+            zoning={isJurisdictionContext ? null : (report?.zoning ?? null)}
+            analysisScope={report?.analysisScope ?? null}
+            showSiteLayers={showOutcome}
+            className="min-h-[280px] flex-1 rounded-none border-0 bg-slate-900 sm:min-h-[360px] lg:min-h-0"
+          />
+          <MapSiteLegend
+            zoningLabel={
+              isJurisdictionContext
+                ? "Unverified"
+                : report?.zoning?.trim() || "Unverified"
+            }
+            lotVerified={
+              !isJurisdictionContext &&
+              report?.lotSizeSqFt != null &&
+              report.lotSizeSqFt > 0
+            }
+            boundaryVerified={
+              !isJurisdictionContext && report?.parcelBoundary != null
+            }
+            analysisVerified={!isJurisdictionContext && Boolean(report)}
+            lotSizeSqFt={report?.lotSizeSqFt ?? null}
+            mapInteractive
+          />
         </div>
       </div>
 
@@ -507,41 +504,59 @@ export function ResultsCard({
                   title="SB 9 Lot Split / Duplex"
                   headingLevel={4}
                 />
-              ) : null}
+              ) : (
+                <p className="px-1 pb-4 text-xs leading-relaxed text-muted-foreground">
+                  SB 9 unit-path scoring was not attached to this report —
+                  confirm Gov. Code §§ 65852.21 and 66411.7 locally. SB 9 does
+                  not set THOW overall.
+                </p>
+              )}
             </div>
           </ExpandableSection>
 
-          {statutoryEvaluations.length > 0 ? (
-            <ExpandableSection
-              title="Statutory compliance checklist"
-              description={
-                isJurisdictionContext || overlaysUnchecked
-                  ? "Statute checks — verified where lot facts ran; otherwise marked unverified"
-                  : "Lot facts checked against cited code sections where data was available"
-              }
-              defaultOpen={false}
-              variant="muted"
-              className="border-border-luxury"
-              contentClassName="p-0 sm:p-0"
-              headingLevel={3}
-            >
-              <StatutoryComplianceChecklist
-                report={report}
-                evaluations={statutoryEvaluations}
-                program="adu"
-                embedded
-              />
-            </ExpandableSection>
-          ) : null}
+          <ExpandableSection
+            title="Statutory compliance checklist"
+            description={
+              isJurisdictionContext || overlaysUnchecked
+                ? "ADU and SB 9 unit checks — all rows shown; unverified where lot facts did not run"
+                : "ADU and SB 9 unit checks — every cited section is listed, including passes"
+            }
+            defaultOpen={false}
+            variant="muted"
+            className="border-border-luxury"
+            contentClassName="p-0 sm:p-0"
+            headingLevel={3}
+          >
+            <StatutoryComplianceChecklist
+              report={report}
+              evaluations={statutoryEvaluations}
+              program="all"
+              embedded
+            />
+          </ExpandableSection>
           <RegulationsAuthorByline className="text-xs text-muted-foreground" />
         </>
       ) : null}
 
       {briefing && !isLoading && showOutcome ? (
         <>
-          <ResultsBriefingSection summary={briefing.summary} />
+          <ExpandableSection
+            title="Parcel briefing"
+            description="What the engine found for this parcel, and what to confirm locally"
+            defaultOpen={false}
+            headingLevel={3}
+          >
+            <ResultsBriefingSection summary={briefing.summary} />
+          </ExpandableSection>
           {briefing.sizeStructure ? (
-            <TinyHomeSizeStructure briefing={briefing.sizeStructure} />
+            <ExpandableSection
+              title="Size and structure limits"
+              description="THOW / park-trailer range first — ADU is an optional pathway"
+              defaultOpen={false}
+              headingLevel={3}
+            >
+              <TinyHomeSizeStructure briefing={briefing.sizeStructure} />
+            </ExpandableSection>
           ) : null}
           <ExpandableSection
             title="Requirements & application steps"
@@ -586,6 +601,16 @@ export function ResultsCard({
         >
           <SearchReceiptCard receipt={briefing.receipt} embedded />
         </ExpandableSection>
+      ) : null}
+
+      {showConnectCtas && overall ? (
+        <div className="pt-2">
+          <ConnectControl
+            overall={overall}
+            href={connectHref}
+            onIntent={onConnectIntent}
+          />
+        </div>
       ) : null}
     </div>
   );

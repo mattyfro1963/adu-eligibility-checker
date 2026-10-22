@@ -45,31 +45,24 @@ function zonePaintColor(
 function paintExistingSiteLayers(
   map: maplibregl.Map,
   paint: SiteLayerPaint,
-  color: string,
+  _color: string,
 ) {
-  map.setPaintProperty("site-zoning-fill", "fill-color", color);
-  map.setPaintProperty(
-    "site-zoning-fill",
-    "fill-opacity",
-    paint.zoneFillOpacity,
-  );
-  if (map.getLayer("site-zoning-halo")) {
-    map.setPaintProperty("site-zoning-halo", "line-color", paint.zoneHaloColor);
-    map.setPaintProperty("site-zoning-halo", "line-width", paint.zoneHaloWidth);
-    map.setPaintProperty("site-zoning-halo", "line-dasharray", paint.zoneDash);
+  void _color;
+  if (!map.getLayer("site-lot-fill")) {
+    return;
   }
-  map.setPaintProperty("site-zoning-line", "line-color", paint.zoneLineColor);
-  map.setPaintProperty("site-zoning-line", "line-width", paint.zoneLineWidth);
-  map.setPaintProperty("site-zoning-line", "line-dasharray", paint.zoneDash);
   map.setPaintProperty("site-lot-fill", "fill-color", paint.lotFillColor);
   map.setPaintProperty("site-lot-fill", "fill-opacity", paint.lotFillOpacity);
   if (map.getLayer("site-lot-halo")) {
     map.setPaintProperty("site-lot-halo", "line-color", paint.lotHaloColor);
     map.setPaintProperty("site-lot-halo", "line-width", paint.lotHaloWidth);
+    map.setPaintProperty("site-lot-halo", "line-blur", paint.lotHaloBlur);
+    map.setPaintProperty("site-lot-halo", "line-opacity", paint.lotHaloOpacity);
     map.setPaintProperty("site-lot-halo", "line-dasharray", paint.lotDash);
   }
   map.setPaintProperty("site-lot-line", "line-color", paint.lotLineColor);
   map.setPaintProperty("site-lot-line", "line-width", paint.lotLineWidth);
+  map.setPaintProperty("site-lot-line", "line-blur", paint.lotLineBlur);
   map.setPaintProperty("site-lot-line", "line-dasharray", paint.lotDash);
 }
 
@@ -85,57 +78,20 @@ function applySiteLayers(
   boundaryVerified: boolean,
 ) {
   const paint = siteLayerPaint(tokens, boundaryVerified);
-  const zoningSource = map.getSource("site-zoning") as
-    { setData: (data: ApproximateSiteGeoJSON["zoning"]) => void } | undefined;
   const lotSource = map.getSource("site-lot") as
     { setData: (data: ApproximateSiteGeoJSON["lot"]) => void } | undefined;
 
-  if (zoningSource) {
-    zoningSource.setData(site.zoning);
-    lotSource?.setData(site.lot);
+  if (lotSource) {
+    lotSource.setData(site.lot);
     paintExistingSiteLayers(map, paint, color);
     return;
   }
 
-  map.addSource("site-zoning", {
-    type: "geojson",
-    data: site.zoning,
-  });
   map.addSource("site-lot", {
     type: "geojson",
     data: site.lot,
   });
 
-  map.addLayer({
-    id: "site-zoning-fill",
-    type: "fill",
-    source: "site-zoning",
-    paint: {
-      "fill-color": color,
-      "fill-opacity": paint.zoneFillOpacity,
-    },
-  });
-  map.addLayer({
-    id: "site-zoning-halo",
-    type: "line",
-    source: "site-zoning",
-    paint: {
-      "line-color": paint.zoneHaloColor,
-      "line-width": paint.zoneHaloWidth,
-      "line-opacity": 0.85,
-      "line-dasharray": paint.zoneDash,
-    },
-  });
-  map.addLayer({
-    id: "site-zoning-line",
-    type: "line",
-    source: "site-zoning",
-    paint: {
-      "line-color": paint.zoneLineColor,
-      "line-width": paint.zoneLineWidth,
-      "line-dasharray": paint.zoneDash,
-    },
-  });
   map.addLayer({
     id: "site-lot-fill",
     type: "fill",
@@ -152,7 +108,8 @@ function applySiteLayers(
     paint: {
       "line-color": paint.lotHaloColor,
       "line-width": paint.lotHaloWidth,
-      "line-opacity": 0.9,
+      "line-blur": paint.lotHaloBlur,
+      "line-opacity": paint.lotHaloOpacity,
       "line-dasharray": paint.lotDash,
     },
   });
@@ -163,9 +120,31 @@ function applySiteLayers(
     paint: {
       "line-color": paint.lotLineColor,
       "line-width": paint.lotLineWidth,
+      "line-blur": paint.lotLineBlur,
       "line-dasharray": paint.lotDash,
     },
   });
+}
+
+const STATUS_CALLOUT: Record<EligibilityStatus, string> = {
+  eligible: "Eligible",
+  warning: "Warning",
+  restricted: "Restricted",
+};
+
+function lotReadingCallout(
+  status: EligibilityStatus | null,
+  zoning: string | null,
+): string {
+  const district = zoning?.trim();
+  if (!status) {
+    return "THOW lot reading";
+  }
+  const vocab = STATUS_CALLOUT[status];
+  if (district && district.toLowerCase() !== "unverified") {
+    return `${vocab} · ${district}`;
+  }
+  return vocab;
 }
 
 function renderFeaturePin(
@@ -173,11 +152,13 @@ function renderFeaturePin(
   status: EligibilityStatus | null,
   label: string | null,
   interactive: boolean,
+  callout: string,
 ) {
   root.render(
     <FeaturePin
       status={status ?? undefined}
       label={label ?? undefined}
+      callout={callout}
       interactive={interactive && Boolean(label?.trim())}
     />,
   );
@@ -195,6 +176,7 @@ type InteractiveSiteMapProps = {
   interactive?: boolean;
   /** Draw lot + zoning GeoJSON. Off for interstitial backdrops. */
   showSiteLayers?: boolean;
+  zoom?: number;
 };
 
 export function InteractiveSiteMap({
@@ -208,6 +190,7 @@ export function InteractiveSiteMap({
   analysisScope = null,
   interactive = true,
   showSiteLayers = true,
+  zoom = PARCEL_MAP_ZOOM,
 }: InteractiveSiteMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -245,7 +228,7 @@ export function InteractiveSiteMap({
       container,
       style: BASEMAP_STYLE,
       center: [lng, lat],
-      zoom: PARCEL_MAP_ZOOM,
+      zoom,
       minZoom: MIN_ZOOM,
       maxZoom: MAX_ZOOM,
       interactive,
@@ -260,7 +243,13 @@ export function InteractiveSiteMap({
     const markerNode = document.createElement("div");
     const root = createRoot(markerNode);
     markerRootRef.current = root;
-    renderFeaturePin(root, status, label, interactive);
+    renderFeaturePin(
+      root,
+      status,
+      label,
+      interactive,
+      lotReadingCallout(status, zoning),
+    );
     const marker = new maplibregl.Marker({
       element: markerNode,
       anchor: "bottom",
@@ -305,15 +294,21 @@ export function InteractiveSiteMap({
     // Pin copy and site layers update in sibling effects so status/lot
     // changes do not tear down the GL map.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lat, lng, interactive, showSiteLayers]);
+  }, [lat, lng, interactive, showSiteLayers, zoom]);
 
   useEffect(() => {
     const root = markerRootRef.current;
     if (!root) {
       return;
     }
-    renderFeaturePin(root, status, label, interactive);
-  }, [status, label, interactive]);
+    renderFeaturePin(
+      root,
+      status,
+      label,
+      interactive,
+      lotReadingCallout(status, zoning),
+    );
+  }, [status, label, interactive, zoning]);
 
   useEffect(() => {
     const map = mapRef.current;

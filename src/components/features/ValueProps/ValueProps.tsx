@@ -1,41 +1,41 @@
-import { House, Map, Ruler } from "lucide-react";
+import { BookOpen, ClipboardCheck, House } from "lucide-react";
 
 const ITEMS = [
   {
     icon: House,
-    title: "Ease of use",
-    body: "Simple address input with fast results.",
+    title: "Placement path",
+    body: "Local THOW / park-model path.",
   },
   {
-    icon: Map,
-    title: "Instant mapping",
-    body: "GIS parcel context for your lot.",
+    icon: BookOpen,
+    title: "GIS mapping",
+    body: "Instant GIS of your parcel.",
   },
   {
-    icon: Ruler,
-    title: "THOW lot fit",
-    body: "CAMBRIA 1 / CAMBRIA 2 placement, cert, and transport gates.",
+    icon: ClipboardCheck,
+    title: "Lot readiness",
+    body: "Utilities and occupancy reading.",
   },
 ] as const;
 
 export function ValueProps() {
   return (
-    <ul className="rule-grid grid grid-cols-1 sm:grid-cols-3">
+    <ul className="grid grid-cols-1 gap-5 pt-6 sm:grid-cols-3 sm:gap-3">
       {ITEMS.map((item) => {
         const Icon = item.icon;
         return (
-          <li
-            key={item.title}
-            className="flex flex-col items-center gap-3 px-4 py-4 text-center sm:py-5"
-          >
-            <span className="flex size-10 items-center justify-center rounded-thumb border border-border text-foreground">
-              <Icon size={16} strokeWidth={1.5} aria-hidden="true" />
-            </span>
+          <li key={item.title} className="flex flex-col items-start gap-2">
+            <Icon
+              size={18}
+              strokeWidth={1.6}
+              className="text-slate-500"
+              aria-hidden="true"
+            />
             <div className="min-w-0 space-y-1">
-              <p className="font-label text-caption text-muted-foreground">
+              <p className="text-[13px] font-semibold tracking-tight text-slate-900">
                 {item.title}
               </p>
-              <p className="text-[13px] leading-snug text-muted-foreground">
+              <p className="text-[12px] leading-snug text-slate-500">
                 {item.body}
               </p>
             </div>

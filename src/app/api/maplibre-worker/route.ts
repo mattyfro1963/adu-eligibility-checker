@@ -3,7 +3,8 @@ import path from "node:path";
 import { NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
 
-export const dynamic = "force-static";
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const log = logger.child({ route: "maplibre-worker" });
 

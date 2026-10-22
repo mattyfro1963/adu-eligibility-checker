@@ -66,12 +66,11 @@ export function buildStatutoryEvaluations(
       outcome: overlayOutcome(!overlays.historicDistrict),
       severity: "blocking",
       citation: SRC.gov65852_21.label,
-      description:
-        !lotVerified
-          ? unverifiedNote
-          : !overlaysVerified
-            ? overlayUnverifiedNote
-            : "Parcel must not be located within an established historic district or designated landmark.",
+      description: !lotVerified
+        ? unverifiedNote
+        : !overlaysVerified
+          ? overlayUnverifiedNote
+          : "Parcel must not be located within an established historic district or designated landmark.",
     },
     {
       ruleId: "SB9-R3",
@@ -80,12 +79,11 @@ export function buildStatutoryEvaluations(
       outcome: overlayOutcome(!(overlays.vhfhsz || overlays.fireHazard)),
       severity: "blocking",
       citation: SRC.hcdSb9.label,
-      description:
-        !lotVerified
-          ? unverifiedNote
-          : !overlaysVerified
-            ? overlayUnverifiedNote
-            : "Properties in Very High Fire Hazard Severity Zones are excluded from the SB 9 two-unit and lot-split path under this checker.",
+      description: !lotVerified
+        ? unverifiedNote
+        : !overlaysVerified
+          ? overlayUnverifiedNote
+          : "Properties in Very High Fire Hazard Severity Zones are excluded from the SB 9 two-unit and lot-split path under this checker.",
     },
     {
       ruleId: "SB9-R4",
@@ -94,12 +92,11 @@ export function buildStatutoryEvaluations(
       outcome: overlayOutcome(!overlays.coastalZone),
       severity: "caution",
       citation: "Cal. Pub. Res. Code § 30000",
-      description:
-        !lotVerified
-          ? unverifiedNote
-          : !overlaysVerified
-            ? overlayUnverifiedNote
-            : "Properties within the Coastal Overlay Zone require Coastal Commission authorization.",
+      description: !lotVerified
+        ? unverifiedNote
+        : !overlaysVerified
+          ? overlayUnverifiedNote
+          : "Properties within the Coastal Overlay Zone require Coastal Commission authorization.",
     },
     {
       ruleId: "SB9-R5",
@@ -140,12 +137,11 @@ export function buildStatutoryEvaluations(
       outcome: overlayOutcome(!(overlays.vhfhsz || overlays.fireHazard)),
       severity: "caution",
       citation: SRC.gov66314.label,
-      description:
-        !lotVerified
-          ? unverifiedNote
-          : !overlaysVerified
-            ? overlayUnverifiedNote
-            : "Fire hazard overlays trigger objective safety standards but do not deny ministerial ADU rights by themselves.",
+      description: !lotVerified
+        ? unverifiedNote
+        : !overlaysVerified
+          ? overlayUnverifiedNote
+          : "Fire hazard overlays trigger objective safety standards but do not deny ministerial ADU rights by themselves.",
     },
     {
       ruleId: "ADU-R3",
@@ -154,12 +150,11 @@ export function buildStatutoryEvaluations(
       outcome: overlayOutcome(!overlays.historicDistrict),
       severity: "caution",
       citation: SRC.gov66314.label,
-      description:
-        !lotVerified
-          ? unverifiedNote
-          : !overlaysVerified
-            ? overlayUnverifiedNote
-            : "Historic districts require objective design standards; ADU rights remain under Chapter 13.",
+      description: !lotVerified
+        ? unverifiedNote
+        : !overlaysVerified
+          ? overlayUnverifiedNote
+          : "Historic districts require objective design standards; ADU rights remain under Chapter 13.",
     },
     {
       ruleId: "ADU-R4",
@@ -168,12 +163,11 @@ export function buildStatutoryEvaluations(
       outcome: overlayOutcome(!overlays.coastalZone),
       severity: "caution",
       citation: SRC.hcdFactSheets2026.label,
-      description:
-        !lotVerified
-          ? unverifiedNote
-          : !overlaysVerified
-            ? overlayUnverifiedNote
-            : "Coastal Development Permit or Coastal Act review may apply in addition to ministerial ADU processing.",
+      description: !lotVerified
+        ? unverifiedNote
+        : !overlaysVerified
+          ? overlayUnverifiedNote
+          : "Coastal Development Permit or Coastal Act review may apply in addition to ministerial ADU processing.",
     },
   ];
 
@@ -186,4 +180,23 @@ export function filterStatutoryEvaluations(
 ): StatutoryEvaluation[] {
   if (program === "all") return evaluations;
   return evaluations.filter((item) => item.program === program);
+}
+
+/** Attach checklist projection at the zoning boundary — not in the client. */
+export function statutoryEvaluationsForReport(
+  report: ZoningReport,
+  coords: { addressId: string; lat: number; lng: number },
+): StatutoryEvaluation[] {
+  const parcel: Parcel = {
+    addressId: coords.addressId,
+    formattedAddress: report.formattedAddress,
+    lat: coords.lat,
+    lng: coords.lng,
+    zoning: report.zoning,
+    overlays: report.overlays,
+    overlaysVerified: report.overlaysVerified === true,
+    lotSizeSqFt: report.lotSizeSqFt ?? null,
+    mapblklot: report.mapblklot ?? null,
+  };
+  return buildStatutoryEvaluations(parcel, report);
 }

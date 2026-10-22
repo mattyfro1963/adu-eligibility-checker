@@ -12,6 +12,46 @@ type StatutoryComplianceChecklistProps = {
   embedded?: boolean;
 };
 
+function RuleGroup({
+  heading,
+  rules,
+}: {
+  heading?: string;
+  rules: StatutoryEvaluation[];
+}) {
+  if (rules.length === 0) return null;
+  return (
+    <div>
+      {heading ? (
+        <p className="font-label mb-1 text-[11px] font-bold tracking-[0.18em] text-luxury-taupe">
+          {heading}
+        </p>
+      ) : null}
+      <ul className="divide-y divide-border">
+        {rules.map((rule) => (
+          <li key={rule.ruleId} className="flex items-start gap-3 py-3">
+            <RuleIcon evaluation={rule} />
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="text-sm font-medium text-foreground">
+                  {rule.title}
+                </span>
+                <span className="flex items-center gap-1 font-mono text-xs text-muted-foreground">
+                  <FileText size={12} aria-hidden="true" />
+                  {rule.citation}
+                </span>
+              </div>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {rule.description}
+              </p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function RuleIcon({ evaluation }: { evaluation: StatutoryEvaluation }) {
   if (evaluation.outcome === "unverified") {
     return (
@@ -98,7 +138,7 @@ export function StatutoryComplianceChecklist({
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-6">
         {embedded ? null : (
           <h3
             id="statutory-checklist-heading"
@@ -107,27 +147,20 @@ export function StatutoryComplianceChecklist({
             Statutory Compliance Checklist
           </h3>
         )}
-        <ul className="divide-y divide-border">
-          {visible.map((rule) => (
-            <li key={rule.ruleId} className="flex items-start gap-3 py-3">
-              <RuleIcon evaluation={rule} />
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-sm font-medium text-foreground">
-                    {rule.title}
-                  </span>
-                  <span className="flex items-center gap-1 font-mono text-xs text-muted-foreground">
-                    <FileText size={12} aria-hidden="true" />
-                    {rule.citation}
-                  </span>
-                </div>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  {rule.description}
-                </p>
-              </div>
-            </li>
-          ))}
-        </ul>
+        {program === "all" ? (
+          <>
+            <RuleGroup
+              heading="SB 9 unit path"
+              rules={visible.filter((rule) => rule.program === "sb9")}
+            />
+            <RuleGroup
+              heading="ADU pathway"
+              rules={visible.filter((rule) => rule.program === "adu")}
+            />
+          </>
+        ) : (
+          <RuleGroup rules={visible} />
+        )}
       </div>
     </>
   );

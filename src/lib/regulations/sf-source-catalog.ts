@@ -90,6 +90,11 @@ export const SF_SOURCE_CATALOG: readonly SfSourceEntry[] = [
   },
 ] as const;
 
+/** SB 9 unit-path statutes — always listed, even when the lot is not SB 9 Green. */
+export function sb9ReceiptSources(): SourceRef[] {
+  return [SRC.gov65852_21, SRC.gov66411_7, SRC.hcdSb9];
+}
+
 /** Sources listed on an SF pilot-lot search receipt. */
 export function sfPilotReceiptSources(): SourceRef[] {
   return [
@@ -101,6 +106,7 @@ export function sfPilotReceiptSources(): SourceRef[] {
     SRC.hcdAdu,
     SRC.hcdTinyHomesIb,
     SRC.govChapter13,
+    ...sb9ReceiptSources(),
     SRC.civ4751,
     SRC.civ4740,
   ];
@@ -114,6 +120,7 @@ export function caStatewideReceiptSources(): SourceRef[] {
     SRC.govChapter13,
     SRC.hcdFactSheets2026,
     SRC.cbscBulletin2601,
+    ...sb9ReceiptSources(),
     SRC.civ4751,
     SRC.civ4740,
   ];

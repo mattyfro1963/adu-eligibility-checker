@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { SAMPLE_REPORTS } from "@/lib/content/sample-reports";
+import {
+  FEATURED_SAMPLE_IDS,
+  SAMPLE_REPORTS,
+} from "@/lib/content/sample-reports";
 import { mockPropertyList } from "@/lib/mock/properties";
 
 const SPOILER =
@@ -32,6 +35,18 @@ describe("SAMPLE_REPORTS catalog", () => {
       expect(sample.label).not.toMatch(SPOILER);
       expect(sample.query).not.toMatch(SPOILER);
       expect(["eligible", "warning", "restricted"]).toContain(sample.tone);
+    }
+  });
+
+  it("features three idle samples without changing query strings", () => {
+    expect(FEATURED_SAMPLE_IDS).toEqual([
+      "oakland-piedmont",
+      "portland-alberta",
+      "parkside",
+    ]);
+    for (const id of FEATURED_SAMPLE_IDS) {
+      const sample = SAMPLE_REPORTS.find((s) => s.id === id);
+      expect(sample?.query.length).toBeGreaterThan(0);
     }
   });
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { mockProperties } from "@/lib/mock/properties";
-import { buildKeyFindings } from "@/lib/results/key-findings";
+import { buildKeyFindings, KEY_FINDING_IDS } from "@/lib/results/key-findings";
 import { evaluateEligibility, evaluateJurisdictionContext } from "@/lib/rules";
 
 describe("buildKeyFindings", () => {
@@ -11,6 +11,7 @@ describe("buildKeyFindings", () => {
   it("surfaces GIS, dimensions, optional ADU, and SB 9 when fields exist", () => {
     const report = evaluateEligibility(mockProperties["addr-r1-tiny"]!);
     const findings = buildKeyFindings(report);
+    expect(findings.map((f) => f.id)).toEqual([...KEY_FINDING_IDS]);
     const byId = Object.fromEntries(findings.map((f) => [f.id, f.text]));
 
     expect(byId.zoning).toMatch(/District RH-1 from lot GIS/);
@@ -38,30 +39,25 @@ describe("buildKeyFindings", () => {
       lng: -122.2556,
     });
     const findings = buildKeyFindings(report);
-    const ids = findings.map((f) => f.id);
-    expect(ids).not.toContain("mapblklot");
-    expect(ids).not.toContain("parcel-boundary");
-    expect(ids).not.toContain("unit-capacity");
+    expect(findings.map((f) => f.id)).toEqual([...KEY_FINDING_IDS]);
     expect(findings.find((f) => f.id === "zoning")?.text).toMatch(
+      /was not verified/,
+    );
+    expect(findings.find((f) => f.id === "mapblklot")?.text).toMatch(
       /was not verified/,
     );
     expect(findings.find((f) => f.id === "lot-area")?.text).toMatch(
       /was not verified from GIS/,
     );
+    expect(findings.find((f) => f.id === "parcel-boundary")?.text).toMatch(
+      /was not verified/,
+    );
     expect(findings.find((f) => f.id === "overlays")?.text).toMatch(
       /were not verified/,
     );
-    expect(ids).toEqual(
-      expect.arrayContaining([
-        "zoning",
-        "lot-area",
-        "overlays",
-        "placement",
-        "certification",
-        "transport",
-        "lot-readiness",
-        "adu",
-      ]),
+    expect(findings.find((f) => f.id === "unit-capacity")?.text).toMatch(
+      /lot area is unknown/,
     );
+    expect(findings.find((f) => f.id === "sb9")?.text).toMatch(/SB 9/);
   });
 });

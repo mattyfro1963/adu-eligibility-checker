@@ -1,7 +1,7 @@
 /**
  * MapLibre paint for lot + district overlays.
  * Schematic envelopes stay status-neutral (eligibility lives on the pin/badge).
- * Contrast must still read on satellite — never the film cream wash.
+ * Parcel stroke is neon cyan on aerial — never a cream wash.
  */
 
 import type { MapPaintTokens } from "@/lib/map/map-tokens";
@@ -15,8 +15,11 @@ export type SiteLayerPaint = {
   lotFillOpacity: number;
   lotLineColor: string;
   lotLineWidth: number;
+  lotLineBlur: number;
   lotHaloColor: string;
   lotHaloWidth: number;
+  lotHaloBlur: number;
+  lotHaloOpacity: number;
   lotDash: [number, number];
   zoneFillColor: string;
   zoneFillOpacity: number;
@@ -31,20 +34,24 @@ export function siteLayerPaint(
   tokens: MapPaintTokens,
   boundaryVerified: boolean,
 ): SiteLayerPaint {
+  const neon = tokens.lotStroke || tokens.lotGlow;
   return {
-    lotFillColor: tokens.lotFill,
-    lotFillOpacity: boundaryVerified ? 0.14 : 0.2,
-    lotLineColor: tokens.lotStroke,
-    lotLineWidth: 2,
-    lotHaloColor: tokens.lotFill,
-    lotHaloWidth: 4.5,
+    lotFillColor: neon,
+    lotFillOpacity: boundaryVerified ? 0.1 : 0.12,
+    lotLineColor: neon,
+    lotLineWidth: 3.75,
+    lotLineBlur: 0,
+    lotHaloColor: tokens.lotGlow || neon,
+    lotHaloWidth: 10,
+    lotHaloBlur: 6,
+    lotHaloOpacity: 0.55,
     lotDash: boundaryVerified ? SOLID_LINE_DASH : SCHEMATIC_LINE_DASH,
     zoneFillColor: tokens.zoneUnverified,
     zoneFillOpacity: tokens.zoneFillOpacity,
     zoneLineColor: tokens.zoneUnverified,
-    zoneLineWidth: 2.25,
+    zoneLineWidth: 1.75,
     zoneHaloColor: tokens.lotFill,
-    zoneHaloWidth: 3.5,
+    zoneHaloWidth: 2.5,
     zoneDash: SCHEMATIC_LINE_DASH,
   };
 }

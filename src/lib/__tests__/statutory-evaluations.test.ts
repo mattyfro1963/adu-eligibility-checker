@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { evaluateEligibility } from "@/lib/rules";
-import { buildStatutoryEvaluations } from "@/lib/rules/statutory-evaluations";
+import { evaluateEligibility, evaluateJurisdictionContext } from "@/lib/rules";
+import {
+  buildStatutoryEvaluations,
+  statutoryEvaluationsForReport,
+} from "@/lib/rules/statutory-evaluations";
 import { mockProperties } from "@/lib/mock/properties";
 import type { Parcel } from "@/lib/types/zoning";
 
@@ -72,6 +75,68 @@ describe("buildStatutoryEvaluations", () => {
     );
     expect(evaluations.find((item) => item.ruleId === "ADU-R2")?.outcome).toBe(
       "unverified",
+    );
+  });
+
+  it("always returns every SB 9 and ADU unit, including passes", () => {
+    const facts = parcel("addr-r1-clean");
+    const report = evaluateEligibility(facts);
+    const evaluations = buildStatutoryEvaluations(facts, report);
+    expect(evaluations.map((item) => item.ruleId)).toEqual([
+      "SB9-R1",
+      "SB9-R2",
+      "SB9-R3",
+      "SB9-R4",
+      "SB9-R5",
+      "ADU-R1",
+      "ADU-R2",
+      "ADU-R3",
+      "ADU-R4",
+    ]);
+    expect(report.statutoryEvaluations?.map((item) => item.ruleId)).toEqual(
+      evaluations.map((item) => item.ruleId),
+    );
+  });
+
+  it("still lists every SB 9 and ADU unit when lot GIS did not run", () => {
+    const report = evaluateJurisdictionContext({
+      addressId: "oakland",
+      formattedAddress: "3800 Piedmont Ave, Oakland, CA 94611",
+      place: "Oakland",
+      county: "Alameda",
+      region: "CA",
+      lat: 37.8239,
+      lng: -122.2556,
+    });
+    expect(report.statutoryEvaluations?.map((item) => item.ruleId)).toEqual([
+      "SB9-R1",
+      "SB9-R2",
+      "SB9-R3",
+      "SB9-R4",
+      "SB9-R5",
+      "ADU-R1",
+      "ADU-R2",
+      "ADU-R3",
+      "ADU-R4",
+    ]);
+    expect(
+      report.statutoryEvaluations?.every(
+        (item) => item.outcome === "unverified",
+      ),
+    ).toBe(true);
+  });
+
+  it("attaches the same projection the zoning route can return", () => {
+    const facts = parcel("addr-r1-clean");
+    const report = evaluateEligibility(facts);
+    const attached = statutoryEvaluationsForReport(report, {
+      addressId: facts.addressId,
+      lat: facts.lat,
+      lng: facts.lng,
+    });
+    expect(attached.length).toBeGreaterThan(0);
+    expect(attached.map((item) => item.ruleId)).toEqual(
+      buildStatutoryEvaluations(facts, report).map((item) => item.ruleId),
     );
   });
 });

@@ -2,6 +2,7 @@ import type { Parcel, ZoningReport } from "@/lib/types/zoning";
 import { evaluateAduStandard } from "@/lib/rules/adu-standard";
 import { evaluateSb9Eligibility } from "@/lib/rules/sb9-eligibility";
 import { thowSummaryForStatus } from "@/lib/rules/thow-summary";
+import { buildStatutoryEvaluations } from "@/lib/rules/statutory-evaluations";
 import { computeUnitCapacity } from "@/lib/rules/unit-capacity";
 import type { ThowModelProfile } from "@/lib/rules/thow-models";
 import {
@@ -94,7 +95,7 @@ export function evaluateEligibility(
   const sb9 = evaluateSb9Eligibility(parcel);
   const unitCapacity = computeUnitCapacity(parcel, sb9.status);
 
-  return {
+  const report: ZoningReport = {
     addressId: parcel.addressId,
     formattedAddress: parcel.formattedAddress,
     zoning: parcel.zoning,
@@ -119,6 +120,8 @@ export function evaluateEligibility(
     zoningSourceUrl: parcel.zoningSourceUrl ?? null,
     region,
   };
+  report.statutoryEvaluations = buildStatutoryEvaluations(parcel, report);
+  return report;
 }
 
 export type { JurisdictionContextInput } from "@/lib/rules/jurisdiction-context";

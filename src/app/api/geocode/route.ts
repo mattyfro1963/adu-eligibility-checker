@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 import {
+  geocodeHttpResult,
+  parseGeocodeMode,
+} from "@/lib/adapters/geocode-response";
+import {
   MapboxConfigError,
   MapboxUpstreamError,
   mapboxGeocoder,
@@ -23,9 +27,13 @@ function geocodingUnavailable(status: 502 | 503) {
 
 export async function GET(request: NextRequest) {
   const q = request.nextUrl.searchParams.get("q");
-  log.info({ q }, "Incoming geocode request");
+  const mode = parseGeocodeMode(request.nextUrl.searchParams.get("mode"));
+  log.info({ q, mode }, "Incoming geocode request");
 
-  const parsed = geocodeQuerySchema.safeParse({ q });
+  const parsed = geocodeQuerySchema.safeParse({
+    q,
+    ...(mode === "suggest" ? { mode } : {}),
+  });
 
   if (!parsed.success) {
     log.warn(
@@ -52,26 +60,32 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const results = await geocoder.searchSuggestions(parsed.data.q);
-
-    if (results.length === 0) {
-      const exact = await geocoder.geocode(parsed.data.q);
-      if (!exact) {
-        log.warn({ q: parsed.data.q, status: 404 }, "Address not found");
-        return NextResponse.json(
-          { error: "Address not found" },
-          { status: 404 },
-        );
-      }
-      log.info({ resultCount: 1, mode: "exact" }, "Geocode succeeded");
-      return NextResponse.json({ results: [exact] });
+    if (mode === "suggest") {
+      const results = await geocoder.searchSuggestions(parsed.data.q);
+      const payload = geocodeHttpResult("suggest", results);
+      log.info(
+        {
+          resultCount: results.length,
+          mode: "suggest",
+          status: payload.status,
+        },
+        "Geocode suggest",
+      );
+      return NextResponse.json(payload.body, { status: payload.status });
     }
 
-    log.info(
-      { resultCount: results.length, mode: "suggestions" },
-      "Geocode succeeded",
-    );
-    return NextResponse.json({ results });
+    const exactResult = await geocoder.geocode(parsed.data.q);
+    const exact = exactResult ? [exactResult] : [];
+    const payload = geocodeHttpResult("geocode", exact);
+    if (payload.status === 404) {
+      log.warn({ q: parsed.data.q, status: 404 }, "Address not found");
+    } else {
+      log.info(
+        { resultCount: exact.length, mode: "geocode" },
+        "Geocode succeeded",
+      );
+    }
+    return NextResponse.json(payload.body, { status: payload.status });
   } catch (err) {
     Sentry.captureException(err, { tags: { route: "geocode" } });
 

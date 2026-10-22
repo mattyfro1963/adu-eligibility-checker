@@ -8,6 +8,7 @@ export type MapZoneKind = "eligible" | "warning" | "restricted" | "unverified";
 export type MapPaintTokens = {
   lotFill: string;
   lotStroke: string;
+  lotGlow: string;
   envelopeFill: string;
   envelopeStroke: string;
   zoneEligible: string;
@@ -21,22 +22,24 @@ export type MapPaintTokens = {
 
 /** SSR / pre-DOM fallbacks — keep in sync with `:root` map tokens in globals.css. */
 export const MAP_PAINT_FALLBACKS: MapPaintTokens = {
-  lotFill: "#ffffff",
-  lotStroke: "#111827",
+  lotFill: "#00c2ff",
+  lotStroke: "#00c2ff",
+  lotGlow: "#00c2ff",
   envelopeFill: "#6b7280",
   envelopeStroke: "#6b7280",
   zoneEligible: "#059669",
   zoneWarning: "#f59e0b",
   zoneRestricted: "#e11d48",
-  zoneUnverified: "#6b7280",
-  zoneFillOpacity: 0.28,
-  hatch: "#6b7280",
-  pinShadow: "rgb(44 40 37 / 0.16)",
+  zoneUnverified: "#94a3b8",
+  zoneFillOpacity: 0.2,
+  hatch: "#94a3b8",
+  pinShadow: "rgb(15 23 42 / 0.18)",
 };
 
 const VAR_KEYS = {
   lotFill: "--map-lot-fill",
   lotStroke: "--map-lot-stroke",
+  lotGlow: "--map-lot-glow",
   envelopeFill: "--map-envelope-fill",
   envelopeStroke: "--map-envelope-stroke",
   zoneEligible: "--map-zone-eligible",
@@ -82,6 +85,7 @@ export function readMapPaintTokens(el?: Element | null): MapPaintTokens {
       VAR_KEYS.lotStroke,
       MAP_PAINT_FALLBACKS.lotStroke,
     ),
+    lotGlow: readVar(style, VAR_KEYS.lotGlow, MAP_PAINT_FALLBACKS.lotGlow),
     envelopeFill: readVar(
       style,
       VAR_KEYS.envelopeFill,

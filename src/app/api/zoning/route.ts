@@ -3,6 +3,7 @@ import * as Sentry from "@sentry/nextjs";
 import { lookupParcel } from "@/lib/adapters/zoning-lookup";
 import { logger } from "@/lib/logger";
 import { evaluateEligibility, evaluateJurisdictionContext } from "@/lib/rules";
+import { statutoryEvaluationsForReport } from "@/lib/rules/statutory-evaluations";
 import { zoningQuerySchema } from "@/lib/validations/api-schemas";
 
 export const dynamic = "force-dynamic";
@@ -73,6 +74,14 @@ export async function GET(request: NextRequest) {
         zoningProvider: provider,
         coverage: "lot" as const,
       };
+      const withEvaluations = {
+        ...report,
+        statutoryEvaluations: statutoryEvaluationsForReport(report, {
+          addressId: report.addressId,
+          lat: latitude,
+          lng: longitude,
+        }),
+      };
       log.info(
         {
           addressId: report.addressId,
@@ -90,21 +99,32 @@ export async function GET(request: NextRequest) {
         "Zoning lookup succeeded",
       );
       return NextResponse.json({
-        report,
+        report: withEvaluations,
         coverage: "lot" as const,
         provider,
+        evaluations: withEvaluations.statutoryEvaluations,
       });
     }
 
-    const report = evaluateJurisdictionContext({
-      addressId,
-      formattedAddress: address || `${latitude}, ${longitude}`,
-      place,
-      county,
-      region,
-      lat: latitude,
-      lng: longitude,
-    });
+    const report = {
+      ...evaluateJurisdictionContext({
+        addressId,
+        formattedAddress: address || `${latitude}, ${longitude}`,
+        place,
+        county,
+        region,
+        lat: latitude,
+        lng: longitude,
+      }),
+    };
+    const withEvaluations = {
+      ...report,
+      statutoryEvaluations: statutoryEvaluationsForReport(report, {
+        addressId,
+        lat: latitude,
+        lng: longitude,
+      }),
+    };
 
     log.info(
       {
@@ -114,20 +134,21 @@ export async function GET(request: NextRequest) {
         county,
         region,
         coverage: "jurisdiction",
-        overall: report.overall,
-        thowOverall: report.thowOverall,
-        aduStatus: report.adu.status,
-        placementStatus: report.dimensions.placement.status,
-        analysisScope: report.analysisScope,
+        overall: withEvaluations.overall,
+        thowOverall: withEvaluations.thowOverall,
+        aduStatus: withEvaluations.adu.status,
+        placementStatus: withEvaluations.dimensions.placement.status,
+        analysisScope: withEvaluations.analysisScope,
         status: 200,
       },
       "No lot GIS — jurisdiction-context decision",
     );
 
     return NextResponse.json({
-      report,
+      report: withEvaluations,
       coverage: "jurisdiction" as const,
       provider: null,
+      evaluations: withEvaluations.statutoryEvaluations,
     });
   } catch (err) {
     Sentry.captureException(err, { tags: { route: "zoning" } });

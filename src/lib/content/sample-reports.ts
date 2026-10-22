@@ -21,6 +21,15 @@ export type SampleReport = {
   tone: SampleReportTone;
 };
 
+/** Default idle chips — one CA Eligible, one OR Eligible, one mixed Warning. */
+export const FEATURED_SAMPLE_IDS = [
+  "oakland-piedmont",
+  "portland-alberta",
+  "parkside",
+] as const;
+
+export type FeaturedSampleId = (typeof FEATURED_SAMPLE_IDS)[number];
+
 /**
  * Statewide street shortcuts. Outcomes come from live geocode + zoning:
  * lot GIS where a provider covers the coordinate, otherwise county/city notes.

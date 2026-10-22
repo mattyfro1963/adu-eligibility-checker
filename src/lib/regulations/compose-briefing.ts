@@ -22,6 +22,7 @@ import {
 } from "@/lib/regulations/location-requirements";
 import {
   caStatewideReceiptSources,
+  sb9ReceiptSources,
   sfPilotReceiptSources,
 } from "@/lib/regulations/sf-source-catalog";
 import {
@@ -188,7 +189,7 @@ function lotSummary(
     const overlayBit =
       report.overlaysVerified === true
         ? "Overlay facts were checked for this lot."
-        : "Overlay layers were not verified for this lot — treat Clear/absent flags as unchecked.";
+        : "Overlay layers were not verified for this lot — treat absent flags as unchecked, not as Clear.";
     const cambria = cambriaComparisonClaim(report);
     return {
       text: `On this ${place} lot (${zoneBit}), THOW candidacy is ${statusWord(report.thowOverall ?? report.overall)}. ${overlayBit}${cambria ? ` ${cambria.text}` : ""} ADU pathway is ${statusWord(report.adu.status)} — possible if local THOW-as-ADU or foundation conversion, not automatic. Confirm primary use, district standards, utilities, and delivery route with Planning/Building before you place or occupy a unit.`,
@@ -294,7 +295,9 @@ export function composeResultsBriefing(
       ? sfPilotReceiptSources()
       : isCalifornia
         ? caStatewideReceiptSources()
-        : [SRC.noahDwelling, SRC.rvia]),
+        : [SRC.noahDwelling, SRC.rvia, SRC.hcdTinyHomesIb]),
+    ...(isCalifornia ? sb9ReceiptSources() : []),
+    ...transportSourcesForRegion(profile.code || geocode.region),
     ...local,
     ...districtUrl,
     SRC.noahDwelling,

@@ -4,13 +4,37 @@ import type { GeocodeResult } from "@/lib/types/gis";
 
 /**
  * Cascadia bounding box (CA / OR / WA): minLng, minLat, maxLng, maxLat.
- * Slightly padded; region short_code filter is the source of truth.
+ * Padded east through Imperial / Coachella (Indio, El Centro, Blythe).
+ * Region short_code filter is the source of truth.
  */
-const CASCADIA_BBOX: [number, number, number, number] = [
-  -124.9, 32.5, -116.4, 49.05,
+export const CASCADIA_BBOX: [number, number, number, number] = [
+  -124.9, 32.4, -114.0, 49.05,
 ];
 
+export function isLngLatInCascadiaBbox(lng: number, lat: number): boolean {
+  const [minLng, minLat, maxLng, maxLat] = CASCADIA_BBOX;
+  return lng >= minLng && lng <= maxLng && lat >= minLat && lat <= maxLat;
+}
+
 const PUBLISHED_REGION_CODES = new Set(["US-CA", "US-OR", "US-WA"]);
+
+/** Comma-delimited USPS codes that are not CA / OR / WA (and DC). */
+const OUT_OF_CASCADIA_ABBREV =
+  /,\s*(AL|AK|AZ|AR|CO|CT|DC|DE|FL|GA|HI|IA|ID|IL|IN|KS|KY|LA|MA|MD|ME|MI|MN|MO|MS|MT|NC|ND|NE|NH|NJ|NM|NV|NY|OH|OK|PA|RI|SC|SD|TN|TX|UT|VA|VT|WI|WV|WY)\b/i;
+
+const OUT_OF_CASCADIA_NAMES =
+  /\b(Alabama|Alaska|Arizona|Arkansas|Colorado|Connecticut|Delaware|District of Columbia|Florida|Georgia|Hawaii|Idaho|Illinois|Indiana|Iowa|Kansas|Kentucky|Louisiana|Maine|Maryland|Massachusetts|Michigan|Minnesota|Mississippi|Missouri|Montana|Nebraska|Nevada|New Hampshire|New Jersey|New Mexico|New York|North Carolina|North Dakota|Ohio|Oklahoma|Pennsylvania|Rhode Island|South Carolina|South Dakota|Tennessee|Texas|Utah|Vermont|Virginia|West Virginia|Wisconsin|Wyoming)\b/i;
+
+/**
+ * Typed submit that names a non-Cascadia state should skip the Cascadia bbox
+ * so Mapbox does not snap “Austin, TX” onto a same-street CA/OR/WA lot.
+ * Suggest stays Cascadia-only. Does not rewrite THOW scoring.
+ */
+export function queryImpliesOutOfCascadia(query: string): boolean {
+  return (
+    OUT_OF_CASCADIA_ABBREV.test(query) || OUT_OF_CASCADIA_NAMES.test(query)
+  );
+}
 
 interface MapboxContextItem {
   id: string;
@@ -114,14 +138,20 @@ export class MapboxUpstreamError extends Error {
  *
  * Cascadia (CA/OR/WA): bbox + country=US; no SF proximity bias.
  */
-function buildForwardGeocodeUrl(query: string, accessToken: string): string {
+function buildForwardGeocodeUrl(
+  query: string,
+  accessToken: string,
+  options: { restrictToCascadia: boolean },
+): string {
   const url = new URL(
     `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json`,
   );
   url.searchParams.set("access_token", accessToken);
   url.searchParams.set("country", "US");
   url.searchParams.set("types", "address");
-  url.searchParams.set("bbox", CASCADIA_BBOX.join(","));
+  if (options.restrictToCascadia) {
+    url.searchParams.set("bbox", CASCADIA_BBOX.join(","));
+  }
   url.searchParams.set("limit", "5");
   url.searchParams.set("autocomplete", "true");
   return url.toString();
@@ -155,6 +185,7 @@ function toGeocodeResult(feature: MapboxAddressFeature): GeocodeResult | null {
 
 async function forwardGeocodeAddresses(
   query: string,
+  options: { restrictToCascadia: boolean },
 ): Promise<GeocodeResult[]> {
   const trimmed = query.trim();
   if (!trimmed) {
@@ -168,10 +199,13 @@ async function forwardGeocodeAddresses(
 
   let response: Response;
   try {
-    response = await fetch(buildForwardGeocodeUrl(trimmed, accessToken), {
-      headers: mapboxRequestHeaders({ Accept: "application/json" }),
-      cache: "no-store",
-    });
+    response = await fetch(
+      buildForwardGeocodeUrl(trimmed, accessToken, options),
+      {
+        headers: mapboxRequestHeaders({ Accept: "application/json" }),
+        cache: "no-store",
+      },
+    );
   } catch {
     throw new MapboxUpstreamError(503);
   }
@@ -187,8 +221,12 @@ async function forwardGeocodeAddresses(
     throw new MapboxUpstreamError(502);
   }
 
-  return (body.features ?? [])
-    .filter(isCascadiaAddress)
+  const features = body.features ?? [];
+  const filtered = options.restrictToCascadia
+    ? features.filter(isCascadiaAddress)
+    : features;
+
+  return filtered
     .map(toGeocodeResult)
     .filter((result): result is GeocodeResult => result !== null);
 }
@@ -199,11 +237,27 @@ async function forwardGeocodeAddresses(
  */
 export const mapboxGeocoder = {
   async searchSuggestions(query: string): Promise<GeocodeResult[]> {
-    return forwardGeocodeAddresses(query);
+    return forwardGeocodeAddresses(query, { restrictToCascadia: true });
   },
 
   async geocode(query: string): Promise<GeocodeResult | null> {
-    const results = await forwardGeocodeAddresses(query);
-    return results[0] ?? null;
+    if (queryImpliesOutOfCascadia(query)) {
+      const anywhere = await forwardGeocodeAddresses(query, {
+        restrictToCascadia: false,
+      });
+      return anywhere[0] ?? null;
+    }
+    const cascadian = await forwardGeocodeAddresses(query, {
+      restrictToCascadia: true,
+    });
+    if (cascadian[0]) {
+      return cascadian[0];
+    }
+    // Unmatched Cascadia typed submit still resolves US-wide so zoning can
+    // emit the locked unsupported-state report instead of a rose 404.
+    const anywhere = await forwardGeocodeAddresses(query, {
+      restrictToCascadia: false,
+    });
+    return anywhere[0] ?? null;
   },
 };

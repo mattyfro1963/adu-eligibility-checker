@@ -18,6 +18,20 @@ describe("formatParcelAddress", () => {
     ).toBe("2000 16th Avenue, San Francisco, CA 94116");
   });
 
+  it("does not duplicate locality when streetLine is already a full place_name", () => {
+    expect(
+      formatParcelAddress({
+        streetLine:
+          "3800 Piedmont Avenue, Oakland, California 94611, United States",
+        place: "Oakland",
+        region: "CA",
+        postcode: "94611",
+        formattedAddress:
+          "3800 Piedmont Avenue, Oakland, California 94611, United States",
+      }),
+    ).toBe("3800 Piedmont Avenue, Oakland, CA 94611");
+  });
+
   it("strips United States from a formatted fallback", () => {
     expect(
       formatParcelAddress({

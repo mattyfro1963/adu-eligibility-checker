@@ -1,4 +1,5 @@
 import type { CitedClaim } from "@/lib/regulations/types";
+import type { StatutoryEvaluation } from "@/lib/types/statutory-evaluation";
 import type {
   FeaturedPlanEligibility,
   FeaturedPlanRecommendation,
@@ -130,4 +131,6 @@ export interface ZoningReport {
   featuredPlans?: FeaturedPlanEligibility[];
   /** Business recommendation across featured plans. */
   planRecommendation?: FeaturedPlanRecommendation;
+  /** Checklist projection attached by `/api/zoning` — UI must not rebuild it. */
+  statutoryEvaluations?: StatutoryEvaluation[];
 }

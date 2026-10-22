@@ -94,7 +94,7 @@ export function ConnectPage() {
     [fetchOptionalZoning],
   );
 
-  const handleSearchError = useCallback((message: string) => {
+  const handleSearchError = useCallback((message: string | null) => {
     setError(message);
   }, []);
 

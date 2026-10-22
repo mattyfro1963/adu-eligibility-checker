@@ -28,6 +28,7 @@ import type {
   ZoningReport,
 } from "@/lib/types/zoning";
 import { normalizeRegionCode } from "@/lib/regulations/states/registry";
+import { statutoryEvaluationsForReport } from "@/lib/rules/statutory-evaluations";
 import {
   evaluateFeaturedPlansForLot,
   PREFERRED_FEATURED_PLAN_ID,
@@ -229,6 +230,18 @@ function buildSb9Result(): EligibilityResult {
   };
 }
 
+function attachStatutoryUnits(
+  report: ZoningReport,
+  coords: { lat: number; lng: number },
+): ZoningReport {
+  report.statutoryEvaluations = statutoryEvaluationsForReport(report, {
+    addressId: report.addressId,
+    lat: coords.lat,
+    lng: coords.lng,
+  });
+  return report;
+}
+
 function unsupportedStateReport(input: JurisdictionContextInput): ZoningReport {
   const region = normalizeRegionCode(input.region);
   const { featuredPlans, planRecommendation, evaluations } =
@@ -238,47 +251,50 @@ function unsupportedStateReport(input: JurisdictionContextInput): ZoningReport {
     });
   const primary = evaluations[0]!;
 
-  return {
-    addressId: input.addressId,
-    formattedAddress: input.formattedAddress,
-    zoning: "Not verified",
-    overlays: { ...EMPTY_OVERLAYS },
-    overlaysVerified: false,
-    overall: "restricted",
-    thowOverall: "restricted",
-    thowSummary: {
-      text: UNSUPPORTED_STATE_THOW_COPY,
-      sources: [...BASE_THOW_SOURCES],
+  return attachStatutoryUnits(
+    {
+      addressId: input.addressId,
+      formattedAddress: input.formattedAddress,
+      zoning: "Not verified",
+      overlays: { ...EMPTY_OVERLAYS },
+      overlaysVerified: false,
+      overall: "restricted",
+      thowOverall: "restricted",
+      thowSummary: {
+        text: UNSUPPORTED_STATE_THOW_COPY,
+        sources: [...BASE_THOW_SOURCES],
+      },
+      dimensions: primary.dimensions,
+      featuredPlans,
+      planRecommendation,
+      adu: {
+        status: "warning",
+        reasons: [
+          {
+            text: "ADU pathway screening is not published for this state in this checker. Do not assume California Chapter 13 ADU rules apply here.",
+            sources: [...BASE_ADU_SOURCES],
+          },
+        ],
+      },
+      sb9: {
+        status: "warning",
+        reasons: [
+          {
+            text: "SB 9 is a California statute and does not apply outside California.",
+            sources: [...BASE_SB9_SOURCES],
+          },
+        ],
+      },
+      analysisScope: "jurisdiction_context",
+      coverage: "jurisdiction",
+      zoningProvider: null,
+      lotSizeSqFt: null,
+      parcelBoundary: null,
+      boundarySource: null,
+      region,
     },
-    dimensions: primary.dimensions,
-    featuredPlans,
-    planRecommendation,
-    adu: {
-      status: "warning",
-      reasons: [
-        {
-          text: "ADU pathway screening is not published for this state in this checker. Do not assume California Chapter 13 ADU rules apply here.",
-          sources: [...BASE_ADU_SOURCES],
-        },
-      ],
-    },
-    sb9: {
-      status: "warning",
-      reasons: [
-        {
-          text: "SB 9 is a California statute and does not apply outside California.",
-          sources: [...BASE_SB9_SOURCES],
-        },
-      ],
-    },
-    analysisScope: "jurisdiction_context",
-    coverage: "jurisdiction",
-    zoningProvider: null,
-    lotSizeSqFt: null,
-    parcelBoundary: null,
-    boundarySource: null,
-    region,
-  };
+    { lat: input.lat, lng: input.lng },
+  );
 }
 
 /**
@@ -340,26 +356,29 @@ export function evaluateJurisdictionContext(
           ],
         };
 
-  return {
-    addressId: input.addressId,
-    formattedAddress: input.formattedAddress,
-    zoning: "Not verified",
-    overlays: { ...EMPTY_OVERLAYS },
-    overlaysVerified: false,
-    overall: thowOverall,
-    thowOverall,
-    thowSummary: thowSummaryForStatus(thowOverall),
-    dimensions: primary.dimensions,
-    featuredPlans,
-    planRecommendation,
-    adu,
-    sb9,
-    analysisScope: "jurisdiction_context",
-    coverage: "jurisdiction",
-    zoningProvider: null,
-    lotSizeSqFt: null,
-    parcelBoundary: null,
-    boundarySource: null,
-    region,
-  };
+  return attachStatutoryUnits(
+    {
+      addressId: input.addressId,
+      formattedAddress: input.formattedAddress,
+      zoning: "Not verified",
+      overlays: { ...EMPTY_OVERLAYS },
+      overlaysVerified: false,
+      overall: thowOverall,
+      thowOverall,
+      thowSummary: thowSummaryForStatus(thowOverall),
+      dimensions: primary.dimensions,
+      featuredPlans,
+      planRecommendation,
+      adu,
+      sb9,
+      analysisScope: "jurisdiction_context",
+      coverage: "jurisdiction",
+      zoningProvider: null,
+      lotSizeSqFt: null,
+      parcelBoundary: null,
+      boundarySource: null,
+      region,
+    },
+    { lat: input.lat, lng: input.lng },
+  );
 }

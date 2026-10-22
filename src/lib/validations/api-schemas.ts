@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const geocodeQuerySchema = z.object({
   q: z.string().trim().min(1, "Query is required").max(200),
+  mode: z.enum(["suggest", "geocode"]).optional(),
 });
 
 export const zoningQuerySchema = z.object({

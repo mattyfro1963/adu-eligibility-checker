@@ -10,7 +10,7 @@ const lato = Lato({
   variable: "--font-lato",
   subsets: ["latin"],
   // Google Lato cuts: 100 / 300 / 400 / 700 / 900 (no 500/600)
-  weight: ["300", "400", "700"],
+  weight: ["300", "400", "700", "900"],
   display: "swap",
 });
 

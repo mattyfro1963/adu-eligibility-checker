@@ -22,11 +22,20 @@ export function formatParcelAddress(
   const postcode = geocode.postcode.trim();
   const regionZip = [region, postcode].filter(Boolean).join(" ");
   const locality = [place, regionZip].filter(Boolean).join(", ");
+  const compactFallback = (value: string) =>
+    value
+      .replace(/,\s*United States\s*$/i, "")
+      .replace(/,\s*California\b/i, ", CA");
+  if (
+    street &&
+    (/united states/i.test(street) ||
+      (place && street.toLowerCase().includes(place.toLowerCase())))
+  ) {
+    return compactFallback(street);
+  }
   if (street && locality) return `${street}, ${locality}`;
   if (street) return street;
-  return geocode.formattedAddress
-    .replace(/,\s*United States\s*$/i, "")
-    .replace(/,\s*California\b/i, ", CA");
+  return compactFallback(geocode.formattedAddress);
 }
 
 /**

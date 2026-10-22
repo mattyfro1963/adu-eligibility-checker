@@ -36,6 +36,7 @@ interface AddressMapPreviewProps {
   analysisScope?: ZoningAnalysisScope | null;
   /** Draw lot + zoning layers (results map). */
   showSiteLayers?: boolean;
+  zoom?: number;
 }
 
 /**
@@ -54,6 +55,7 @@ export function AddressMapPreview({
   zoning = null,
   analysisScope = null,
   showSiteLayers = false,
+  zoom,
 }: AddressMapPreviewProps) {
   const hasCoords =
     typeof lat === "number" &&
@@ -82,6 +84,7 @@ export function AddressMapPreview({
           analysisScope={analysisScope}
           interactive={chrome}
           showSiteLayers={showSiteLayers}
+          zoom={zoom}
         />
       ) : (
         <div className="absolute inset-0 bg-muted" aria-hidden="true" />

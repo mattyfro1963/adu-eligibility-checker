@@ -1,9 +1,15 @@
 /**
- * SF assessor parcels (DataSF acdm-wktn) — local GeoJSON point-in-polygon.
+ * SF assessor parcels (DataSF acdm-wktn).
  * Supplies parcelBoundary, mapblklot, and GIS lotSizeSqFt (Turf area when no
  * area attribute). Zoning district codes still come from sf-datasf-zoning.
  * Catalog: https://data.sfgov.org/d/acdm-wktn (PDDL).
- * Served only from a local snapshot — never fetch DataSF at runtime.
+ *
+ * Lookup order:
+ * 1. Local snapshot (gitignored full city, else committed SAMPLE_REPORTS extract)
+ * 2. One DataSF point query when the snapshot misses — the local file is often
+ *    a neighborhood chip (~4k lots), not the ~228k-parcel city extract.
+ * Approximate site polygons still must not feed eligibility; this adapter is
+ * the only path that binds APN / area / outline to the searched coordinate.
  */
 
 import { readFile } from "node:fs/promises";
@@ -45,6 +51,23 @@ const SNAP_BEARINGS = [0, 45, 90, 135, 180, 225, 270, 315] as const;
 const NEAR_PAD_DEG = 0.0008; // ~90 m
 const SQ_M_TO_SQ_FT = 10.76391041671;
 
+/** Current Socrata host (data.sfgov.org redirects here). */
+export const DATASF_ASSESSOR_GEOJSON_URL =
+  "https://data.sf.gov/resource/acdm-wktn.geojson";
+const DATASF_POINT_TIMEOUT_MS = 5000;
+const DATASF_POINT_LIMIT = 8;
+const DATASF_CIRCLE_METERS = 40;
+/** Full city is ~228k active parcels; below this we warn once. */
+const FULL_CITY_PARCEL_HINT = 50_000;
+
+/** Skip DataSF for Oakland / non-SF coordinates. */
+const SF_CITY_BBOX = {
+  minLng: -122.52,
+  minLat: 37.7,
+  maxLng: -122.35,
+  maxLat: 37.84,
+} as const;
+
 type AssessorProperties = {
   mapblklot?: unknown;
   blklot?: unknown;
@@ -72,6 +95,7 @@ type AssessorCollection = FeatureCollection<
 
 let cachedCollection: AssessorCollection | null | undefined;
 let loadAttempted = false;
+let warnedIncompleteSnapshot = false;
 
 function isPolygonGeometry(
   geometry: Feature["geometry"] | null,
@@ -276,13 +300,92 @@ async function loadSfAssessorParcels(): Promise<AssessorCollection | null> {
     (await readAssessorPath(SF_ASSESSOR_PARCELS_PATH)) ??
     (await readAssessorPath(SF_ASSESSOR_PARCELS_SAMPLES_PATH));
   cachedCollection = collection;
+  if (collection && collection.features.length < FULL_CITY_PARCEL_HINT) {
+    warnIncompleteSnapshot(collection.features.length);
+  }
   return cachedCollection;
+}
+
+function warnIncompleteSnapshot(featureCount: number): void {
+  if (warnedIncompleteSnapshot) return;
+  warnedIncompleteSnapshot = true;
+  console.warn(
+    `[sf-assessor-parcels] Local snapshot has ${featureCount} parcels (full city is ~228k). Coordinates outside the extract use a DataSF point query so APN / area / outline stay bound to the searched lot.`,
+  );
+}
+
+export function isLngLatInSanFrancisco(lng: number, lat: number): boolean {
+  return (
+    lng >= SF_CITY_BBOX.minLng &&
+    lng <= SF_CITY_BBOX.maxLng &&
+    lat >= SF_CITY_BBOX.minLat &&
+    lat <= SF_CITY_BBOX.maxLat
+  );
+}
+
+function datasfWhereIntersects(lat: number, lng: number): string {
+  return `intersects(shape,'POINT(${lng} ${lat})') AND active='true'`;
+}
+
+function datasfWhereCircle(lat: number, lng: number): string {
+  return `within_circle(shape,${lat},${lng},${DATASF_CIRCLE_METERS}) AND active='true'`;
+}
+
+async function fetchDatasfAssessorCollection(
+  where: string,
+): Promise<AssessorCollection | null> {
+  const url = new URL(DATASF_ASSESSOR_GEOJSON_URL);
+  url.searchParams.set("$where", where);
+  url.searchParams.set("$limit", String(DATASF_POINT_LIMIT));
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), DATASF_POINT_TIMEOUT_MS);
+  try {
+    const response = await fetch(url.toString(), {
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    if (!response.ok) return null;
+    const parsed = (await response.json()) as FeatureCollection;
+    if (
+      parsed.type !== "FeatureCollection" ||
+      !Array.isArray(parsed.features)
+    ) {
+      return null;
+    }
+    if (parsed.features.length === 0) return null;
+    return parsed as AssessorCollection;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * Point query against live DataSF when the local snapshot does not cover
+ * this coordinate. Fail-soft: network errors return null (district PIP still
+ * runs). Adapter-only — never called from rules.
+ */
+export async function fetchAssessorParcelFromDatasf(
+  lat: number,
+  lng: number,
+): Promise<AssessorParcelHit | null> {
+  if (!isLngLatInSanFrancisco(lng, lat)) return null;
+
+  const collection =
+    (await fetchDatasfAssessorCollection(datasfWhereIntersects(lat, lng))) ??
+    (await fetchDatasfAssessorCollection(datasfWhereCircle(lat, lng)));
+  if (!collection) return null;
+  return lookupAssessorParcelInCollection(collection, lat, lng);
 }
 
 /** Test helper — reset module cache between fixture-driven cases. */
 export function resetSfAssessorParcelsCacheForTests(): void {
   cachedCollection = undefined;
   loadAttempted = false;
+  warnedIncompleteSnapshot = false;
 }
 
 /** Resolve assessor parcel facts for WGS84 coordinates, or null when uncovered. */
@@ -291,6 +394,9 @@ export async function lookupSfAssessorParcel(
   lng: number,
 ): Promise<AssessorParcelHit | null> {
   const collection = await loadSfAssessorParcels();
-  if (!collection) return null;
-  return lookupAssessorParcelInCollection(collection, lat, lng);
+  if (collection) {
+    const local = lookupAssessorParcelInCollection(collection, lat, lng);
+    if (local) return local;
+  }
+  return fetchAssessorParcelFromDatasf(lat, lng);
 }

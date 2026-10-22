@@ -56,3 +56,13 @@ export const STATIC_MAP_DEFAULTS = {
 
 /** Tight zoom so an urban lot reads as a site, not a city pin. */
 export const PARCEL_MAP_ZOOM = 18;
+
+/**
+ * Idle hero aerial — typical CA residential neighborhood for composition.
+ * Not a live eligibility result. Tooltip stays “THOW lot reading”.
+ */
+export const IDLE_HERO_VIEW = {
+  lat: 37.75105,
+  lng: -122.46685,
+  zoom: 18.6,
+} as const;

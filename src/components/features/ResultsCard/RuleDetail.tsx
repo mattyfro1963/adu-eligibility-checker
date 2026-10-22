@@ -1,7 +1,24 @@
 import type { EligibilityResult } from "@/lib/types/zoning";
 import { EligibilityBadge } from "@/components/ui/eligibility-badge";
+import type { EligibilityBadgeProgram } from "@/components/ui/eligibility-badge";
 import { ExpandableSection } from "@/components/ui/expandable-section";
 import { CitedText } from "@/components/features/ResultsCard/CitedText";
+
+function programFromCategory(category: string): EligibilityBadgeProgram {
+  if (/ADU/i.test(category)) return "adu";
+  if (/SB\s*9/i.test(category)) return "sb9";
+  return "dimension";
+}
+
+function statuteRationale(category: string): string {
+  if (/ADU/i.test(category)) {
+    return "Gov. Code Chapter 13 (§§ 66310–66342)";
+  }
+  if (/SB\s*9/i.test(category)) {
+    return "Gov. Code §§ 65852.21 & 66411.7 (2021 SB 9)";
+  }
+  return "Placement, certification, transport, and lot-readiness notes — informational, not a permit.";
+}
 
 export function RuleDetail({
   result,
@@ -27,6 +44,8 @@ export function RuleDetail({
   const rationaleSources = result.reasons.flatMap((reason) => reason.sources);
   const TitleTag = headingLevel === 4 ? "h4" : "h3";
   const leadReason = result.reasons[0] ?? null;
+  const extraReasons = result.reasons.slice(1);
+  const program = programFromCategory(category);
 
   if (compact) {
     return (
@@ -38,7 +57,7 @@ export function RuleDetail({
           <span className="font-label text-[10px] tracking-[0.18em] text-luxury-taupe">
             {category}
           </span>
-          <EligibilityBadge status={result.status} />
+          <EligibilityBadge status={result.status} program={program} />
         </div>
         <TitleTag className="font-sans text-base font-medium tracking-[-0.02em] text-text-luxury">
           {title}
@@ -54,6 +73,25 @@ export function RuleDetail({
             No additional detail from the rules engine.
           </p>
         )}
+        {extraReasons.length > 0 ? (
+          <details className="mt-2">
+            <summary className="cursor-pointer text-[13px] text-luxury-wood underline-offset-2 hover:underline">
+              {extraReasons.length} more engine{" "}
+              {extraReasons.length === 1 ? "note" : "notes"}
+            </summary>
+            <ul className="mt-2 list-none space-y-2">
+              {extraReasons.map((reason) => (
+                <li key={reason.text}>
+                  <CitedText
+                    claim={reason}
+                    showSources={false}
+                    className="text-[13px] leading-relaxed font-light text-text-luxury/62"
+                  />
+                </li>
+              ))}
+            </ul>
+          </details>
+        ) : null}
         {inviteNextStep ? (
           <p className="mt-2 text-[13px] leading-relaxed text-luxury-wood">
             This stays open until you confirm locally — or continue with
@@ -70,7 +108,7 @@ export function RuleDetail({
         <span className="font-label text-[10px] tracking-[0.14em] text-luxury-taupe">
           {category}
         </span>
-        <EligibilityBadge status={result.status} />
+        <EligibilityBadge status={result.status} program={program} />
       </div>
 
       <TitleTag className="mb-2 font-sans text-lg font-medium tracking-[-0.02em] text-text-luxury">
@@ -113,9 +151,7 @@ export function RuleDetail({
               <span className="mr-1 font-normal text-foreground">
                 RATIONALE:
               </span>
-              {category === "ADU"
-                ? "Gov. Code Chapter 13 (§§ 66310–66342)"
-                : "Gov. Code §§ 65852.21 & 66411.7 (2021 SB 9)"}
+              {statuteRationale(category)}
             </p>
             {rationaleSources.length > 0 ? (
               <CitedText

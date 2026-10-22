@@ -488,6 +488,15 @@ describe("ADU topic coverage and legal sources", () => {
     expect(hrefs.some((href) => href.includes("mapbox.com/about/maps"))).toBe(
       true,
     );
+    expect(hrefs.some((href) => href.includes("sectionNum=65852.21"))).toBe(
+      true,
+    );
+    expect(hrefs.some((href) => href.includes("sectionNum=66411.7"))).toBe(
+      true,
+    );
+    expect(hrefs.some((href) => href.includes("transportation-permits"))).toBe(
+      true,
+    );
 
     const caBriefing = composeResultsBriefing({
       geocode: {
@@ -505,6 +514,13 @@ describe("ADU topic coverage and legal sources", () => {
     expect(caHrefs.some((href) => href.includes("mapbox.com/about/maps"))).toBe(
       true,
     );
+    expect(caHrefs.some((href) => href.includes("sectionNum=65852.21"))).toBe(
+      true,
+    );
+    expect(caHrefs.some((href) => href.includes("sectionNum=66411.7"))).toBe(
+      true,
+    );
+    expect(caHrefs.some((href) => href.includes("sb-9-fact-sheet"))).toBe(true);
   });
 
   it("has zero references to nolo or nolo.com across regulation files", () => {
@@ -621,7 +637,7 @@ describe("California visitor-facing branding", () => {
       ],
       [
         "AddressSearch/SampleReportButtons.tsx",
-        [/uppercase/, /min-h-\[44px\]/, /status-eligible/],
+        [/uppercase/, /min-h-\[44px\]/, /chip-editorial/],
       ],
       [
         "ResultsCard/ResultsCard.tsx",

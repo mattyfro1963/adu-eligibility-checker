@@ -1,8 +1,10 @@
-import { AlertTriangle, CheckCircle2, XCircle } from "lucide-react";
+import { Circle, Minus, Square } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { EligibilityStatus } from "@/lib/types/zoning";
+
+export type EligibilityBadgeProgram = "thow" | "adu" | "sb9" | "dimension";
 
 const statusConfig: Record<
   EligibilityStatus,
@@ -18,38 +20,60 @@ const statusConfig: Record<
   eligible: {
     label: "Green",
     vocabulary: "Eligible",
-    icon: CheckCircle2,
+    icon: Circle,
     className:
-      "border-status-eligible-border bg-status-eligible-muted text-status-eligible-fg [a]:hover:bg-status-eligible-muted",
+      "border-transparent bg-status-eligible-solid text-status-eligible-solid-fg [a]:hover:bg-status-eligible-solid",
   },
   warning: {
     label: "Yellow",
     vocabulary: "Warning",
-    icon: AlertTriangle,
+    icon: Minus,
     className:
-      "border-status-warning-border bg-status-warning-muted text-status-warning-fg [a]:hover:bg-status-warning-muted",
+      "border-transparent bg-status-warning-solid text-status-warning-solid-fg [a]:hover:bg-status-warning-solid",
   },
   restricted: {
     label: "Red",
     vocabulary: "Restricted",
-    icon: XCircle,
+    icon: Square,
     className:
-      "border-status-restricted-border bg-status-restricted-muted text-status-restricted-fg [a]:hover:bg-status-restricted-muted",
+      "border-transparent bg-status-restricted-solid text-status-restricted-solid-fg [a]:hover:bg-status-restricted-solid",
   },
 };
 
+function programAriaLabel(
+  program: EligibilityBadgeProgram,
+  vocabulary: string,
+  color: string,
+): string {
+  if (program === "adu") {
+    return `ADU pathway: ${vocabulary} (${color})`;
+  }
+  if (program === "sb9") {
+    return `SB 9 pathway: ${vocabulary} (${color})`;
+  }
+  if (program === "dimension") {
+    return `THOW dimension: ${vocabulary} (${color})`;
+  }
+  return `THOW candidacy: ${vocabulary} (${color})`;
+}
+
 /**
- * THOW lot-candidacy badge: Green / Yellow / Red over shadcn Badge.
- * Status tokens only — emerald / amber / rose reserved for eligibility context.
+ * THOW lot-candidacy badge: filled Eligible / Warning / Restricted pills.
+ * Eligible is the neon-green twin of the reference “Compliant” chrome.
  */
 export function EligibilityBadge({
   status,
   size = "sm",
   className,
+  program = "thow",
+  example = false,
 }: {
   status: EligibilityStatus;
   size?: "sm" | "lg";
   className?: string;
+  program?: EligibilityBadgeProgram;
+  /** Idle hero chrome — illustrates vocabulary, not a live lot result. */
+  example?: boolean;
 }) {
   const config = statusConfig[status];
   const Icon = config.icon;
@@ -57,20 +81,25 @@ export function EligibilityBadge({
   return (
     <Badge
       variant="outline"
-      role="status"
+      role={example ? undefined : "status"}
       className={cn(
-        "gap-1.5 rounded-md border shadow-none",
+        "gap-1.5 rounded-full border font-semibold shadow-none",
         size === "lg"
-          ? "h-auto px-3 py-1.5 text-xs font-medium tracking-[0.04em] uppercase"
-          : "h-auto px-2.5 py-1 text-[11px] font-medium tracking-[0.04em] uppercase",
+          ? "h-auto px-5 py-2 text-[15px] tracking-tight [&>svg]:size-4!"
+          : "h-auto px-2.5 py-1 text-[11px] tracking-tight [&>svg]:size-3.5!",
         config.className,
         className,
       )}
-      aria-label={`THOW candidacy: ${config.vocabulary} (${config.label})`}
+      aria-hidden={example || undefined}
+      aria-label={
+        example
+          ? undefined
+          : programAriaLabel(program, config.vocabulary, config.label)
+      }
     >
       <Icon
-        className={size === "lg" ? "size-3.5!" : "size-3!"}
-        strokeWidth={2}
+        className={size === "lg" ? "size-4!" : "size-3!"}
+        strokeWidth={2.4}
         aria-hidden="true"
       />
       <span aria-hidden="true">{config.vocabulary}</span>

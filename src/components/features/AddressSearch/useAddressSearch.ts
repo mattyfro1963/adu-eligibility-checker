@@ -1,18 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { formatParcelAddress } from "@/lib/address/format-parcel-address";
 import type { GeocodeResult } from "@/lib/types/gis";
 
 interface UseAddressSearchOptions {
   onResolved: (result: GeocodeResult) => void;
-  onError?: (message: string) => void;
+  onError?: (message: string | null) => void;
 }
 
 const DEBOUNCE_MS = 300;
 const MIN_QUERY_LENGTH = 2;
 
 /** Same-origin relative URL — avoids apex↔www redirect breaking fetch. */
-function geocodeUrl(query: string): string {
+function geocodeUrl(query: string, mode?: "suggest" | "geocode"): string {
   const url = new URL("/api/geocode", window.location.origin);
   url.searchParams.set("q", query);
+  if (mode) {
+    url.searchParams.set("mode", mode);
+  }
   return url.toString();
 }
 
@@ -52,41 +56,34 @@ export function useAddressSearch({
   const suggestAbortRef = useRef<AbortController | null>(null);
   const resolveAbortRef = useRef<AbortController | null>(null);
 
-  const fetchSuggestions = useCallback(
-    async (value: string) => {
-      suggestAbortRef.current?.abort();
-      const controller = new AbortController();
-      suggestAbortRef.current = controller;
-      setIsSearching(true);
+  const fetchSuggestions = useCallback(async (value: string) => {
+    suggestAbortRef.current?.abort();
+    const controller = new AbortController();
+    suggestAbortRef.current = controller;
+    setIsSearching(true);
 
-      try {
-        const res = await fetch(geocodeUrl(value), {
-          signal: controller.signal,
-        });
-        if (!res.ok) {
-          const body: unknown = await res.json().catch(() => null);
-          setSuggestions([]);
-          onError?.(
-            readErrorMessage(body, "Failed to fetch address suggestions"),
-          );
-          return;
-        }
-        const data: unknown = await res.json();
-        setSuggestions(parseResults(data));
-      } catch (err) {
-        if (err instanceof DOMException && err.name === "AbortError") {
-          return;
-        }
-        onError?.("Failed to fetch address suggestions");
+    try {
+      const res = await fetch(geocodeUrl(value, "suggest"), {
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        // Suggest 5xx: empty list, no rose 404 stuck on the field.
         setSuggestions([]);
-      } finally {
-        if (suggestAbortRef.current === controller) {
-          setIsSearching(false);
-        }
+        return;
       }
-    },
-    [onError],
-  );
+      const data: unknown = await res.json();
+      setSuggestions(parseResults(data));
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") {
+        return;
+      }
+      setSuggestions([]);
+    } finally {
+      if (suggestAbortRef.current === controller) {
+        setIsSearching(false);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (isResolving) {
@@ -106,24 +103,29 @@ export function useAddressSearch({
     };
   }, [query, fetchSuggestions, isResolving]);
 
-  const handleQueryChange = useCallback((value: string) => {
-    setQuery(value);
-    setIsOpen(true);
-    if (value.trim().length < MIN_QUERY_LENGTH) {
-      suggestAbortRef.current?.abort();
-      setSuggestions([]);
-      setIsSearching(false);
-    }
-  }, []);
+  const handleQueryChange = useCallback(
+    (value: string) => {
+      setQuery(value);
+      setIsOpen(true);
+      onError?.(null);
+      if (value.trim().length < MIN_QUERY_LENGTH) {
+        suggestAbortRef.current?.abort();
+        setSuggestions([]);
+        setIsSearching(false);
+      }
+    },
+    [onError],
+  );
 
   const selectAddress = useCallback(
     (result: GeocodeResult) => {
-      setQuery(result.formattedAddress);
+      setQuery(formatParcelAddress(result));
       setIsOpen(false);
       setSuggestions([]);
+      onError?.(null);
       onResolved(result);
     },
-    [onResolved],
+    [onError, onResolved],
   );
 
   const resolveQuery = useCallback(
@@ -142,7 +144,7 @@ export function useAddressSearch({
       setSuggestions([]);
 
       try {
-        const res = await fetch(geocodeUrl(trimmed), {
+        const res = await fetch(geocodeUrl(trimmed, "geocode"), {
           signal: controller.signal,
         });
         if (!res.ok) {

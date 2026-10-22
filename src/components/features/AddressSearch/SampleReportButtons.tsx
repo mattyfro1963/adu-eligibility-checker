@@ -1,23 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
+  FEATURED_SAMPLE_IDS,
   SAMPLE_REPORTS,
   type SampleReportTone,
 } from "@/lib/content/sample-reports";
 import { cn } from "@/lib/utils";
 
-type SampleFilter = "all" | SampleReportTone;
+type SampleFilter = "featured" | "all" | SampleReportTone;
 
-/** Editorial chips — live Green/Yellow/Red is reserved for the results badge. */
-const TONE_CLASS: Record<SampleReportTone, string> = {
-  eligible:
-    "border-chip-editorial-border bg-chip-editorial-fill text-text-luxury hover:border-brand-taupe/55",
-  warning:
-    "border-chip-editorial-gold bg-chip-editorial-gold text-chip-editorial-gold-fg hover:border-chip-editorial-gold-fg/35",
-  restricted:
-    "border-chip-editorial-rose bg-chip-editorial-rose text-chip-editorial-rose-fg hover:border-chip-editorial-rose-fg/35",
-};
+/** White SaaS chips — live Green/Yellow/Red is reserved for the results badge. */
+const CHIP_CLASS =
+  "border-chip-editorial-border bg-chip-editorial-fill text-slate-800 shadow-sm hover:border-slate-300";
 
 const TONE_VOCABULARY: Record<SampleReportTone, string> = {
   eligible: "Eligible",
@@ -26,7 +21,7 @@ const TONE_VOCABULARY: Record<SampleReportTone, string> = {
 };
 
 const FILTER_OPTIONS: ReadonlyArray<{
-  id: SampleFilter;
+  id: Exclude<SampleFilter, "featured">;
   label: string;
   note: string;
   descriptionId: string;
@@ -58,17 +53,12 @@ const FILTER_OPTIONS: ReadonlyArray<{
 ];
 
 const FILTER_TOGGLE_BASE =
-  "rounded-md border px-3.5 py-1.5 font-label text-[10px] uppercase tracking-[0.14em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40";
+  "min-h-[44px] rounded-md border px-3.5 py-1.5 font-label text-[10px] uppercase tracking-[0.14em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40";
 
 const FILTER_TOGGLE_IDLE =
-  "border-border-luxury/70 bg-surface-luxury/45 text-muted-foreground hover:border-brand-taupe/55 hover:bg-surface-luxury/65 hover:text-text-luxury";
+  "border-slate-200 bg-white text-muted-foreground hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900";
 
-const FILTER_TOGGLE_SELECTED: Record<SampleFilter, string> = {
-  all: "border-brand-taupe/60 bg-luxury-charcoal/90 text-luxury-cream",
-  eligible: "border-brand-taupe/60 bg-luxury-charcoal/90 text-luxury-cream",
-  warning: "border-brand-taupe/60 bg-luxury-charcoal/90 text-luxury-cream",
-  restricted: "border-brand-taupe/60 bg-luxury-charcoal/90 text-luxury-cream",
-};
+const FILTER_TOGGLE_SELECTED = "border-slate-900 bg-slate-900 text-white";
 
 interface SampleReportButtonsProps {
   onSelectQuery: (query: string) => void;
@@ -81,14 +71,27 @@ export function SampleReportButtons({
   disabled = false,
   className,
 }: SampleReportButtonsProps) {
-  const [filter, setFilter] = useState<SampleFilter>("all");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [filter, setFilter] = useState<SampleFilter>("featured");
+
+  const featured = useMemo(
+    () =>
+      FEATURED_SAMPLE_IDS.map((id) =>
+        SAMPLE_REPORTS.find((sample) => sample.id === id),
+      ).filter((sample): sample is (typeof SAMPLE_REPORTS)[number] =>
+        Boolean(sample),
+      ),
+    [],
+  );
 
   const filtered =
-    filter === "all"
-      ? SAMPLE_REPORTS
-      : SAMPLE_REPORTS.filter((sample) => sample.tone === filter);
+    filter === "featured"
+      ? featured
+      : filter === "all"
+        ? SAMPLE_REPORTS
+        : SAMPLE_REPORTS.filter((sample) => sample.tone === filter);
 
-  const activeOption = FILTER_OPTIONS.find((o) => o.id === filter)!;
+  const activeOption = FILTER_OPTIONS.find((o) => o.id === filter);
 
   return (
     <div className={cn("space-y-8", className)}>
@@ -106,49 +109,68 @@ export function SampleReportButtons({
             className="max-w-xl text-[15px] leading-relaxed text-muted-foreground"
           >
             Click a sample location to run the same live search as typing an
-            address. Filter by outcome tone when you want a specific example.
+            address.
           </p>
         </div>
-        <div
-          role="group"
-          aria-labelledby="sample-reports-label"
-          aria-describedby="sample-reports-hint"
-          className="flex flex-wrap gap-2"
+        <button
+          type="button"
+          disabled={disabled}
+          aria-expanded={filtersOpen}
+          aria-controls="sample-outcome-filters"
+          onClick={() => {
+            setFiltersOpen((open) => {
+              const next = !open;
+              if (!next) setFilter("featured");
+              return next;
+            });
+          }}
+          className={cn(FILTER_TOGGLE_BASE, FILTER_TOGGLE_IDLE)}
         >
-          {FILTER_OPTIONS.map((option) => {
-            const selected = filter === option.id;
-            return (
-              <button
-                key={option.id}
-                type="button"
-                disabled={disabled}
-                aria-pressed={selected}
-                aria-describedby={option.descriptionId}
-                onClick={() => setFilter(option.id)}
-                className={cn(
-                  FILTER_TOGGLE_BASE,
-                  selected
-                    ? FILTER_TOGGLE_SELECTED[option.id]
-                    : FILTER_TOGGLE_IDLE,
-                )}
+          Filter by outcome
+        </button>
+        {filtersOpen ? (
+          <div id="sample-outcome-filters" className="space-y-3">
+            <div
+              role="group"
+              aria-labelledby="sample-reports-label"
+              aria-describedby="sample-reports-hint"
+              className="flex flex-wrap gap-2"
+            >
+              {FILTER_OPTIONS.map((option) => {
+                const selected = filter === option.id;
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    disabled={disabled}
+                    aria-pressed={selected}
+                    aria-describedby={option.descriptionId}
+                    onClick={() => setFilter(option.id)}
+                    className={cn(
+                      FILTER_TOGGLE_BASE,
+                      selected ? FILTER_TOGGLE_SELECTED : FILTER_TOGGLE_IDLE,
+                    )}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+            {activeOption ? (
+              <p
+                id={activeOption.descriptionId}
+                className="max-w-xl text-xs leading-snug text-muted-foreground"
               >
-                {option.label}
-              </button>
-            );
-          })}
-        </div>
-        <p
-          id={activeOption.descriptionId}
-          className="max-w-xl text-xs leading-snug text-muted-foreground"
-        >
-          {activeOption.note}
-        </p>
-        {/* Off-screen descriptions for non-active filters (aria-describedby). */}
-        {FILTER_OPTIONS.filter((o) => o.id !== filter).map((option) => (
-          <p key={option.id} id={option.descriptionId} className="sr-only">
-            {option.note}
-          </p>
-        ))}
+                {activeOption.note}
+              </p>
+            ) : null}
+            {FILTER_OPTIONS.filter((o) => o.id !== filter).map((option) => (
+              <p key={option.id} id={option.descriptionId} className="sr-only">
+                {option.note}
+              </p>
+            ))}
+          </div>
+        ) : null}
       </div>
       <div
         className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:gap-2.5"
@@ -169,7 +191,7 @@ export function SampleReportButtons({
               onClick={() => onSelectQuery(sample.query)}
               className={cn(
                 "min-h-[44px] w-full rounded-lg border px-3.5 py-2.5 text-left text-[13px] leading-snug tracking-tight break-words transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:py-2",
-                TONE_CLASS[sample.tone],
+                CHIP_CLASS,
               )}
               aria-label={`Search ${sample.label} (${TONE_VOCABULARY[sample.tone]} example): ${sample.query}`}
             >

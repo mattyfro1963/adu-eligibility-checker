@@ -136,7 +136,7 @@ function projectLngLatToPixels(
 }
 
 /** Typical urban CA lot when area is unknown — schematic only. */
-export const DEFAULT_SCHEMATIC_LOT_SQFT = 5000;
+export const DEFAULT_SCHEMATIC_LOT_SQFT = 16000;
 
 const FT_PER_METER = 3.280839895;
 const EARTH_CIRCUMFERENCE_M = 40_075_016.686;

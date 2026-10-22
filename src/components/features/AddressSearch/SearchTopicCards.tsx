@@ -19,7 +19,7 @@ const TOPIC_ICONS: Record<SearchTopicIcon, LucideIcon> = {
   sparkles: Sparkles,
 };
 
-/** Topic cards below the idle search hero — quiet luxury chrome + line icons. */
+/** Topic cards below the idle search hero — white SaaS cards. */
 export function SearchTopicCards() {
   return (
     <nav
@@ -31,7 +31,7 @@ export function SearchTopicCards() {
         return (
           <article
             key={card.id}
-            className="flex min-h-0 flex-col border border-border-luxury bg-surface-elevated/80 px-5 py-6 sm:min-h-[200px] sm:px-6 sm:py-7"
+            className="flex min-h-0 flex-col rounded-[20px] border border-slate-200 bg-white px-5 py-6 shadow-sm sm:min-h-[200px] sm:px-6 sm:py-7"
           >
             <div className="flex items-start gap-3">
               <Icon

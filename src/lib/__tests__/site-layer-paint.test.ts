@@ -16,9 +16,12 @@ describe("siteLayerPaint", () => {
     expect(verified.lotLineColor).toBe(MAP_PAINT_FALLBACKS.lotStroke);
     expect(verified.lotFillColor).toBe(MAP_PAINT_FALLBACKS.lotFill);
     expect(verified.zoneFillColor).toBe(MAP_PAINT_FALLBACKS.zoneUnverified);
-    expect(verified.lotFillOpacity).toBeGreaterThanOrEqual(0.12);
+    expect(verified.lotFillOpacity).toBeGreaterThanOrEqual(0.1);
     expect(schematic.lotFillOpacity).toBeGreaterThan(verified.lotFillOpacity);
     expect(verified.lotHaloWidth).toBeGreaterThan(verified.lotLineWidth);
+    expect(verified.lotLineWidth).toBeGreaterThanOrEqual(3);
+    expect(verified.lotHaloBlur).toBeGreaterThan(0);
+    expect(verified.lotLineColor.toLowerCase()).toBe("#00c2ff");
     expect(verified.zoneFillOpacity).toBeGreaterThanOrEqual(0.2);
   });
 });

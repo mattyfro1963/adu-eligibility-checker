@@ -55,6 +55,12 @@
   --color-status-restricted-fg: var(--status-restricted-fg);
   --color-status-restricted-muted: var(--status-restricted-muted);
   --color-status-restricted-border: var(--status-restricted-border);
+  --color-status-eligible-solid: var(--status-eligible-solid);
+  --color-status-eligible-solid-fg: var(--status-eligible-solid-fg);
+  --color-status-warning-solid: var(--status-warning-solid);
+  --color-status-warning-solid-fg: var(--status-warning-solid-fg);
+  --color-status-restricted-solid: var(--status-restricted-solid);
+  --color-status-restricted-solid-fg: var(--status-restricted-solid-fg);
 
   /* Backward-compatible status aliases */
   --color-eligible: var(--status-eligible);
@@ -64,6 +70,7 @@
   /* Map overlays */
   --color-map-lot-fill: var(--map-lot-fill);
   --color-map-lot-stroke: var(--map-lot-stroke);
+  --color-map-lot-glow: var(--map-lot-glow);
   --color-map-envelope-fill: var(--map-envelope-fill);
   --color-map-envelope-stroke: var(--map-envelope-stroke);
   --color-map-zone-eligible: var(--map-zone-eligible);
@@ -151,11 +158,11 @@
   --apricot-wash: #ffedd5;
   --coral-wash-gradient: #ff7e67;
 
-  /* Modern Earthy Minimalist — primary luxury base for the checker */
-  --brand-cream: #f7f3ed;
-  --brand-taupe: #9a8f82;
-  --brand-charcoal: #2c2825;
-  --brand-wood: #6b5344;
+  /* Cool SaaS canvas — light gray / off-white (not cream paper) */
+  --brand-cream: #f4f6f8;
+  --brand-taupe: #94a3b8;
+  --brand-charcoal: #0f172a;
+  --brand-wood: #475569;
 
   /* Neutrals */
   --ink-black: #000000;
@@ -177,8 +184,8 @@
   --surface-luxury: var(--brand-cream);
   --border-default: var(--ash-border);
   --border-strong: color-mix(in srgb, var(--slate-700) 28%, var(--ash-border));
-  /* Taupe-leaning hairline for checker chrome (not cool ash) */
-  --border-luxury: color-mix(in srgb, var(--brand-taupe) 32%, var(--brand-cream));
+  /* Cool hairline for checker chrome */
+  --border-luxury: #e5e7eb;
 
   /* —— Typography color roles —— */
   --text-primary: var(--ink-black);
@@ -240,31 +247,38 @@
     var(--status-restricted) 35%,
     transparent
   );
+  /* Filled status pills — banner twin (white type on solid) */
+  --status-eligible-solid: #16a34a;
+  --status-eligible-solid-fg: #ffffff;
+  --status-warning-solid: #d97706;
+  --status-warning-solid-fg: #ffffff;
+  --status-restricted-solid: #e11d48;
+  --status-restricted-solid-fg: #ffffff;
 
-  /* —— Map overlays —— */
-  --map-lot-fill: #ffffff;
-  --map-lot-stroke: #111827;
+  /* —— Map overlays — neon cyan parcel on aerial —— */
+  --map-lot-fill: #00c2ff;
+  --map-lot-stroke: #00c2ff;
+  --map-lot-glow: #00c2ff;
   --map-envelope-fill: #6b7280;
   --map-envelope-stroke: #6b7280;
   --map-zone-eligible: var(--status-eligible);
   --map-zone-warning: var(--status-warning);
   --map-zone-restricted: var(--status-restricted);
-  --map-zone-unverified: #6b7280;
+  --map-zone-unverified: #94a3b8;
   /* District fill on satellite — visible overlay, not a cream wash. */
-  --map-zone-fill-opacity: 0.28;
-  --map-hatch: #6b7280;
-  --map-pin-shadow: rgb(44 40 37 / 0.16);
+  --map-zone-fill-opacity: 0.2;
+  --map-hatch: #94a3b8;
+  --map-pin-shadow: rgb(15 23 42 / 0.18);
 
-  /* —— Luxury brand roles —— */
+  /* —— Checker brand roles (navy on cool gray) —— */
   --luxury-cream: var(--brand-cream);
-  /* Wood (not light taupe) — AA text on cream; borders still use brand-taupe */
   --luxury-taupe: var(--brand-wood);
   --luxury-charcoal: var(--brand-charcoal);
   --luxury-wood: var(--brand-wood);
   --luxury-elevated-shadow: var(--shadow-elevated);
 
   /* shadcn semantic surfaces (aligned to action roles; no visual redesign) */
-  --background: var(--paper-white);
+  --background: var(--brand-cream);
   --foreground: var(--ink-black);
   --card: var(--paper-white);
   --card-foreground: var(--ink-black);
@@ -298,7 +312,7 @@
 
   /* Radius */
   --radius: 6px;
-  --radius-card: 16px;
+  --radius-card: 20px;
   --radius-button: 6px;
   --radius-input: 10px;
   --radius-icon: 6px;
@@ -309,18 +323,14 @@
   --shadow-subtle: rgba(75, 85, 99, 0.2) 0px 0px 0px 1px;
   --shadow-xl: rgba(50, 50, 92, 0.05) 0px 50px 100px -20px,
     rgba(0, 0, 0, 0.15) 0px 30px 60px -30px;
-  --shadow-elevated: 0 12px 40px rgb(44 40 37 / 0.08);
-  /* Soft brochure search shell — shallow, warm, lighter than elevated */
-  --shadow-brochure-input: 0 1px 2px rgb(44 40 37 / 0.04),
-    0 6px 18px rgb(107 83 68 / 0.07);
+  --shadow-elevated: 0 12px 40px rgb(15 23 42 / 0.08);
+  /* Soft SaaS search shell */
+  --shadow-brochure-input: 0 1px 2px rgb(15 23 42 / 0.04),
+    0 8px 24px rgb(15 23 42 / 0.06);
 
   /* Editorial sample chips — muted brochure tones; live status stays emerald/amber/rose */
-  --chip-editorial-fill: var(--brand-cream);
-  --chip-editorial-border: color-mix(
-    in srgb,
-    var(--brand-taupe) 42%,
-    var(--paper-white)
-  );
+  --chip-editorial-fill: var(--paper-white);
+  --chip-editorial-border: #e5e7eb;
   --chip-editorial-rose: color-mix(in srgb, #b87a7a 18%, var(--brand-cream));
   --chip-editorial-rose-fg: #7a4545;
   --chip-editorial-gold: color-mix(in srgb, #c4a574 20%, var(--brand-cream));
@@ -511,6 +521,9 @@
       color-mix(in srgb, var(--map-hatch) 35%, transparent) 2px,
       color-mix(in srgb, var(--map-hatch) 35%, transparent) 3px
     );
+  }
+  .parcel-glow {
+    filter: drop-shadow(0 0 6px var(--map-lot-glow));
   }
 }
 

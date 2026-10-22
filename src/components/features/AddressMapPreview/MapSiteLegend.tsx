@@ -33,30 +33,28 @@ export function MapSiteLegend({
 
   return (
     <div
-      className="border-t border-border-luxury bg-surface-luxury/50 px-4 py-3.5 sm:px-5"
+      className="border-t border-slate-200 bg-white px-4 py-3.5 sm:px-5"
       role="region"
       aria-label="Site reading legend"
     >
-      <p className="font-label text-luxury-taupe">Site reading</p>
+      <p className="font-label text-slate-500">Site reading</p>
       <ul className="mt-2.5 space-y-1.5">
-        <li className="flex items-center gap-2 text-[12px] leading-snug text-text-luxury">
+        <li className="flex items-center gap-2 text-[12px] leading-snug text-slate-800">
           <span
             className={cn(
-              "h-2.5 w-3.5 shrink-0 border border-text-luxury/70",
-              boundaryVerified
-                ? "bg-text-luxury/5"
-                : "border-dashed bg-map-lot-fill/80",
+              "h-2.5 w-3.5 shrink-0 border-2 border-map-lot-stroke bg-map-lot-stroke/15",
+              !boundaryVerified && "border-dashed",
             )}
             aria-hidden="true"
           />
           {lotLine}
         </li>
-        <li className="flex items-center gap-2 text-[12px] leading-snug text-text-luxury">
+        <li className="flex items-center gap-2 text-[12px] leading-snug text-slate-800">
           <span
-            className="map-hatch-swatch h-2.5 w-3.5 shrink-0 border border-dashed border-foreground/45"
+            className="h-2.5 w-3.5 shrink-0 border border-transparent"
             aria-hidden="true"
           />
-          District · {zoningLabel}
+          District code · {zoningLabel} — not drawn as a second outline
         </li>
       </ul>
       <p className="mt-2 text-[11px] leading-snug text-text-tertiary">
@@ -73,7 +71,7 @@ export function MapSiteLegend({
           href={SRC.esriWorldImagery.href}
           target="_blank"
           rel="noopener noreferrer"
-          className="font-medium text-text-luxury underline-offset-2 hover:underline"
+          className="font-medium text-slate-800 underline-offset-2 hover:underline"
         >
           {SRC.esriWorldImagery.label}
         </a>
@@ -83,7 +81,7 @@ export function MapSiteLegend({
           href={SRC.mapboxGeocoding.href}
           target="_blank"
           rel="noopener noreferrer"
-          className="font-medium text-text-luxury underline-offset-2 hover:underline"
+          className="font-medium text-slate-800 underline-offset-2 hover:underline"
         >
           {SRC.mapboxGeocoding.label}
         </a>

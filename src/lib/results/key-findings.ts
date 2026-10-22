@@ -46,103 +46,118 @@ export function providerDisplayName(
   return "lot GIS";
 }
 
+/** Fixed order — every search shows every unit, including unverified ones. */
+export const KEY_FINDING_IDS: readonly KeyFindingId[] = [
+  "zoning",
+  "mapblklot",
+  "lot-area",
+  "parcel-boundary",
+  "overlays",
+  "unit-capacity",
+  "placement",
+  "certification",
+  "transport",
+  "lot-readiness",
+  "adu",
+  "sb9",
+] as const;
+
 /**
- * Key findings from a zoning report. Only omit a row when the field is
- * absent — never drop zoning, lot area, overlays, dimensions, or ADU when
- * the report exists. Copy is derived from engine fields; not legal advice.
+ * Key findings from a zoning report. Every unit is always present when a
+ * report exists — unverified GIS or empty findings still get a row.
+ * Copy is derived from engine fields; not legal advice.
  */
 export function buildKeyFindings(report: ZoningReport | null): KeyFinding[] {
   if (!report) return [];
 
-  const findings: KeyFinding[] = [];
   const isJurisdictionContext = report.analysisScope === "jurisdiction_context";
   const overlaysUnchecked = report.overlaysVerified !== true;
   const providerLabel = report.zoningProvider?.trim() || null;
+  const zoningLabel = report.zoning.trim();
+  const zoningKnown =
+    !isJurisdictionContext &&
+    zoningLabel.length > 0 &&
+    zoningLabel.toLowerCase() !== "not verified" &&
+    zoningLabel.toLowerCase() !== "unverified";
 
-  if (isJurisdictionContext) {
-    findings.push({
-      id: "zoning",
-      text: "Base zoning was not verified at this coordinate — candidacy uses published county/city guidance plus state profiles.",
-    });
-  } else if (report.zoning) {
-    findings.push({
-      id: "zoning",
-      text: `District ${report.zoning} from ${providerDisplayName(providerLabel)}. Confirm occupancy and wheeled-unit rules with local Planning.`,
-    });
-  }
+  const zoning: KeyFinding = {
+    id: "zoning",
+    text: zoningKnown
+      ? `District ${report.zoning} from ${providerDisplayName(providerLabel)}. Confirm occupancy and wheeled-unit rules with local Planning.`
+      : "Base zoning was not verified at this coordinate — candidacy uses published county/city guidance plus state profiles.",
+  };
 
-  if (report.mapblklot) {
-    findings.push({
-      id: "mapblklot",
-      text: `APN / mapblklot ${report.mapblklot}.`,
-    });
-  }
+  const mapblklot: KeyFinding = {
+    id: "mapblklot",
+    text: report.mapblklot
+      ? `APN / mapblklot ${report.mapblklot}.`
+      : "APN / mapblklot was not verified for this search.",
+  };
 
-  if (report.lotSizeSqFt != null && report.lotSizeSqFt > 0) {
-    findings.push({
-      id: "lot-area",
-      text: `Lot area ${report.lotSizeSqFt.toLocaleString()} sq ft from GIS — still confirm setbacks and coverage with a survey before delivery.`,
-    });
-  } else {
-    findings.push({
-      id: "lot-area",
-      text: "Lot area was not verified from GIS for this search — treat size-dependent pathways as provisional.",
-    });
-  }
+  const lotArea: KeyFinding = {
+    id: "lot-area",
+    text:
+      report.lotSizeSqFt != null && report.lotSizeSqFt > 0
+        ? `Lot area ${report.lotSizeSqFt.toLocaleString()} sq ft from GIS — still confirm setbacks and coverage with a survey before delivery.`
+        : "Lot area was not verified from GIS for this search — treat size-dependent pathways as provisional.",
+  };
 
-  if (report.parcelBoundary) {
-    findings.push({
-      id: "parcel-boundary",
-      text:
-        report.boundarySource === "mock"
-          ? "Parcel outline is demo assessor geometry for this sample — not a recorded survey."
-          : "Assessor parcel boundary is drawn from GIS — not a recorded survey.",
-    });
-  }
+  const parcelBoundary: KeyFinding = {
+    id: "parcel-boundary",
+    text: report.parcelBoundary
+      ? report.boundarySource === "mock"
+        ? "Parcel outline is demo assessor geometry for this sample — not a recorded survey."
+        : "Assessor parcel boundary is drawn from GIS — not a recorded survey."
+      : "Parcel outline was not verified — map geometry is schematic only, not a recorded survey.",
+  };
 
-  findings.push({
+  const overlays: KeyFinding = {
     id: "overlays",
     text:
       isJurisdictionContext || overlaysUnchecked
         ? "Overlay layers (coastal, fire, historic, tiny-home) were not verified for this parcel."
         : "Overlay facts were checked against mapped layers where available — still confirm with Planning/Building.",
-  });
+  };
 
-  if (report.unitCapacity) {
-    findings.push({
-      id: "unit-capacity",
-      text: `GIS lot area supports up to ${report.unitCapacity.maxAllowableUnits} dwelling units on this parcel — confirm locally. Unit capacity is not a THOW placement permit.`,
-    });
-  }
+  const unitCapacity: KeyFinding = {
+    id: "unit-capacity",
+    text: report.unitCapacity
+      ? `GIS lot area supports up to ${report.unitCapacity.maxAllowableUnits} dwelling units on this parcel — confirm locally. Unit capacity is not a THOW placement permit.`
+      : "Dwelling-unit capacity was not verified because lot area is unknown. Confirm locally. Unit capacity is not a THOW placement permit.",
+  };
 
-  findings.push({
-    id: "placement",
-    text: `Placement ${statusWord(report.dimensions.placement.status)} — local THOW / park-model path. A THOW is not automatically an ADU.`,
-  });
-  findings.push({
-    id: "certification",
-    text: `Certification ${statusWord(report.dimensions.certification.status)} — size and seal fit for the featured plan.`,
-  });
-  findings.push({
-    id: "transport",
-    text: `Transport ${statusWord(report.dimensions.transport.status)} — delivery and route logistics; oversize permits still depend on the hauler route.`,
-  });
-  findings.push({
-    id: "lot-readiness",
-    text: `Lot readiness ${statusWord(report.dimensions.lotReadiness.status)} — utilities and occupancy readiness.`,
-  });
-
-  findings.push({
-    id: "adu",
-    text: `ADU pathway ${statusWord(report.adu.status)} (optional — not automatic from wheeled placement).`,
-  });
-
-  if (report.sb9) {
-    findings.push({
+  return [
+    zoning,
+    mapblklot,
+    lotArea,
+    parcelBoundary,
+    overlays,
+    unitCapacity,
+    {
+      id: "placement",
+      text: `Placement ${statusWord(report.dimensions.placement.status)} — local THOW / park-model path. A THOW is not automatically an ADU.`,
+    },
+    {
+      id: "certification",
+      text: `Certification ${statusWord(report.dimensions.certification.status)} — size and seal fit for the featured plan.`,
+    },
+    {
+      id: "transport",
+      text: `Transport ${statusWord(report.dimensions.transport.status)} — delivery and route logistics; oversize permits still depend on the hauler route.`,
+    },
+    {
+      id: "lot-readiness",
+      text: `Lot readiness ${statusWord(report.dimensions.lotReadiness.status)} — utilities and occupancy readiness.`,
+    },
+    {
+      id: "adu",
+      text: `ADU pathway ${statusWord(report.adu.status)} (optional — not automatic from wheeled placement).`,
+    },
+    {
       id: "sb9",
-      text: `SB 9 ${statusWord(report.sb9.status)} (other pathway — does not set THOW overall).`,
-    });
-  }
-
-  return findings;
+      text: report.sb9
+        ? `SB 9 ${statusWord(report.sb9.status)} (other pathway — does not set THOW overall).`
+        : "SB 9 was not scored for this search (other pathway — does not set THOW overall).",
+    },
+  ];
 }
