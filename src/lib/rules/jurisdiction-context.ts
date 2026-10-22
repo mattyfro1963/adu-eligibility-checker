@@ -10,11 +10,7 @@ import {
   type ResolvedJurisdiction,
 } from "@/lib/content/resolve-jurisdiction";
 import type { JurisdictionNote } from "@/lib/content/ca-tiny-home-regulations";
-import { evaluateCertification } from "@/lib/rules/certification";
-import { computeThowOverall } from "@/lib/rules/compute-thow-overall";
-import { evaluateLotReadiness } from "@/lib/rules/lot-readiness";
 import {
-  evaluatePlacement,
   inferExpressThowPathFromText,
   inferPlacementBanFromText,
 } from "@/lib/rules/placement";
@@ -23,7 +19,6 @@ import {
   thowSummaryForStatus,
   UNSUPPORTED_STATE_THOW_COPY,
 } from "@/lib/rules/thow-summary";
-import { evaluateTransport } from "@/lib/rules/transport";
 import { SRC } from "@/lib/regulations/sources";
 import type { CitedClaim, SourceRef } from "@/lib/regulations/types";
 import type { GeocodeResult } from "@/lib/types/gis";
@@ -33,6 +28,11 @@ import type {
   ZoningReport,
 } from "@/lib/types/zoning";
 import { normalizeRegionCode } from "@/lib/regulations/states/registry";
+import {
+  evaluateFeaturedPlansForLot,
+  PREFERRED_FEATURED_PLAN_ID,
+  worstThowOverall,
+} from "@/lib/thow/plans";
 
 const BASE_ADU_SOURCES = [
   SRC.govChapter13,
@@ -40,7 +40,11 @@ const BASE_ADU_SOURCES = [
   SRC.hcdTinyHomesIb,
 ] as const;
 const BASE_SB9_SOURCES = [SRC.gov65852_21, SRC.hcdSb9] as const;
-const BASE_THOW_SOURCES = [SRC.hcdTinyHomesIb, SRC.hcdAdu, SRC.noahDwelling] as const;
+const BASE_THOW_SOURCES = [
+  SRC.hcdTinyHomesIb,
+  SRC.hcdAdu,
+  SRC.noahDwelling,
+] as const;
 
 const EMPTY_OVERLAYS = {
   tinyHomeFriendly: false,
@@ -142,9 +146,7 @@ export function inferAduPostureFromNote(
 }
 
 /** Placement posture from jurisdiction notes (separate from ADU pathway). */
-export function inferPlacementPostureFromNote(
-  note: JurisdictionNote | null,
-): {
+export function inferPlacementPostureFromNote(note: JurisdictionNote | null): {
   express: boolean;
   ban: boolean;
   temporaryOnly: boolean;
@@ -229,15 +231,12 @@ function buildSb9Result(): EligibilityResult {
 
 function unsupportedStateReport(input: JurisdictionContextInput): ZoningReport {
   const region = normalizeRegionCode(input.region);
-  const restricted: EligibilityResult = {
-    status: "restricted",
-    reasons: [
-      {
-        text: UNSUPPORTED_STATE_THOW_COPY,
-        sources: [...BASE_THOW_SOURCES],
-      },
-    ],
-  };
+  const { featuredPlans, planRecommendation, evaluations } =
+    evaluateFeaturedPlansForLot({
+      parcel: null,
+      region,
+    });
+  const primary = evaluations[0]!;
 
   return {
     addressId: input.addressId,
@@ -251,20 +250,9 @@ function unsupportedStateReport(input: JurisdictionContextInput): ZoningReport {
       text: UNSUPPORTED_STATE_THOW_COPY,
       sources: [...BASE_THOW_SOURCES],
     },
-    dimensions: {
-      placement: restricted,
-      certification: evaluateCertification({}),
-      transport: {
-        status: "restricted",
-        reasons: [
-          {
-            text: UNSUPPORTED_STATE_THOW_COPY,
-            sources: [...BASE_THOW_SOURCES],
-          },
-        ],
-      },
-      lotReadiness: restricted,
-    },
+    dimensions: primary.dimensions,
+    featuredPlans,
+    planRecommendation,
     adu: {
       status: "warning",
       reasons: [
@@ -301,31 +289,39 @@ export function evaluateJurisdictionContext(
   }
 
   const region = normalizeRegionCode(input.region) || "CA";
-  const resolved = resolveJurisdictionGuide(input.place, input.county);
+  const resolved = resolveJurisdictionGuide(input.place, input.county, region);
   const primaryNote = resolved.city ?? resolved.county;
   const placementSignals = inferPlacementPostureFromNote(primaryNote);
   const aduStatus = inferAduPostureFromNote(primaryNote);
 
-  const placement = evaluatePlacement(null, {
-    jurisdictionFallback: true,
-    jurisdictionExpressPath: placementSignals.express,
-    explicitBan: placementSignals.ban,
-  });
-  const certification = evaluateCertification({});
-  const transport = evaluateTransport({ region });
-  const lotReadiness = evaluateLotReadiness(null, {
-    jurisdictionFallback: true,
-    temporaryOnly: placementSignals.temporaryOnly,
-    utilityConnectBanned: placementSignals.utilityBanned,
-  });
+  const { evaluations, featuredPlans, planRecommendation } =
+    evaluateFeaturedPlansForLot({
+      parcel: null,
+      region,
+      placementContext: {
+        jurisdictionFallback: true,
+        jurisdictionExpressPath: placementSignals.express,
+        explicitBan: placementSignals.ban,
+      },
+      lotReadinessContext: {
+        jurisdictionFallback: true,
+        jurisdictionExpressPath: placementSignals.express,
+        temporaryOnly: placementSignals.temporaryOnly,
+        utilityConnectBanned: placementSignals.utilityBanned,
+      },
+    });
 
-  const dimensions = {
-    placement,
-    certification,
-    transport,
-    lotReadiness,
-  };
-  const thowOverall = computeThowOverall(dimensions);
+  const useRecommended = planRecommendation.recommendedPlanId != null;
+  const recommendedId =
+    planRecommendation.recommendedPlanId ?? PREFERRED_FEATURED_PLAN_ID;
+  const recommendedEval =
+    evaluations.find((e) => e.plan.id === recommendedId) ?? evaluations[0]!;
+  const cambria1 = evaluations.find((e) => e.plan.id === "cambria-1")!;
+  const cambria2 = evaluations.find((e) => e.plan.id === "cambria-2")!;
+  const primary = useRecommended ? recommendedEval : cambria1;
+  const thowOverall = useRecommended
+    ? primary.thowOverall
+    : worstThowOverall(cambria1.thowOverall, cambria2.thowOverall);
 
   const adu = buildAduPathwayResult(resolved, primaryNote, aduStatus);
   const sb9 =
@@ -350,7 +346,9 @@ export function evaluateJurisdictionContext(
     overall: thowOverall,
     thowOverall,
     thowSummary: thowSummaryForStatus(thowOverall),
-    dimensions,
+    dimensions: primary.dimensions,
+    featuredPlans,
+    planRecommendation,
     adu,
     sb9,
     analysisScope: "jurisdiction_context",

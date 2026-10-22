@@ -19,6 +19,12 @@ export type LotReadinessContext = {
   temporaryOnly?: boolean;
   /** Jurisdiction fallback (no lot GIS). */
   jurisdictionFallback?: boolean;
+  /**
+   * Published express THOW / park-model / RV path from jurisdiction notes.
+   * With jurisdiction fallback (and no utility/temporary ban), supports Eligible
+   * lot readiness — same honesty pattern as tinyHomeFriendly overlays.
+   */
+  jurisdictionExpressPath?: boolean;
 };
 
 /**
@@ -57,6 +63,13 @@ export function evaluateLotReadiness(
   const overlaysChecked = parcel?.overlaysVerified === true;
 
   if (context.jurisdictionFallback || !parcel) {
+    if (context.jurisdictionExpressPath === true) {
+      reasons.push({
+        text: "Lot-level utilities, fire access, setbacks, and pad readiness were not verified, but published guidance supports an express wheeled placement path. Still obtain written utility and occupancy approval before delivery.",
+        sources: [...READY_SOURCES],
+      });
+      return { status: "eligible", reasons };
+    }
     reasons.push({
       text: "Water, sewer/septic, electric, fire access, setbacks, and pad readiness were not verified at lot level. Confirm utility hookups and long-term occupancy rules with the city or county before delivery.",
       sources: [...READY_SOURCES],

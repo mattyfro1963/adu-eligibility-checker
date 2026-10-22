@@ -5,7 +5,7 @@ import Link from "next/link";
 import { AlertTriangle, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LegalConsentNote } from "@/components/features/LegalConsentNote/LegalConsentNote";
-import { buildConnectHref as buildConnectDeepLink } from "@/lib/content/connect-url";
+import { CONNECT_SECTION_ID } from "@/lib/content/connect-url";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { EligibilityStatus } from "@/lib/types/zoning";
@@ -37,28 +37,6 @@ const BUDGET_OPTIONS = [
   { value: "unsure", label: "Not sure yet" },
 ] as const;
 
-function buildLeadConnectHref(props: {
-  address: string;
-  lat: number;
-  lng: number;
-  overallStatus: string;
-}): string {
-  return buildConnectDeepLink(
-    {
-      addressId: `prefill-${props.lat.toFixed(5)}-${props.lng.toFixed(5)}`,
-      formattedAddress: props.address,
-      streetLine: props.address,
-      place: "",
-      county: "",
-      region: "CA",
-      postcode: "",
-      lat: props.lat,
-      lng: props.lng,
-    },
-    props.overallStatus as EligibilityStatus,
-  );
-}
-
 export function LeadFallbackForm({
   address,
   lat,
@@ -77,12 +55,6 @@ export function LeadFallbackForm({
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const connectHref = buildLeadConnectHref({
-    address,
-    lat,
-    lng,
-    overallStatus: status,
-  });
 
   async function handleRestrictedSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -219,9 +191,7 @@ export function LeadFallbackForm({
           ) : null}
           <div className="flex flex-col gap-3 sm:flex-row">
             <div className="flex-1 space-y-1.5">
-              <Label htmlFor="lead-warning-name" className="sr-only">
-                Full name
-              </Label>
+              <Label htmlFor="lead-warning-name">Full name</Label>
               <Input
                 id="lead-warning-name"
                 type="text"
@@ -229,14 +199,12 @@ export function LeadFallbackForm({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Your name"
+                autoComplete="name"
                 className="h-11 rounded-[10px] border-border bg-card"
-                aria-label="Full name for specialist review"
               />
             </div>
             <div className="flex-1 space-y-1.5">
-              <Label htmlFor="lead-warning-email" className="sr-only">
-                Email address
-              </Label>
+              <Label htmlFor="lead-warning-email">Email</Label>
               <Input
                 id="lead-warning-email"
                 type="email"
@@ -244,8 +212,8 @@ export function LeadFallbackForm({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your@email.com"
+                autoComplete="email"
                 className="h-11 rounded-[10px] border-border bg-card"
-                aria-label="Email for specialist review"
               />
             </div>
           </div>
@@ -285,8 +253,8 @@ export function LeadFallbackForm({
           </p>
           <p className="text-sm font-light break-words text-muted-foreground">
             You may still have a lawful pathway, such as a permanent-foundation
-            ADU. Specialists audit complex lots and route referrals through
-            our review queue — not licensed legal representation.
+            ADU. Specialists audit complex lots and route referrals through our
+            review queue — not licensed legal representation.
           </p>
         </div>
       </div>
@@ -308,9 +276,7 @@ export function LeadFallbackForm({
       <form onSubmit={handleRestrictedSubmit} className="flex flex-col gap-3">
         <div className="flex flex-col gap-3 sm:flex-row">
           <div className="flex-1 space-y-1.5">
-            <Label htmlFor="lead-name" className="sr-only">
-              Full name
-            </Label>
+            <Label htmlFor="lead-name">Full name</Label>
             <Input
               id="lead-name"
               type="text"
@@ -318,14 +284,12 @@ export function LeadFallbackForm({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Your name"
+              autoComplete="name"
               className="h-11 rounded-[10px] border-border bg-card"
-              aria-label="Full name for expert review"
             />
           </div>
           <div className="flex-1 space-y-1.5">
-            <Label htmlFor="lead-email" className="sr-only">
-              Email address
-            </Label>
+            <Label htmlFor="lead-email">Email</Label>
             <Input
               id="lead-email"
               type="email"
@@ -333,8 +297,8 @@ export function LeadFallbackForm({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
+              autoComplete="email"
               className="h-11 rounded-[10px] border-border bg-card"
-              aria-label="Email for expert review"
             />
           </div>
         </div>
@@ -345,7 +309,7 @@ export function LeadFallbackForm({
               htmlFor="lead-intent"
               className="text-xs text-muted-foreground"
             >
-              Intent
+              Project intent
             </Label>
             <select
               id="lead-intent"
@@ -353,7 +317,6 @@ export function LeadFallbackForm({
               value={intent}
               onChange={(e) => setIntent(e.target.value)}
               className="h-11 w-full rounded-[10px] border border-border bg-card px-3 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              aria-label="Project intent"
             >
               <option value="" disabled>
                 Select intent
@@ -378,7 +341,6 @@ export function LeadFallbackForm({
               value={budget}
               onChange={(e) => setBudget(e.target.value)}
               className="h-11 w-full rounded-[10px] border border-border bg-card px-3 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              aria-label="Budget band"
             >
               <option value="" disabled>
                 Select budget
@@ -399,7 +361,7 @@ export function LeadFallbackForm({
               <p className="text-xs text-muted-foreground">
                 Or{" "}
                 <Link
-                  href={connectHref}
+                  href={`#${CONNECT_SECTION_ID}`}
                   className="font-medium text-foreground underline-offset-2 hover:underline"
                 >
                   continue to builder match below
@@ -412,7 +374,9 @@ export function LeadFallbackForm({
             disabled={isSubmitting}
             className="h-11 min-h-[44px] w-full shadow-editorial sm:w-auto"
           >
-            {isSubmitting ? "Submitting…" : "Request Review"}
+            {isSubmitting
+              ? "Submitting…"
+              : "Request specialist compliance review"}
           </Button>
         </div>
       </form>

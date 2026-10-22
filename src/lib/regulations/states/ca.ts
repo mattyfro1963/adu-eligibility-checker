@@ -124,6 +124,20 @@ export const CA_OUTLINE: OutlineSection[] = [
     ],
   },
   {
+    id: "transport",
+    title: "Transport & delivery",
+    claims: [
+      {
+        text: "CAMBRIA plans are designed to reduce pilot-car requirements. Final pilot-car requirements depend on state permit rules and the delivery route. California legal max width is 102 in (8 ft 6 in) under Vehicle Code § 35100 unless permitted.",
+        sources: [SRC.caCvc35100, SRC.caDotVehicleWidths, SRC.caDotOversize],
+      },
+      {
+        text: "Oversize moves need Caltrans transportation permits; pilot-car count is route- and dimension-specific (Single Trip Pilot Car Maps / TPM Ch. 5) — never a blanket no-pilot clearance for ~11 ft CAMBRIA loads.",
+        sources: [SRC.caDotOversize, SRC.caDotPilotCarMaps, SRC.caDotTpmCh5],
+      },
+    ],
+  },
+  {
     id: "cabin",
     title: "Cabin",
     claims: [

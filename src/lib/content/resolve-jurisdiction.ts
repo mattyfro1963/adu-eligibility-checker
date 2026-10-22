@@ -2,13 +2,19 @@
  * Resolve COUNTY_GUIDES / nested cities from geocoded place + county.
  * Zero React. Matching is normalized — "San Francisco County" ≡ "San Francisco";
  * "South San Francisco" does not match San Francisco.
+ * Region selects CA / OR / WA corpus (default CA for legacy callers).
  */
 
-import {
-  COUNTY_GUIDES,
-  type JurisdictionNote,
-  type JurisdictionRequirementSeed,
-} from "@/lib/content/ca-tiny-home-regulations";
+import { COUNTY_GUIDES as CA_COUNTY_GUIDES } from "@/lib/content/ca-tiny-home-regulations";
+import { COUNTY_GUIDES as OR_COUNTY_GUIDES } from "@/lib/content/or-tiny-home-regulations";
+import { COUNTY_GUIDES as WA_COUNTY_GUIDES } from "@/lib/content/wa-tiny-home-regulations";
+import type {
+  JurisdictionNote,
+  JurisdictionRequirementSeed,
+} from "@/lib/content/state-tiny-home-guide-types";
+import { normalizeRegionCode } from "@/lib/regulations/states/registry";
+
+export type { JurisdictionNote, JurisdictionRequirementSeed };
 
 export type ResolvedJurisdiction = {
   county: JurisdictionNote | null;
@@ -16,6 +22,27 @@ export type ResolvedJurisdiction = {
   countyLabel: string;
   cityLabel: string | null;
 };
+
+export type GuideRegion = "CA" | "OR" | "WA";
+
+function countyGuidesForRegion(region?: string | null): JurisdictionNote[] {
+  const code = normalizeRegionCode(region ?? "CA");
+  if (code === "OR") return OR_COUNTY_GUIDES;
+  if (code === "WA") return WA_COUNTY_GUIDES;
+  return CA_COUNTY_GUIDES;
+}
+
+function defaultStateLabel(region: GuideRegion): string {
+  if (region === "OR") return "Oregon";
+  if (region === "WA") return "Washington";
+  return "California";
+}
+
+function toGuideRegion(region?: string | null): GuideRegion {
+  const code = normalizeRegionCode(region ?? "CA");
+  if (code === "OR" || code === "WA") return code;
+  return "CA";
+}
 
 /** Strip common jurisdiction prefixes/suffixes for equality checks. */
 export function normalizeJurisdictionName(name: string): string {
@@ -58,9 +85,13 @@ export function requirementsFromJurisdictionNote(
   return seeds;
 }
 
-function formatCountyLabel(county: string, place: string): string {
+function formatCountyLabel(
+  county: string,
+  place: string,
+  region: GuideRegion,
+): string {
   const raw = county.trim() || place.trim();
-  if (!raw) return "California";
+  if (!raw) return defaultStateLabel(region);
   if (/\bcounty\b/i.test(raw)) return raw;
   // Consolidated city-county (San Francisco) keeps the place name without "County".
   if (normalizeJurisdictionName(raw) === "san francisco") {
@@ -76,13 +107,17 @@ export function isSanFranciscoPlace(place: string): boolean {
 }
 
 /**
- * Match place + county against COUNTY_GUIDES and nested cities[].
+ * Match place + county against the region's COUNTY_GUIDES and nested cities[].
  * City match under a county wins over bare place≈county name collisions.
+ * @param region USPS region — selects CA / OR / WA guides (default CA).
  */
 export function resolveJurisdictionGuide(
   place: string,
   county: string,
+  region?: string | null,
 ): ResolvedJurisdiction {
+  const guideRegion = toGuideRegion(region);
+  const guides = countyGuidesForRegion(guideRegion);
   const placeNorm = normalizeJurisdictionName(place);
   const countyNorm = normalizeJurisdictionName(county);
 
@@ -91,7 +126,7 @@ export function resolveJurisdictionGuide(
 
   // Prefer city-under-county when place matches a nested city (Oakland → Alameda).
   if (placeNorm) {
-    for (const guide of COUNTY_GUIDES) {
+    for (const guide of guides) {
       const city = (guide.cities ?? []).find(
         (c) => normalizeJurisdictionName(c.name) === placeNorm,
       );
@@ -108,7 +143,7 @@ export function resolveJurisdictionGuide(
     const needle = countyNorm || placeNorm;
     if (needle) {
       matchedCounty =
-        COUNTY_GUIDES.find(
+        guides.find(
           (guide) => normalizeJurisdictionName(guide.name) === needle,
         ) ?? null;
     }
@@ -127,7 +162,7 @@ export function resolveJurisdictionGuide(
     city: matchedCity,
     countyLabel: matchedCounty
       ? matchedCounty.name
-      : formatCountyLabel(county, place),
+      : formatCountyLabel(county, place, guideRegion),
     cityLabel: matchedCity?.name ?? null,
   };
 }

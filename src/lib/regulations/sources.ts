@@ -74,13 +74,69 @@ export const SRC = {
     label: "WSDOT — Oversize / Overweight Permits",
     href: "https://wsdot.wa.gov/travel/commercial-vehicles/commercial-vehicle-permits",
   },
+  waWacPilotEscort: {
+    label: "WAC 468-38-100 — Pilot / escort vehicle requirements",
+    href: "https://app.leg.wa.gov/WAC/default.aspx?cite=468-38-100",
+  },
+  waDotPermitForm560002: {
+    label: "WSDOT Form 560-002 — Oversize / overweight permit conditions",
+    href: "https://wsdot.wa.gov/publications/fulltext/forms/560-002.PDF",
+  },
+  waWacParkTrailer: {
+    label: "WAC 296-150P — Recreational park trailers",
+    href: "https://app.leg.wa.gov/wac/default.aspx?cite=296-150p&full=true",
+  },
+  waLniFasLaws: {
+    label: "WA L&I — Manufactured / modular laws & rules",
+    href: "https://lni.wa.gov/licensing-permits/manufactured-modular-mobile-structures/laws-rules",
+  },
+  waLniModularPortal: {
+    label: "WA L&I — Modular & other mobile structures",
+    href: "https://lni.wa.gov/licensing-permits/manufactured-modular-mobile-structures/modular-other-mobile-structures/",
+  },
   orDotOversize: {
     label: "ODOT — Over-Dimension Permits",
     href: "https://www.oregon.gov/odot/mct/pages/over-dimension.aspx",
   },
+  orDotLegalDims: {
+    label: "ODOT — Legal vehicle dimensions",
+    href: "https://www.oregon.gov/odot/mct/pages/legal-vehicle-dimensions.aspx",
+  },
+  orDotOverDimOps: {
+    label: "ODOT — Over-Dimension Operations",
+    href: "https://www.oregon.gov/odot/MCT/Pages/Over-Dimension-Operations-Oregon.aspx",
+  },
+  orDotPermittableTables: {
+    label: "ODOT — Permittable dimensions & weight tables",
+    href: "https://www.oregon.gov/odot/mct/pages/permittable-vehicle-dimensions-weight-tables.aspx",
+  },
+  orOarPilotVehicles: {
+    label: "OAR 734-078-0035 — Pilot vehicles",
+    href: "https://secure.sos.state.or.us/oard/viewSingleRule.action?ruleVrsnRsn=322439",
+  },
+  orDotPilotGuide: {
+    label: "ODOT — Pilot car operations guide (PDF)",
+    href: "https://www.oregon.gov/odot/MCT/Documents/pilotcarguide.pdf",
+  },
   caDotOversize: {
     label: "Caltrans — Oversize / Overweight Permits",
     href: "https://dot.ca.gov/programs/traffic-operations/transportation-permits",
+  },
+  caCvc35100: {
+    label: "Vehicle Code § 35100 — Width limit",
+    href: "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=VEH&sectionNum=35100",
+  },
+  caDotVehicleWidths: {
+    label: "Caltrans — Legal vehicle widths",
+    href: "https://dot.ca.gov/programs/traffic-operations/legal-truck-access/vehicle-widths",
+  },
+  caDotPilotCarMaps: {
+    label: "Caltrans — Single Trip Pilot Car Maps",
+    href: "https://dot.ca.gov/programs/traffic-operations/transportation-permits/stpcmaps",
+  },
+  caDotTpmCh5: {
+    label: "Caltrans TPM Ch. 5 — Routing & safety (PDF)",
+    href: "https://dot.ca.gov/-/media/dot-media/programs/traffic-operations/documents/transportation-permits/tpm/2024-cvo-transportation-permits-manual-chapter-5-a11y.pdf",
   },
   cbscBulletin2601: {
     label: "CBSC Information Bulletin 26-01",

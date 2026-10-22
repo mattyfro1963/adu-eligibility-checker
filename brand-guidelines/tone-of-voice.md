@@ -53,26 +53,34 @@ UTM and outbound links use `utm_source=doihave.space`. Affiliate links use `rel=
 
 ## Visual voice (for copywriters coordinating with design)
 
-Canonical tokens live in `src/app/globals.css` (not legacy README color notes). The primary checker (`/`) is a calm luxury base — cream canvas, charcoal type, muted taupe secondary — with the map visually leading. Vermilion is a sparse accent (links, small marks), not page or CTA energy. Status emerald / amber / rose is eligibility-only.
+Canonical tokens live in `src/app/globals.css` (not legacy README color notes). The primary checker (`/`) is modern luxury + place-based brochure energy — cream canvas, charcoal type, muted taupe secondary — with the map visually leading. Vermilion is a sparse accent (links, small marks), not page or CTA energy. Status emerald / amber / rose is eligibility-only (live outcomes); sample chips use muted editorial cream/taupe/rose/gold tokens.
 
 | Element | Spec |
 |---------|------|
 | Checker canvas | `--surface-luxury` / `--luxury-cream` |
-| Body / secondary type | `--text-secondary` · luxury headings `--text-luxury` / `--luxury-charcoal` |
+| Checker chrome borders | `--border-luxury` (taupe-leaning hairline) |
+| Search shell shadow | `--shadow-brochure-input` / `.shadow-brochure-input` |
+| Body / UI type | Lato (`--font-sans` / `--font-lato`) — body **15–16px** (~1.6 line-height), labels, eyebrows, badges, inputs, data (`.font-mono`), topic titles, results · secondary `--text-secondary` · luxury headings `--text-luxury` / `--luxury-charcoal` |
+| Display / hero H1 | Lato via `.font-display` — **bold 700** · hero scale **3rem / 48px → 4rem / 64px**, tight leading (hierarchy via scale + weight, not a second family) |
 | Muted / captions | `--text-tertiary` · taupe eyebrows `--luxury-taupe` |
 | Default actions | `--action-primary` (charcoal/ink) — not vermilion |
 | Brand accent (sparse) | `--text-brand` / `--action-brand` vermilion `#fc4a2b` |
-| Status — eligible | `--status-eligible` (+ `-fg` / `-muted` / `-border`) |
-| Status — warning | `--status-warning` family (`#f59e0b`) |
-| Status — restricted | `--status-restricted` |
+| Status — eligible | `--status-eligible` (+ `-fg` / `-muted` / `-border`) · vocabulary **Eligible**; live badge **Green** |
+| Status — warning | `--status-warning` family (`#f59e0b`) · vocabulary **Warning**; live badge **Yellow** |
+| Status — restricted | `--status-restricted` · vocabulary **Restricted**; live badge **Red** |
+| Sample chips (editorial only) | `--chip-editorial-fill` / `-border` / `-rose` / `-gold` (+ `-fg`) — muted brochure tones; label Warning / Restricted example outcomes clearly |
 | Map overlays | `--map-lot-*`, `--map-zone-*`, `--map-hatch` |
-| Headings | Söhn |
-| Eyebrow labels | IBM Plex Mono, 11px, uppercase, wide tracking |
-| Pull quotes / editorial display | Söhn |
+| Eyebrow labels | Lato via `.font-label` — 11px, uppercase, **light 300**, tracking **~0.18em** (architectural blueprint) |
 
-**Eyebrow pattern:** short uppercase mono labels — e.g. "Parcel evaluation", "Builder match · Lead routing", "State of California · ADU & SB 9". Prefer taupe/luxury over vermilion on the checker.
+**One font only:** Lato for everything (display, body, labels, technical specs). No Playfair Display, Instrument Serif, Outfit, Cormorant Garamond, Montserrat, Source Serif 4, Söhn, IBM Plex Mono, or any serif / second family.
 
-**Layout feel:** editorial/pro — max width ~1200px, cream map-forward surfaces, subtle shadows. Not SaaS dashboard noise.
+**Typography hierarchy:** titles = Lato bold (700) at large scale; body = crisp 15–16px Lato; eyebrows = wide-tracked light all-caps Lato.
+
+**Status vocabulary:** Eligible / Warning / Restricted — never "approved" or "denied". Live badges stay Green / Yellow / Red with `status-*` tokens; do not mute live eligibility into taupe.
+
+**Eyebrow pattern:** short uppercase Lato labels — e.g. "Lot readiness report", "Builder match · Lead routing", "State of California · ADU & SB 9". Prefer taupe/luxury over vermilion on chrome labels; keep dimension labels (Placement, Certification, Transport, Utilities) clear.
+
+**Layout feel:** editorial luxury — max width ~1200px, cream map-forward surfaces, thin taupe rules, soft brochure shadows. Not SaaS dashboard noise; not rustic cottage.
 
 ## Outcome-colored CTAs
 

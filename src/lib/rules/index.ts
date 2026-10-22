@@ -1,14 +1,14 @@
 import type { Parcel, ZoningReport } from "@/lib/types/zoning";
 import { evaluateAduStandard } from "@/lib/rules/adu-standard";
-import { evaluateCertification } from "@/lib/rules/certification";
-import { computeThowOverall } from "@/lib/rules/compute-thow-overall";
-import { evaluateLotReadiness } from "@/lib/rules/lot-readiness";
-import { evaluatePlacement } from "@/lib/rules/placement";
 import { evaluateSb9Eligibility } from "@/lib/rules/sb9-eligibility";
 import { thowSummaryForStatus } from "@/lib/rules/thow-summary";
-import { evaluateTransport } from "@/lib/rules/transport";
 import { computeUnitCapacity } from "@/lib/rules/unit-capacity";
 import type { ThowModelProfile } from "@/lib/rules/thow-models";
+import {
+  evaluateFeaturedPlansForLot,
+  PREFERRED_FEATURED_PLAN_ID,
+  worstThowOverall,
+} from "@/lib/thow/plans";
 
 export { computeThowOverall } from "@/lib/rules/compute-thow-overall";
 /** @deprecated Prefer computeThowOverall — kept for transitional imports. */
@@ -35,36 +35,61 @@ export {
 export type EvaluateEligibilityOptions = {
   /** USPS region (CA / OR / WA published). Defaults to CA for legacy lot GIS. */
   region?: string | null;
+  /**
+   * Optional single-model override for transitional callers.
+   * Featured CAMBRIA plans are always evaluated; when set, dimensions prefer
+   * the matching featured plan if present.
+   */
   model?: ThowModelProfile;
 };
 
 /**
- * Orchestrator: THOW dimensions drive overall; ADU is an optional pathway;
- * SB 9 remains computed but does not set overall.
+ * Orchestrator: evaluate CAMBRIA 1 + 2; THOW dimensions drive overall;
+ * ADU is an optional pathway; SB 9 remains computed but does not set overall.
  */
 export function evaluateEligibility(
   parcel: Parcel,
   options: EvaluateEligibilityOptions = {},
 ): ZoningReport {
   const region = options.region ?? "CA";
-  const model = options.model;
 
-  const placement = evaluatePlacement(parcel, {
+  const placementContext = {
     expressLocalPath:
       parcel.overlaysVerified === true && parcel.overlays.tinyHomeFriendly,
-  });
-  const certification = evaluateCertification({ model });
-  const transport = evaluateTransport({ region, model });
-  const lotReadiness = evaluateLotReadiness(parcel, {});
-
-  const dimensions = {
-    placement,
-    certification,
-    transport,
-    lotReadiness,
   };
 
-  const thowOverall = computeThowOverall(dimensions);
+  const { evaluations, featuredPlans, planRecommendation } =
+    evaluateFeaturedPlansForLot({
+      parcel,
+      region,
+      placementContext,
+      lotReadinessContext: {},
+    });
+
+  const recommendedId =
+    planRecommendation.recommendedPlanId ?? PREFERRED_FEATURED_PLAN_ID;
+  const recommendedEval =
+    evaluations.find((e) => e.plan.id === recommendedId) ?? evaluations[0]!;
+  const cambria1 = evaluations.find((e) => e.plan.id === "cambria-1")!;
+  const cambria2 = evaluations.find((e) => e.plan.id === "cambria-2")!;
+
+  // When recommendation is null (both yellow or both red), use worst-of-two
+  // overall and CAMBRIA 1 dimensions for the legacy single-panel breakdown.
+  const useRecommended = planRecommendation.recommendedPlanId != null;
+  const primary = useRecommended ? recommendedEval : cambria1;
+  const thowOverall = useRecommended
+    ? primary.thowOverall
+    : worstThowOverall(cambria1.thowOverall, cambria2.thowOverall);
+
+  // Transitional model override: prefer matching featured plan dimensions.
+  let dimensions = primary.dimensions;
+  if (options.model) {
+    const match = evaluations.find((e) => e.model.id === options.model?.id);
+    if (match) {
+      dimensions = match.dimensions;
+    }
+  }
+
   const adu = evaluateAduStandard(parcel);
   const sb9 = evaluateSb9Eligibility(parcel);
   const unitCapacity = computeUnitCapacity(parcel, sb9.status);
@@ -80,6 +105,8 @@ export function evaluateEligibility(
     thowOverall,
     thowSummary: thowSummaryForStatus(thowOverall),
     dimensions,
+    featuredPlans,
+    planRecommendation,
     adu,
     sb9,
     analysisScope: "lot_zoning",

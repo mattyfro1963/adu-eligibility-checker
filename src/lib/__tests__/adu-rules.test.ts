@@ -3,10 +3,7 @@ import { evaluateEligibility } from "@/lib/rules";
 import { evaluateCertification } from "@/lib/rules/certification";
 import { computeThowOverall } from "@/lib/rules/compute-thow-overall";
 import { evaluateTransport } from "@/lib/rules/transport";
-import {
-  DEFAULT_11_4,
-  TRANSPORT_OPTIMIZED_11,
-} from "@/lib/rules/thow-models";
+import { DEFAULT_11_4, TRANSPORT_OPTIMIZED_11 } from "@/lib/rules/thow-models";
 import {
   THOW_SUMMARY_BY_STATUS,
   UNSUPPORTED_STATE_THOW_COPY,
@@ -76,26 +73,29 @@ describe("evaluateEligibility — THOW overall", () => {
     expect(report.dimensions.lotReadiness).toBeDefined();
   });
 
-  it("default 11.4 ft model → transport Yellow with route-qualified escort copy", () => {
+  it("default 11.4 ft model → transport Yellow with WAC escort cite in WA", () => {
     const transport = evaluateTransport({
       region: "WA",
       model: DEFAULT_11_4,
     });
     expect(transport.status).toBe("warning");
     expect(
+      reasonTexts(transport.reasons).some((r) => /WAC 468-38-100/i.test(r)),
+    ).toBe(true);
+    expect(
       reasonTexts(transport.reasons).some((r) =>
-        /No pilot car on qualifying routes/i.test(r),
+        /designed to reduce pilot-car requirements/i.test(r),
       ),
     ).toBe(true);
     expect(
       reasonTexts(transport.reasons).some((r) =>
-        /pilot-car need confirmed by state permit route/i.test(r),
+        /No pilot car on qualifying routes/i.test(r),
       ),
-    ).toBe(true);
+    ).toBe(false);
     expectCited(transport.reasons);
   });
 
-  it("≤11 ft optimized model → transport can be Green with route-qualified language", () => {
+  it("≤11 ft optimized model → WA transport eligible without blanket no-pilot claim", () => {
     const transport = evaluateTransport({
       region: "WA",
       model: TRANSPORT_OPTIMIZED_11,
@@ -103,9 +103,14 @@ describe("evaluateEligibility — THOW overall", () => {
     expect(transport.status).toBe("eligible");
     expect(
       reasonTexts(transport.reasons).some((r) =>
-        /route and permit confirmation required/i.test(r),
+        /oversize permits and route review are still required/i.test(r),
       ),
     ).toBe(true);
+    expect(
+      reasonTexts(transport.reasons).some((r) =>
+        /No pilot car on qualifying routes/i.test(r),
+      ),
+    ).toBe(false);
   });
 
   it("unknown certification → Yellow; never alone greens THOW overall", () => {
@@ -116,26 +121,28 @@ describe("evaluateEligibility — THOW overall", () => {
     ).toBe(true);
   });
 
-  it("ADU eligible ≠ THOW Green when placement/cert/transport are Yellow", () => {
+  it("ADU eligible ≠ THOW Green when placement is Yellow", () => {
     const report = evaluateEligibility(parcel("addr-r1-clean"));
     expect(report.adu.status).toBe("eligible");
+    // CAMBRIA cert is NOAH Green; placement/lot readiness still Yellow without express path.
+    expect(report.dimensions.placement.status).toBe("warning");
     expect(report.thowOverall).toBe("warning");
     expect(report.overall).toBe("warning");
-    expect(report.dimensions.placement.status).toBe("warning");
-    expect(report.dimensions.certification.status).toBe("warning");
   });
 
-  it("tinyHomeFriendly + NOAH optimized model can reach THOW Green", () => {
+  it("tinyHomeFriendly + CAMBRIA plans can reach THOW Green (option b)", () => {
     const report = evaluateEligibility(parcel("addr-r1-tiny"), {
-      model: TRANSPORT_OPTIMIZED_11,
+      region: "CA",
     });
     expect(report.dimensions.placement.status).toBe("eligible");
     expect(report.dimensions.certification.status).toBe("eligible");
-    expect(report.dimensions.transport.status).toBe("eligible");
+    // CA transport stays warning (route-specific); option (b) still allows overall Green.
+    expect(report.dimensions.transport.status).toBe("warning");
     expect(report.dimensions.lotReadiness.status).toBe("eligible");
     expect(report.thowOverall).toBe("eligible");
     expect(report.overall).toBe("eligible");
     expect(report.thowSummary.text).toBe(THOW_SUMMARY_BY_STATUS.eligible.text);
+    expect(report.planRecommendation?.recommendedPlanId).toBe("cambria-1");
     // ADU pathway remains independent
     expect(report.adu.status).toBe("eligible");
   });

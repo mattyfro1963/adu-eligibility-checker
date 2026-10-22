@@ -5,7 +5,7 @@ import { Slot } from "radix-ui";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-button border border-transparent bg-clip-padding text-sm font-medium tracking-[-0.02em] whitespace-nowrap transition-colors outline-none select-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-button border border-transparent bg-clip-padding text-sm font-medium tracking-[-0.02em] whitespace-nowrap transition-colors outline-none select-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
@@ -18,7 +18,12 @@ const buttonVariants = cva(
         ghost:
           "text-foreground hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground",
         destructive:
-          "bg-destructive/15 text-restricted hover:bg-destructive/25 focus-visible:border-destructive/40 focus-visible:ring-destructive/20",
+          "bg-status-restricted-muted text-status-restricted-fg hover:bg-status-restricted-muted focus-visible:border-status-restricted-border focus-visible:ring-status-restricted/30",
+        /** Live eligibility outcome CTAs — status tokens only (not editorial taupe). */
+        warning:
+          "border-status-warning-border bg-status-warning-muted text-status-warning-fg hover:border-status-warning/50",
+        restricted:
+          "border-status-restricted-border bg-status-restricted-muted text-status-restricted-fg hover:border-status-restricted/50",
         link: "rounded-none text-foreground underline-offset-4 hover:underline",
       },
       size: {

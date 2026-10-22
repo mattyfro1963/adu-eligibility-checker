@@ -11,8 +11,18 @@ import type {
   StateProfile,
 } from "@/lib/regulations/types";
 
-const classSources = [SRC.hcdTinyHomesIb, SRC.noahDwelling, SRC.rvia] as const;
-const transportSources = [SRC.waDotOversize] as const;
+const classSources = [
+  SRC.waWacParkTrailer,
+  SRC.waLniFasLaws,
+  SRC.waLniModularPortal,
+  SRC.noahDwelling,
+  SRC.rvia,
+] as const;
+const transportSources = [
+  SRC.waDotOversize,
+  SRC.waWacPilotEscort,
+  SRC.waDotPermitForm560002,
+] as const;
 
 export const WA_USE_DOCTRINE: CitedClaim[] = [
   {
@@ -20,11 +30,11 @@ export const WA_USE_DOCTRINE: CitedClaim[] = [
     sources: [...classSources],
   },
   {
-    text: "Park-model RVs (often ANSI A119.5) are commonly recreational / seasonal unless local rules allow longer occupancy. L&I / factory-built paths are different from PMRV classification — do not conflate them.",
+    text: "Recreational park trailers / park-model RVs are defined with ≤400 sq ft set-up and ANSI A119.5 under WAC 296-150P; the L&I insignia path differs from factory-built housing. Do not conflate recreational seals with a permanent dwelling permit.",
     sources: [...classSources],
   },
   {
-    text: "Do not assume California Chapter 13 ADU rules apply in Washington. Local THOW-as-ADU or companion-unit ordinances are jurisdiction-specific.",
+    text: "Local THOW-as-ADU or companion-unit ordinances are jurisdiction-specific. A park-trailer / recreational classification under WAC 296-150P is not a permanent dwelling entitlement — confirm L&I vs recreational path with local Planning.",
     sources: [...classSources],
   },
 ];
@@ -60,7 +70,11 @@ export const WA_OUTLINE: OutlineSection[] = [
     title: "Transport & delivery",
     claims: [
       {
-        text: "Designed to reduce escort requirements; pilot-car need confirmed by state permit route. Washington widths over 11 ft commonly increase escort risk. No pilot car on qualifying routes; route and permit confirmation required before delivery.",
+        text: "CAMBRIA plans are designed to reduce pilot-car requirements. Final pilot-car requirements depend on state permit rules and the delivery route. Legal width is 8 ft 6 in; oversize loads need a WSDOT permit.",
+        sources: [...transportSources],
+      },
+      {
+        text: "Under WAC 468-38-100(1)(a), a load or vehicle exceeding 11 ft width requires two pilot/escort vehicles on two-lane highways (front and rear). CAMBRIA 1 (11.4 ft) is a known escort risk on those routes; CAMBRIA 2 (≤11 ft) avoids that automatic two-escort trigger but still needs oversize permits and route confirmation.",
         sources: [...transportSources],
       },
     ],
@@ -88,7 +102,7 @@ export const WA_CHECKLIST: ChecklistItem[] = [
     id: "wa-transport",
     title: "Hauler route & WSDOT permits",
     detail: {
-      text: "Complete a hauler route review. Prefer ≤11 ft width when possible; widths over 11 ft often raise escort requirements on Washington routes — confirm with WSDOT permits.",
+      text: "Complete a hauler route review. Prefer ≤11 ft width when possible; widths over 11 ft trigger WAC 468-38-100(1)(a) two-escort requirements on two-lane highways — confirm with WSDOT permits.",
       sources: [...transportSources],
     },
   },

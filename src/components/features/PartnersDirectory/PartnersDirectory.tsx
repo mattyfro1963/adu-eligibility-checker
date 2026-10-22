@@ -46,7 +46,7 @@ export function PartnersDirectory() {
         actions={
           <PageActionLink href="/">
             <Package size={16} aria-hidden="true" />
-            Check a California address
+            Check a CA, OR, or WA address
           </PageActionLink>
         }
       />
@@ -72,7 +72,7 @@ export function PartnersDirectory() {
                         href={href}
                         target="_blank"
                         rel="sponsored noopener noreferrer"
-                        className="flex min-h-[44px] flex-col gap-1 rounded-xl border border-border bg-card p-4 transition-colors hover:border-foreground/15 focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none"
+                        className="flex min-h-[44px] flex-col gap-1 rounded-xl border border-border bg-card p-4 transition-colors hover:border-foreground/15 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                       >
                         <span className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground">
                           {partner.name}

@@ -8,6 +8,7 @@ import {
   PageShell,
   TocNav,
 } from "@/components/features/PageShell/PageShell";
+import { RegulationsStateNav } from "@/components/features/RegulationsGuide/RegulationsStateNav";
 import { ExpandableSection } from "@/components/ui/expandable-section";
 import { RegulationsAuthorByline } from "@/components/features/ResultsCard/RegulationsAuthorByline";
 import { buildAffiliateHref } from "@/lib/affiliates/track";
@@ -17,25 +18,28 @@ import {
   affiliatesByCategory,
   type AffiliateCategory,
 } from "@/lib/content/affiliates";
-import {
-  CBC_BASELINE,
-  CITY_DIRECTORY,
-  COMMUNITIES,
-  COUNTY_DIRECTORY,
-  COUNTY_GUIDES,
-  FAQS,
-  GUIDE_DISCLAIMER,
-  GUIDE_INTRO,
-  PARK_MODEL_OVERVIEW,
-  PERMIT_OVERVIEW,
-  UNCLEAR_COUNTIES,
-  type JurisdictionNote,
-  type ResourceLink,
-} from "@/lib/content/ca-tiny-home-regulations";
+import { CA_GUIDE_CONTENT } from "@/lib/content/ca-tiny-home-regulations";
+import type {
+  JurisdictionNote,
+  ResourceLink,
+  StateTinyHomeGuideContent,
+} from "@/lib/content/state-tiny-home-guide-types";
 
 const PARTNER_TEASER_CATEGORIES = Object.keys(
   AFFILIATE_CATEGORY_LABELS,
 ) as AffiliateCategory[];
+
+const TOC = [
+  { id: "overview", label: "Overview" },
+  { id: "park-models", label: "Park models" },
+  { id: "county-guides", label: "County guides" },
+  { id: "directories", label: "Official directories" },
+  { id: "unclear", label: "Unclear counties" },
+  { id: "permits", label: "Permits" },
+  { id: "communities", label: "Communities" },
+  { id: "partners", label: "Partners" },
+  { id: "faqs", label: "FAQs" },
+] as const;
 
 function ExternalResource({ link }: { link: ResourceLink }) {
   return (
@@ -108,39 +112,46 @@ function CountyCard({ county }: { county: JurisdictionNote }) {
   );
 }
 
-const TOC = [
-  { id: "overview", label: "Overview" },
-  { id: "park-models", label: "Park models" },
-  { id: "county-guides", label: "County guides" },
-  { id: "directories", label: "Official directories" },
-  { id: "unclear", label: "Unclear counties" },
-  { id: "permits", label: "Permits" },
-  { id: "communities", label: "Communities" },
-  { id: "partners", label: "Partners" },
-  { id: "faqs", label: "FAQs" },
-] as const;
+/**
+ * Shared CA / OR / WA regulations page shell.
+ * All visible strings come from `content` — never hardcode California-only CTAs.
+ */
+export function RegulationsGuide({
+  content = CA_GUIDE_CONTENT,
+  activeHref,
+}: {
+  content?: StateTinyHomeGuideContent;
+  activeHref?: string;
+} = {}) {
+  const navHref = activeHref ?? content.defaultActiveHref;
+  const { intro, actions, asideCta } = content;
 
-export function RegulationsGuide() {
   return (
     <PageShell>
       <PageHeader
-        eyebrow={`California · ${CBC_BASELINE.codeYear} CBC context`}
-        title={GUIDE_INTRO.title}
+        eyebrow={content.eyebrow}
+        title={intro.title}
         description={
           <>
-            <p className="text-[15px] sm:text-base">{GUIDE_INTRO.subtitle}</p>
-            <p className="mt-3 text-sm sm:text-[15px]">{GUIDE_INTRO.lead}</p>
+            <RegulationsStateNav activeHref={navHref} className="mb-3" />
+            <p className="text-[15px] sm:text-base">{intro.subtitle}</p>
+            <p className="mt-3 text-sm sm:text-[15px]">{intro.lead}</p>
           </>
         }
         meta={<RegulationsAuthorByline />}
         actions={
           <>
-            <PageActionLink href="/">Check a California address</PageActionLink>
-            <PageActionLink href="/" variant="outline">
-              Search, then request a builder intro
+            <PageActionLink href={actions.primary.href}>
+              {actions.primary.label}
             </PageActionLink>
-            <PageAnchorLink href="#county-guides">
-              Jump to county guides
+            <PageActionLink
+              href={actions.secondary.href}
+              variant={actions.secondary.variant ?? "outline"}
+            >
+              {actions.secondary.label}
+            </PageActionLink>
+            <PageAnchorLink href={actions.jumpToCounties.href}>
+              {actions.jumpToCounties.label}
             </PageAnchorLink>
           </>
         }
@@ -163,37 +174,26 @@ export function RegulationsGuide() {
                 aria-hidden="true"
               />
               <h2 className="text-xl font-normal tracking-tight text-foreground">
-                Building code baseline
+                {content.codeBaseline.sectionTitle}
               </h2>
             </div>
             <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground">
-              {GUIDE_INTRO.buildingCodeNote}
+              {intro.buildingCodeNote}
             </p>
             <dl className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-xl border border-border bg-card p-4">
-                <dt className="text-xs font-normal tracking-wide text-muted-foreground uppercase">
-                  Ceiling height
-                </dt>
-                <dd className="mt-1 text-sm font-medium text-foreground">
-                  {CBC_BASELINE.ceilingHeight}
-                </dd>
-              </div>
-              <div className="rounded-xl border border-border bg-card p-4">
-                <dt className="text-xs font-normal tracking-wide text-muted-foreground uppercase">
-                  Primary room
-                </dt>
-                <dd className="mt-1 text-sm font-medium text-foreground">
-                  ≥ {CBC_BASELINE.primaryRoomSqFt} sq ft
-                </dd>
-              </div>
-              <div className="rounded-xl border border-border bg-card p-4">
-                <dt className="text-xs font-normal tracking-wide text-muted-foreground uppercase">
-                  Additional rooms
-                </dt>
-                <dd className="mt-1 text-sm font-medium text-foreground">
-                  ≥ {CBC_BASELINE.additionalRoomSqFt} sq ft each
-                </dd>
-              </div>
+              {content.codeBaseline.metrics.map((metric) => (
+                <div
+                  key={metric.label}
+                  className="rounded-xl border border-border bg-card p-4"
+                >
+                  <dt className="text-xs font-normal tracking-wide text-muted-foreground uppercase">
+                    {metric.label}
+                  </dt>
+                  <dd className="mt-1 text-sm font-medium text-foreground">
+                    {metric.value}
+                  </dd>
+                </div>
+              ))}
             </dl>
           </section>
 
@@ -208,13 +208,13 @@ export function RegulationsGuide() {
                 aria-hidden="true"
               />
               <h2 className="text-xl font-normal tracking-tight text-foreground">
-                {PARK_MODEL_OVERVIEW.title}
+                {content.parkModelOverview.title}
               </h2>
             </div>
             <div className="max-w-3xl space-y-3 text-sm leading-relaxed text-muted-foreground">
-              <p>{PARK_MODEL_OVERVIEW.body}</p>
-              <p>{PARK_MODEL_OVERVIEW.livingFullTime}</p>
-              <p>{PARK_MODEL_OVERVIEW.ansiNote}</p>
+              <p>{content.parkModelOverview.body}</p>
+              <p>{content.parkModelOverview.livingFullTime}</p>
+              <p>{content.parkModelOverview.ansiNote}</p>
             </div>
           </section>
 
@@ -223,15 +223,13 @@ export function RegulationsGuide() {
             className="scroll-mt-32 sm:scroll-mt-24 space-y-4"
           >
             <h2 className="text-xl font-normal tracking-tight text-foreground">
-              What counties allow tiny houses?
+              {content.countyGuides.sectionTitle}
             </h2>
             <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground">
-              Nearly every California county allows some form of tiny home. The
-              details—especially for park models—vary. Expand a county for a
-              short summary and official links.
+              {content.countyGuides.intro}
             </p>
             <div className="space-y-2">
-              {COUNTY_GUIDES.map((county) => (
+              {content.countyGuides.counties.map((county) => (
                 <CountyCard key={county.name} county={county} />
               ))}
             </div>
@@ -239,32 +237,31 @@ export function RegulationsGuide() {
 
           <section id="directories" className="scroll-mt-32 sm:scroll-mt-24">
             <ExpandableSection
-              title="Official resource directories"
-              description="County planning links and major city ordinances"
+              title={content.directories.title}
+              description={content.directories.description}
               defaultOpen={false}
             >
               <div className="grid gap-8 lg:grid-cols-2">
                 <div className="space-y-3">
                   <h3 className="text-base font-normal tracking-tight text-foreground">
-                    County resource directory
+                    {content.directories.countyTitle}
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    Direct links to planning, building, and tiny-home materials.
+                    {content.directories.countyDescription}
                   </p>
                   <div className="rounded-xl border border-border bg-card p-5">
-                    <ResourceList links={COUNTY_DIRECTORY} />
+                    <ResourceList links={content.directories.countyLinks} />
                   </div>
                 </div>
                 <div className="space-y-3">
                   <h3 className="text-base font-normal tracking-tight text-foreground">
-                    Major cities
+                    {content.directories.cityTitle}
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    City rules can differ from the surrounding county—check
-                    both.
+                    {content.directories.cityDescription}
                   </p>
                   <div className="rounded-xl border border-border bg-card p-5">
-                    <ResourceList links={CITY_DIRECTORY} />
+                    <ResourceList links={content.directories.cityLinks} />
                   </div>
                 </div>
               </div>
@@ -282,16 +279,14 @@ export function RegulationsGuide() {
                 aria-hidden="true"
               />
               <h2 className="text-xl font-normal tracking-tight text-foreground">
-                Counties with unclear park-model rules
+                {content.unclear.sectionTitle}
               </h2>
             </div>
             <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground">
-              Published guidance for park models / THOWs is thin in these
-              counties. Contact planning or building staff before assuming
-              permanence.
+              {content.unclear.intro}
             </p>
             <div className="border border-warning/30 bg-warning/5 p-5">
-              <ResourceList links={UNCLEAR_COUNTIES} />
+              <ResourceList links={content.unclear.links} />
             </div>
           </section>
 
@@ -300,26 +295,24 @@ export function RegulationsGuide() {
             className="scroll-mt-32 sm:scroll-mt-24 space-y-3"
           >
             <h2 className="text-xl font-normal tracking-tight text-foreground">
-              {PERMIT_OVERVIEW.title}
+              {content.permitOverview.title}
             </h2>
             <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground">
-              {PERMIT_OVERVIEW.body}
+              {content.permitOverview.body}
             </p>
           </section>
 
           <section id="communities" className="scroll-mt-32 sm:scroll-mt-24">
             <ExpandableSection
-              title="Example tiny-home communities"
-              description="Designated parks when local rules require community placement"
+              title={content.communities.title}
+              description={content.communities.description}
               defaultOpen={false}
             >
               <p className="mb-4 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-                When local rules require a designated park, established
-                communities can be a practical placement option. Verify current
-                availability and residency rules directly with each site.
+                {content.communities.intro}
               </p>
               <ul className="grid gap-4 md:grid-cols-3">
-                {COMMUNITIES.map((community) => (
+                {content.communities.items.map((community) => (
                   <li
                     key={community.name}
                     className="rounded-xl border border-border bg-card p-5"
@@ -411,7 +404,7 @@ export function RegulationsGuide() {
               FAQs
             </h2>
             <div className="space-y-2">
-              {FAQS.map((faq) => (
+              {content.faqs.map((faq) => (
                 <details
                   key={faq.question}
                   className="rounded-xl border border-border bg-card"
@@ -433,16 +426,16 @@ export function RegulationsGuide() {
       </div>
 
       <PageAside>
-        <p>{GUIDE_DISCLAIMER}</p>
+        <p>{content.disclaimer}</p>
         <p className="mt-3">
-          Ready to evaluate a California address for ADU or SB 9 overlays?{" "}
+          {asideCta.lead}{" "}
           <Link
-            href="/"
+            href={asideCta.href}
             className="font-medium text-foreground underline-offset-2 hover:underline"
           >
-            Open the eligibility checker
+            {asideCta.linkLabel}
           </Link>
-          . After a search, request a builder intro on the results page.
+          .
         </p>
       </PageAside>
     </PageShell>

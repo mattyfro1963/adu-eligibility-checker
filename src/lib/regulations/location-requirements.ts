@@ -19,6 +19,7 @@ import {
   CA_STRUCTURE_PATH_CLAIM,
 } from "@/lib/regulations/size-structure";
 import { SRC, uniqueSourceRefs } from "@/lib/regulations/sources";
+import { normalizeRegionCode } from "@/lib/regulations/states/registry";
 import type { CitedClaim, SourceRef } from "@/lib/regulations/types";
 import type { GeocodeResult } from "@/lib/types/gis";
 import type { ZoningReport } from "@/lib/types/zoning";
@@ -56,9 +57,13 @@ function claim(text: string, sources: SourceRef[]): CitedClaim {
 
 /** City links when the place matches a nested city; otherwise county links. */
 export function jurisdictionSourceRefs(
-  geocode: Pick<GeocodeResult, "place" | "county">,
+  geocode: Pick<GeocodeResult, "place" | "county" | "region">,
 ): SourceRef[] {
-  const resolved = resolveJurisdictionGuide(geocode.place, geocode.county);
+  const resolved = resolveJurisdictionGuide(
+    geocode.place,
+    geocode.county,
+    geocode.region,
+  );
   const note = resolved.city ?? resolved.county;
   if (!note) return [];
   return uniqueSourceRefs(
@@ -148,7 +153,11 @@ function statewideFloor(): LocationRequirement[] {
 function jurisdictionRequirements(
   geocode: GeocodeResult,
 ): LocationRequirement[] {
-  const resolved = resolveJurisdictionGuide(geocode.place, geocode.county);
+  const resolved = resolveJurisdictionGuide(
+    geocode.place,
+    geocode.county,
+    geocode.region,
+  );
   const out: LocationRequirement[] = [];
 
   if (resolved.county) {
@@ -329,16 +338,28 @@ function overlayRequirements(
 }
 
 /**
- * Always emits a non-empty list for California geocodes: statewide floor +
- * county/city notes + lot zoning/overlays when a report exists.
+ * Always emits a non-empty list for published Cascadia geocodes:
+ * CA gets statewide floor + county/city notes + lot zoning/overlays;
+ * OR / WA get jurisdiction notes (+ lot overlays when a report exists).
  */
 export function composeLocationRequirements(
   input: ComposeLocationRequirementsInput,
 ): LocationRequirement[] {
-  return [
-    ...statewideFloor(),
-    ...jurisdictionRequirements(input.geocode),
-    ...lotZoningRequirements(input.report, input.geocode),
-    ...overlayRequirements(input.report),
-  ];
+  const region = normalizeRegionCode(input.geocode.region);
+  if (region === "CA") {
+    return [
+      ...statewideFloor(),
+      ...jurisdictionRequirements(input.geocode),
+      ...lotZoningRequirements(input.report, input.geocode),
+      ...overlayRequirements(input.report),
+    ];
+  }
+  if (region === "OR" || region === "WA") {
+    return [
+      ...jurisdictionRequirements(input.geocode),
+      ...lotZoningRequirements(input.report, input.geocode),
+      ...overlayRequirements(input.report),
+    ];
+  }
+  return [];
 }

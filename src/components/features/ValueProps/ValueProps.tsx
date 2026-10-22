@@ -13,8 +13,8 @@ const ITEMS = [
   },
   {
     icon: Ruler,
-    title: "Compliance check",
-    body: "ADU and SB 9 status from parcel facts.",
+    title: "THOW lot fit",
+    body: "CAMBRIA 1 / CAMBRIA 2 placement, cert, and transport gates.",
   },
 ] as const;
 

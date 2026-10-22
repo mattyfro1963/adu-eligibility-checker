@@ -5,41 +5,21 @@
  */
 
 import { formatRegulationsDisclaimer } from "@/lib/regulations/agent";
+import type {
+  FaqItem,
+  JurisdictionNote,
+  JurisdictionRequirementSeed,
+  ResourceLink,
+  StateTinyHomeGuideContent,
+  TinyHomeCommunity,
+} from "@/lib/content/state-tiny-home-guide-types";
 
-export type ResourceLink = {
-  label: string;
-  href: string;
-};
-
-/** Structured requirement seed for search results (not only /regulations prose). */
-export type JurisdictionRequirementSeed = {
-  id: string;
-  title: string;
-  tinyHomeExplanation: string;
-};
-
-export type JurisdictionNote = {
-  name: string;
-  summary: string;
-  parkModel?: string;
-  links: ResourceLink[];
-  cities?: JurisdictionNote[];
-  /**
-   * Optional explicit requirement bullets. When omitted, search results seed
-   * from `summary` / `parkModel` via `requirementsFromJurisdictionNote`.
-   */
-  requirements?: JurisdictionRequirementSeed[];
-};
-
-export type TinyHomeCommunity = {
-  name: string;
-  address: string;
-  notes: string;
-};
-
-export type FaqItem = {
-  question: string;
-  answer: string;
+export type {
+  ResourceLink,
+  JurisdictionRequirementSeed,
+  JurisdictionNote,
+  TinyHomeCommunity,
+  FaqItem,
 };
 
 export const CBC_BASELINE = {
@@ -1300,3 +1280,82 @@ export const FAQS: FaqItem[] = [
 export const GUIDE_DISCLAIMER = formatRegulationsDisclaimer(
   "Ordinances change; always verify with the jurisdiction that will issue your permit.",
 );
+
+/** Packaged CA page payload for the shared RegulationsGuide shell. */
+export const CA_GUIDE_CONTENT: StateTinyHomeGuideContent = {
+  stateCode: "CA",
+  stateName: "California",
+  defaultActiveHref: "/regulations/california",
+  eyebrow: `California · ${CBC_BASELINE.codeYear} CBC context`,
+  intro: GUIDE_INTRO,
+  codeBaseline: {
+    sectionTitle: "Building code baseline",
+    metrics: [
+      { label: "Ceiling height", value: CBC_BASELINE.ceilingHeight },
+      {
+        label: "Primary room",
+        value: `≥ ${CBC_BASELINE.primaryRoomSqFt} sq ft`,
+      },
+      {
+        label: "Additional rooms",
+        value: `≥ ${CBC_BASELINE.additionalRoomSqFt} sq ft each`,
+      },
+    ],
+  },
+  parkModelOverview: PARK_MODEL_OVERVIEW,
+  countyGuides: {
+    sectionTitle: "What counties allow tiny houses?",
+    intro:
+      "Nearly every California county allows some form of tiny home. The details—especially for park models—vary. Expand a county for a short summary and official links.",
+    counties: COUNTY_GUIDES,
+  },
+  directories: {
+    title: "Official resource directories",
+    description: "County planning links and major city ordinances",
+    countyTitle: "County resource directory",
+    countyDescription:
+      "Direct links to planning, building, and tiny-home materials.",
+    countyLinks: COUNTY_DIRECTORY,
+    cityTitle: "Major cities",
+    cityDescription:
+      "City rules can differ from the surrounding county—check both.",
+    cityLinks: CITY_DIRECTORY,
+  },
+  unclear: {
+    sectionTitle: "Counties with unclear park-model rules",
+    intro:
+      "Published guidance for park models / THOWs is thin in these counties. Contact planning or building staff before assuming permanence.",
+    links: UNCLEAR_COUNTIES,
+  },
+  permitOverview: PERMIT_OVERVIEW,
+  communities: {
+    title: "Example tiny-home communities",
+    description:
+      "Designated parks when local rules require community placement",
+    intro:
+      "When local rules require a designated park, established communities can be a practical placement option. Verify current availability and residency rules directly with each site.",
+    items: COMMUNITIES,
+  },
+  faqs: FAQS,
+  disclaimer: GUIDE_DISCLAIMER,
+  actions: {
+    primary: {
+      label: "Check a CA, OR, or WA address",
+      href: "/",
+    },
+    secondary: {
+      label: "Search, then request a builder intro",
+      href: "/",
+      variant: "outline",
+    },
+    jumpToCounties: {
+      label: "Jump to county guides",
+      href: "#county-guides",
+    },
+  },
+  asideCta: {
+    lead: "Ready to screen a CA, OR, or WA lot for THOW placement?",
+    linkLabel: "Open the lot eligibility checker",
+    href: "/",
+  },
+};

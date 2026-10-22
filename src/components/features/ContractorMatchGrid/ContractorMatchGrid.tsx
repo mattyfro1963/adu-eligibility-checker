@@ -134,7 +134,7 @@ export function ContractorMatchGrid({
                     href={contractor.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex min-h-[40px] items-center justify-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+                    className="inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-sm text-xs font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     Website
                     <ExternalLink size={12} aria-hidden="true" />

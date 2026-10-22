@@ -44,7 +44,7 @@ export function SiteHeader() {
               doihave.space
             </span>
             <span className="hidden text-[10px] tracking-wide text-muted-foreground sm:block">
-              ADU &amp; SB 9 eligibility checker
+              Tiny Home on Wheels Lot Eligibility Checker
             </span>
           </span>
         </Link>
@@ -59,7 +59,7 @@ export function SiteHeader() {
                     href={item.href}
                     title={item.description}
                     className={cn(
-                      "inline-flex min-h-[44px] items-center rounded-md px-2.5 text-[10px] font-label tracking-[0.1em] uppercase whitespace-nowrap transition-colors sm:px-3 sm:text-[11px] sm:tracking-[0.12em]",
+                      "inline-flex min-h-[44px] items-center rounded-md px-2.5 text-[10px] font-label tracking-[0.1em] uppercase whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none sm:px-3 sm:text-[11px] sm:tracking-[0.12em]",
                       active
                         ? "bg-muted text-foreground"
                         : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",

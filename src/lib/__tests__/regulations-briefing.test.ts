@@ -349,9 +349,7 @@ describe("composeResultsBriefing", () => {
         /sfplanning\.org|sf\.gov|data\.sfgov\.org/i.test(href),
       ),
     ).toBe(false);
-    expect(
-      briefing.summary.some((c) => /Oakland/i.test(c.text)),
-    ).toBe(true);
+    expect(briefing.summary.some((c) => /Oakland/i.test(c.text))).toBe(true);
   });
 
   it("South San Francisco (no report) → CA checklist, not SF guides", () => {
@@ -586,7 +584,11 @@ describe("California visitor-facing branding", () => {
       ["SiteHeader/SiteHeader.tsx", [/\bpx-4\b/, /sm:px-6/, /min-h-\[44px\]/]],
       [
         "AddressSearch/AddressSearch.tsx",
-        [/uppercase/, /shadow-elevated/, /min-h-\[44px\]/],
+        [/shadow-elevated/, /min-h-\[44px\]/],
+      ],
+      [
+        "AddressSearch/SampleReportButtons.tsx",
+        [/uppercase/, /min-h-\[44px\]/, /status-eligible/],
       ],
       [
         "ResultsCard/ResultsCard.tsx",

@@ -5,9 +5,14 @@ export type SearchTopicLink = {
   href: string;
 };
 
+/** Lucide icon keys resolved in SearchTopicCards (lib stays React-free). */
+export type SearchTopicIcon =
+  "house" | "book-open" | "clipboard-list" | "sparkles";
+
 export type SearchTopicCard = {
   id: string;
   title: string;
+  icon: SearchTopicIcon;
   links: SearchTopicLink[];
   viewAllHref: string;
   viewAllLabel?: string;
@@ -17,29 +22,31 @@ export const SEARCH_TOPIC_CARDS: SearchTopicCard[] = [
   {
     id: "thow",
     title: "THOW & park models",
+    icon: "house",
     links: [
       {
-        label: "County requirements by address",
-        href: "/regulations#county-guides",
+        label: "California county guides",
+        href: "/regulations/california#county-guides",
       },
       {
-        label: "Certification & size expectations",
-        href: "/regulations#park-models",
+        label: "Oregon THOW / park-model context",
+        href: "/regulations/oregon",
       },
       {
-        label: "Optional ADU pathway (not automatic)",
-        href: "/regulations#overview",
+        label: "Washington L&I / park trailer context",
+        href: "/regulations/washington",
       },
     ],
     viewAllHref: "/regulations",
-    viewAllLabel: "View all regulations",
+    viewAllLabel: "View regulations hub",
   },
   {
     id: "location-guides",
     title: "Location-based guides",
+    icon: "book-open",
     links: [
       {
-        label: "THOW legality",
+        label: "SF THOW legality",
         href: "/guides/tiny-home-on-wheels-san-francisco",
       },
       {
@@ -57,6 +64,7 @@ export const SEARCH_TOPIC_CARDS: SearchTopicCard[] = [
   {
     id: "next-steps",
     title: "Permits & next steps",
+    icon: "clipboard-list",
     links: [
       {
         label: "Partner build-out resources",
@@ -77,6 +85,7 @@ export const SEARCH_TOPIC_CARDS: SearchTopicCard[] = [
   {
     id: "premium",
     title: "Premium tools",
+    icon: "sparkles",
     links: [
       {
         label: "Site planning checklist",

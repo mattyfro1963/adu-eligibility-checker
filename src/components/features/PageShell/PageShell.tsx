@@ -233,7 +233,7 @@ export function ContentLinkCard({
   return (
     <Link
       href={href}
-      className="group block rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+      className="group block rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <article className="flex min-h-[44px] items-start gap-3 rounded-xl border border-border bg-card px-4 py-4 shadow-elevated transition-colors hover:border-foreground/15 sm:gap-4 sm:px-5">
         {icon ? (
@@ -297,7 +297,7 @@ export function SkipToContent() {
   return (
     <a
       href="#main-content"
-      className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[100] focus:rounded-button focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-primary-foreground"
+      className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[100] focus:rounded-button focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-primary-foreground focus:ring-2 focus:ring-ring focus:outline-none"
     >
       Skip to content
     </a>

@@ -56,9 +56,7 @@ export function FeaturePin({
               <p
                 className={cn(
                   "font-label text-[10px]",
-                  resolved
-                    ? STATUS_ACCENT[resolved]
-                    : "text-muted-foreground",
+                  resolved ? STATUS_ACCENT[resolved] : "text-muted-foreground",
                 )}
               >
                 {statusLabel}
@@ -70,7 +68,7 @@ export function FeaturePin({
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="inline-flex min-h-[32px] min-w-[32px] shrink-0 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+              className="inline-flex min-h-[32px] min-w-[32px] shrink-0 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="Close parcel details"
             >
               <X size={14} aria-hidden="true" />

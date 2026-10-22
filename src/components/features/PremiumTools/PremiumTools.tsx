@@ -106,7 +106,7 @@ function ProductCard({
       <Button
         type="button"
         onClick={() => onJoinWaitlist(tool.id)}
-        className="mt-5 h-11 min-h-[44px] w-full rounded-xl bg-primary text-white hover:bg-primary"
+        className="mt-5 h-11 min-h-[44px] w-full rounded-xl"
       >
         Join waitlist
       </Button>
@@ -239,7 +239,7 @@ function WaitlistForm({
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="h-11 min-h-[44px] w-full shrink-0 rounded-xl bg-primary text-white hover:bg-primary sm:w-auto sm:px-6"
+          className="h-11 min-h-[44px] w-full shrink-0 rounded-xl sm:w-auto sm:px-6"
         >
           {isSubmitting ? "Joining…" : "Join waitlist"}
         </Button>

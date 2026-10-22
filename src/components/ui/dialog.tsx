@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface DialogProps {
@@ -83,14 +84,16 @@ export function Dialog({
             </p>
           ) : null}
         </div>
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon-sm"
           onClick={() => onOpenChange(false)}
-          className="inline-flex size-9 shrink-0 items-center justify-center rounded-[8px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          className="shrink-0 text-muted-foreground hover:text-foreground"
           aria-label="Close dialog"
         >
           <X size={18} aria-hidden="true" />
-        </button>
+        </Button>
       </div>
       <div className="px-8 py-6">{children}</div>
     </dialog>

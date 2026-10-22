@@ -3,8 +3,17 @@ import { Compass } from "lucide-react";
 import type { GuideLinkRef } from "@/lib/regulations/types";
 
 /** Compact deep-link strip to SF buyer guides under the parcel briefing. */
-export function BuyerGuideLinks({ links }: { links: GuideLinkRef[] }) {
+export function BuyerGuideLinks({
+  links,
+  embedded = false,
+}: {
+  links: GuideLinkRef[];
+  /** When nested under an expandable `h3`, use `h4` for this strip. */
+  embedded?: boolean;
+}) {
   if (links.length === 0) return null;
+
+  const HeadingTag = embedded ? "h4" : "h3";
 
   return (
     <nav
@@ -16,12 +25,12 @@ export function BuyerGuideLinks({ links }: { links: GuideLinkRef[] }) {
           <Compass size={18} className="text-foreground" aria-hidden="true" />
         </div>
         <div className="min-w-0">
-          <h3
+          <HeadingTag
             id="buyer-guides-heading"
             className="text-sm font-normal tracking-tight text-foreground"
           >
             Buyer guides
-          </h3>
+          </HeadingTag>
           <p className="text-xs text-muted-foreground">
             SF technical guides for THOW rules, costs, and wheels vs foundation
           </p>

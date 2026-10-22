@@ -66,7 +66,10 @@ export function HomePageClient() {
   const [report, setReport] = useState<ZoningReport | null>(null);
   const [isZoningLoading, setIsZoningLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [wantsConnect, setWantsConnect] = useState(false);
+  const [wantsConnect, setWantsConnect] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.location.hash.replace("#", "") === CONNECT_SECTION_ID;
+  });
   const zoningAbortRef = useRef<AbortController | null>(null);
   const appliedQueryKeyRef = useRef<string | null>(null);
 
@@ -160,13 +163,6 @@ export function HomePageClient() {
     void handleResolved(queryPrefill);
   }, [queryKey, queryPrefill, handleResolved]);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (window.location.hash.replace("#", "") === CONNECT_SECTION_ID) {
-      setWantsConnect(true);
-    }
-  }, []);
-
   const showInterstitial = Boolean(geocodeResult) && isZoningLoading;
   const showDashboard = Boolean(geocodeResult) && !isZoningLoading;
   const connectOverallStatus = report?.overall ?? queryStatus;
@@ -190,15 +186,27 @@ export function HomePageClient() {
     <main
       id="main-content"
       tabIndex={-1}
-      className="mx-auto w-full max-w-layout flex-1 scroll-mt-4 space-y-8 bg-surface-luxury px-4 py-6 text-text-luxury sm:space-y-12 sm:px-6 sm:py-12"
+      className={
+        compact
+          ? "mx-auto w-full max-w-layout flex-1 scroll-mt-4 space-y-8 bg-surface-luxury px-4 py-6 text-text-luxury sm:space-y-12 sm:px-6 sm:py-12"
+          : "w-full flex-1 scroll-mt-4 bg-surface-luxury text-text-luxury"
+      }
     >
-      <div className="search-enter space-y-6 sm:space-y-8">
+      <div
+        className={
+          compact ? "search-enter space-y-6 sm:space-y-8" : "search-enter"
+        }
+      >
         {showConnectPrompt ? (
           <p
             role="status"
-            className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-950"
+            className={
+              compact
+                ? "rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-950"
+                : "mx-auto mt-4 max-w-layout rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-950 sm:mt-6 sm:px-6"
+            }
           >
-            Search a California address first — builder intro and specialist
+            Search a CA, OR, or WA address first — builder intro and specialist
             review forms appear after your parcel check.
           </p>
         ) : null}
@@ -240,33 +248,39 @@ export function HomePageClient() {
         ) : null}
       </div>
 
-      <footer className="border-t border-border pt-6 text-center text-[11px] leading-relaxed text-muted-foreground">
+      <footer
+        className={
+          compact
+            ? "border-t border-border-luxury pt-6 text-center text-[11px] leading-relaxed text-muted-foreground"
+            : "mx-auto max-w-layout border-t border-border-luxury px-4 pt-6 pb-8 text-center text-[11px] leading-relaxed text-muted-foreground sm:px-6 sm:pb-12"
+        }
+      >
         <p>
-          Informational only — not legal advice. Confirm with local planning
-          and building departments.
+          Informational only — not legal advice. Confirm with local planning and
+          building departments.
         </p>
         <p className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
           <Link
             href="/privacy"
-            className="underline-offset-2 hover:text-foreground hover:underline"
+            className="rounded-sm underline-offset-2 hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             Privacy
           </Link>
           <Link
             href="/terms"
-            className="underline-offset-2 hover:text-foreground hover:underline"
+            className="rounded-sm underline-offset-2 hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             Terms
           </Link>
           <Link
             href="/guides"
-            className="underline-offset-2 hover:text-foreground hover:underline"
+            className="rounded-sm underline-offset-2 hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             Guides
           </Link>
           <Link
             href="/regulations"
-            className="underline-offset-2 hover:text-foreground hover:underline"
+            className="rounded-sm underline-offset-2 hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             Regulations
           </Link>

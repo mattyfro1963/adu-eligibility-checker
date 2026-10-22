@@ -249,9 +249,11 @@ export function AddressMapPreview({
         <img
           src={objectUrl!}
           alt={
-            hasCoords
-              ? `Map preview centered on ${lat!.toFixed(5)}, ${lng!.toFixed(5)}`
-              : "Map preview"
+            pinLabel
+              ? `Map preview of ${pinLabel}`
+              : hasCoords
+                ? `Map preview centered on ${lat!.toFixed(5)}, ${lng!.toFixed(5)}`
+                : "Map preview"
           }
           className="absolute inset-0 z-0 h-full w-full border-0 object-cover"
         />

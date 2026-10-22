@@ -59,6 +59,67 @@ function statusWord(status: EligibilityStatus): string {
   }
 }
 
+function lotRatingWord(rating: "green" | "yellow" | "red"): string {
+  switch (rating) {
+    case "green":
+      return "Green";
+    case "yellow":
+      return "Yellow";
+    case "red":
+      return "Red";
+    default: {
+      const _exhaustive: never = rating;
+      return _exhaustive;
+    }
+  }
+}
+
+function transportSourcesForRegion(
+  region: string | null | undefined,
+): SourceRef[] {
+  const code = (region ?? "").trim().toUpperCase();
+  if (code === "WA") {
+    return [SRC.waDotOversize, SRC.waWacPilotEscort, SRC.waDotPermitForm560002];
+  }
+  if (code === "OR") {
+    return [
+      SRC.orDotLegalDims,
+      SRC.orDotOverDimOps,
+      SRC.orOarPilotVehicles,
+      SRC.orDotPilotGuide,
+    ];
+  }
+  return [
+    SRC.caCvc35100,
+    SRC.caDotVehicleWidths,
+    SRC.caDotOversize,
+    SRC.caDotPilotCarMaps,
+    SRC.caDotTpmCh5,
+  ];
+}
+
+function cambriaComparisonClaim(report: ZoningReport): CitedClaim | null {
+  const plans = report.featuredPlans;
+  if (!plans || plans.length < 2) return null;
+  const c1 = plans.find((p) => p.planId === "cambria-1");
+  const c2 = plans.find((p) => p.planId === "cambria-2");
+  if (!c1 || !c2) return null;
+  const rec = report.planRecommendation;
+  const recBit = rec
+    ? rec.recommendedPlanId
+      ? ` Recommendation: ${rec.recommendedPlanId === "cambria-1" ? "CAMBRIA 1" : "CAMBRIA 2"} — ${rec.rationale}`
+      : ` Recommendation: ${rec.rationale}`
+    : "";
+  return {
+    text: `CAMBRIA 1 lot fit ${lotRatingWord(c1.lotRating)} (transport ${statusWord(c1.transportStatus)}); CAMBRIA 2 lot fit ${lotRatingWord(c2.lotRating)} (transport ${statusWord(c2.transportStatus)}).${recBit}`,
+    sources: uniqueSourceRefs([
+      ...transportSourcesForRegion(report.region),
+      SRC.hcdTinyHomesIb,
+      SRC.noahDwelling,
+    ]),
+  };
+}
+
 function placeLabel(geocode: GeocodeResult): string {
   const place = geocode.place.trim() || geocode.county.trim();
   if (place) return place;
@@ -101,9 +162,14 @@ function lotSummary(
 
   if (report?.analysisScope === "jurisdiction_context") {
     const dims = report.dimensions;
+    const cambria = cambriaComparisonClaim(report);
     return {
-      text: `For this ${place} address, lot zoning was not verified. THOW lot candidacy is ${statusWord(report.thowOverall ?? report.overall)} — placement ${statusWord(dims.placement.status)}, certification ${statusWord(dims.certification.status)}, transport ${statusWord(dims.transport.status)}, lot readiness ${statusWord(dims.lotReadiness.status)}. ADU pathway is ${statusWord(report.adu.status)} (optional — not automatic from wheeled placement). Confirm base district, utility hookups, and permits with local Planning/Building.`,
-      sources: uniqueSourceRefs([...local, ...thowSources]),
+      text: `For this ${place} address, lot zoning was not verified. THOW lot candidacy is ${statusWord(report.thowOverall ?? report.overall)} — placement ${statusWord(dims.placement.status)}, certification ${statusWord(dims.certification.status)}, transport ${statusWord(dims.transport.status)}, lot readiness ${statusWord(dims.lotReadiness.status)}.${cambria ? ` ${cambria.text}` : ""} ADU pathway is ${statusWord(report.adu.status)} (optional — not automatic from wheeled placement). Confirm base district, utility hookups, and permits with local Planning/Building.`,
+      sources: uniqueSourceRefs([
+        ...local,
+        ...thowSources,
+        ...(cambria?.sources ?? []),
+      ]),
     };
   }
 
@@ -119,11 +185,13 @@ function lotSummary(
       report.overlaysVerified === true
         ? "Overlay facts were checked for this lot."
         : "Overlay layers were not verified for this lot — treat Clear/absent flags as unchecked.";
+    const cambria = cambriaComparisonClaim(report);
     return {
-      text: `On this ${place} lot (${zoneBit}), THOW candidacy is ${statusWord(report.thowOverall ?? report.overall)}. ${overlayBit} ADU pathway is ${statusWord(report.adu.status)} — possible if local THOW-as-ADU or foundation conversion, not automatic. Confirm primary use, district standards, utilities, and delivery route with Planning/Building before you place or occupy a unit.`,
+      text: `On this ${place} lot (${zoneBit}), THOW candidacy is ${statusWord(report.thowOverall ?? report.overall)}. ${overlayBit}${cambria ? ` ${cambria.text}` : ""} ADU pathway is ${statusWord(report.adu.status)} — possible if local THOW-as-ADU or foundation conversion, not automatic. Confirm primary use, district standards, utilities, and delivery route with Planning/Building before you place or occupy a unit.`,
       sources: uniqueSourceRefs([
         ...districtSources(report, sfPlace),
         ...thowSources,
+        ...(cambria?.sources ?? []),
         ...(sfPlace ? [SRC.sfPlanningAdu] : local),
       ]),
     };
@@ -176,7 +244,9 @@ export function composeResultsBriefing(
     sources: uniqueSourceRefs(
       sfPlace
         ? [SRC.hcdAdu, SRC.sfPlanning, SRC.sfDbi]
-        : [SRC.hcdTinyHomesIb, SRC.noahDwelling, ...local],
+        : isCalifornia
+          ? [SRC.hcdTinyHomesIb, SRC.noahDwelling, ...local]
+          : [SRC.noahDwelling, SRC.rvia, ...local],
     ),
   };
 
@@ -217,13 +287,15 @@ export function composeResultsBriefing(
   const sourcesUsed = uniqueSourceRefs([
     ...(sfPlace && analysisScope === "lot_zoning"
       ? sfPilotReceiptSources()
-      : caStatewideReceiptSources()),
+      : isCalifornia
+        ? caStatewideReceiptSources()
+        : [SRC.noahDwelling, SRC.rvia]),
     ...local,
     ...districtUrl,
     SRC.noahDwelling,
   ]);
 
-  const requirements: LocationRequirement[] = isCalifornia
+  const requirements: LocationRequirement[] = isPublished
     ? composeLocationRequirements({ geocode, report })
     : [];
 

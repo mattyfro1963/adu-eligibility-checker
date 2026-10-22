@@ -144,7 +144,6 @@ export function ProjectLeadForm({
               onChange={(e) => setName(e.target.value)}
               placeholder="Your name"
               className="h-11 rounded-[10px] border-border bg-card"
-              aria-label="Full name for builder intro"
               disabled={isSubmitting}
             />
           </div>
@@ -158,7 +157,6 @@ export function ProjectLeadForm({
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
               className="h-11 rounded-[10px] border-border bg-card"
-              aria-label="Email for builder intro"
               disabled={isSubmitting}
             />
           </div>
@@ -173,7 +171,6 @@ export function ProjectLeadForm({
             onChange={(e) => setPhone(e.target.value)}
             placeholder="(415) 555-0100"
             className="h-11 rounded-[10px] border-border bg-card"
-            aria-label="Phone for builder intro"
             disabled={isSubmitting}
           />
         </div>
@@ -189,7 +186,6 @@ export function ProjectLeadForm({
                 setPropertyIntent(e.target.value as PropertyIntent)
               }
               disabled={isSubmitting}
-              aria-label="Property intent"
             >
               {INTENT_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -206,7 +202,6 @@ export function ProjectLeadForm({
               value={structure}
               onChange={(e) => setStructure(e.target.value as StructureChoice)}
               disabled={isSubmitting}
-              aria-label="Structure choice"
             >
               {STRUCTURE_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -223,7 +218,6 @@ export function ProjectLeadForm({
               value={budget}
               onChange={(e) => setBudget(e.target.value as ProjectBudget)}
               disabled={isSubmitting}
-              aria-label="Project budget"
             >
               {BUDGET_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>

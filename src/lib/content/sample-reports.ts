@@ -22,6 +22,18 @@ export type SampleReport = {
  */
 export const SAMPLE_REPORTS: readonly SampleReport[] = [
   {
+    id: "oakland-piedmont",
+    label: "Oakland, East Bay, CA",
+    query: "3800 Piedmont Avenue, Oakland, CA",
+    tone: "eligible",
+  },
+  {
+    id: "portland-alberta",
+    label: "Alberta Arts, Portland, OR",
+    query: "2326 NE Alberta Street, Portland, OR",
+    tone: "eligible",
+  },
+  {
     id: "parkside",
     label: "Parkside, San Francisco, CA",
     query: "2000 16th Avenue, San Francisco, CA",
@@ -61,12 +73,6 @@ export const SAMPLE_REPORTS: readonly SampleReport[] = [
     id: "sacramento",
     label: "Midtown, Sacramento, CA",
     query: "1000 21st Street, Sacramento, CA",
-    tone: "warning",
-  },
-  {
-    id: "oakland-piedmont",
-    label: "Oakland, East Bay, CA",
-    query: "3800 Piedmont Avenue, Oakland, CA",
     tone: "warning",
   },
   {

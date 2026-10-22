@@ -1,8 +1,7 @@
 import { cn } from "@/lib/utils";
 
 /** Neutral hatch — eligibility colors stay on badges/pin, not schematic envelopes. */
-const NEUTRAL_HATCH =
-  "border-foreground/50 map-hatch-swatch";
+const NEUTRAL_HATCH = "border-foreground/50 map-hatch-swatch";
 
 export function MapSiteLegend({
   zoningLabel,
@@ -18,7 +17,11 @@ export function MapSiteLegend({
   mapInteractive?: boolean;
 }) {
   return (
-    <div className="border-t border-border bg-surface-elevated px-4 py-3">
+    <div
+      className="border-t border-border-luxury bg-surface-luxury/40 px-4 py-3"
+      role="region"
+      aria-label="Site reading legend"
+    >
       <p className="font-label text-[10px] tracking-[0.14em] text-luxury-taupe">
         Site reading
       </p>

@@ -8,6 +8,8 @@ type StatutoryComplianceChecklistProps = {
   report: ZoningReport;
   evaluations: StatutoryEvaluation[];
   program?: "adu" | "sb9" | "all";
+  /** Omit duplicate section heading when nested under ExpandableSection. */
+  embedded?: boolean;
 };
 
 function RuleIcon({ evaluation }: { evaluation: StatutoryEvaluation }) {
@@ -51,6 +53,7 @@ export function StatutoryComplianceChecklist({
   report,
   evaluations,
   program = "all",
+  embedded = false,
 }: StatutoryComplianceChecklistProps) {
   const visible =
     program === "all"
@@ -62,11 +65,8 @@ export function StatutoryComplianceChecklist({
   const lotSizeSqFt = report.lotSizeSqFt;
   const maxUnits = report.unitCapacity?.maxAllowableUnits;
 
-  return (
-    <section
-      aria-labelledby="statutory-checklist-heading"
-      className="space-y-4 rounded-xl border border-border bg-card p-5 sm:p-6"
-    >
+  const body = (
+    <>
       <div className="grid grid-cols-1 gap-4 border-b border-border pb-4 text-center sm:grid-cols-3">
         <div>
           <span className="font-label text-[10px] text-muted-foreground">
@@ -99,12 +99,14 @@ export function StatutoryComplianceChecklist({
       </div>
 
       <div className="space-y-3">
-        <h3
-          id="statutory-checklist-heading"
-          className="text-sm font-normal tracking-wide text-muted-foreground uppercase"
-        >
-          Statutory Compliance Checklist
-        </h3>
+        {embedded ? null : (
+          <h3
+            id="statutory-checklist-heading"
+            className="text-sm font-normal tracking-wide text-muted-foreground uppercase"
+          >
+            Statutory Compliance Checklist
+          </h3>
+        )}
         <ul className="divide-y divide-border">
           {visible.map((rule) => (
             <li key={rule.ruleId} className="flex items-start gap-3 py-3">
@@ -127,6 +129,19 @@ export function StatutoryComplianceChecklist({
           ))}
         </ul>
       </div>
+    </>
+  );
+
+  if (embedded) {
+    return <div className="space-y-4 p-5 sm:p-6">{body}</div>;
+  }
+
+  return (
+    <section
+      aria-labelledby="statutory-checklist-heading"
+      className="space-y-4 rounded-xl border border-border bg-card p-5 sm:p-6"
+    >
+      {body}
     </section>
   );
 }

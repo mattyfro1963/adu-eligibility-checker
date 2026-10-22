@@ -19,7 +19,7 @@ export const RESOURCE_NAV: SiteNavItem[] = [
     href: "/regulations",
     label: "Regulations",
     shortLabel: "Regs",
-    description: "Statewide tiny-home context",
+    description: "California county guide; Oregon & Washington statewide",
   },
   {
     href: "/partners",
@@ -55,7 +55,7 @@ export const PRIMARY_NAV: SiteNavItem[] = [
   {
     href: "/",
     label: "Checker",
-    description: "THOW lot eligibility (CA / OR / WA)",
+    description: "Tiny Home on Wheels Lot Eligibility Checker (CA / OR / WA)",
   },
   ...RESOURCE_NAV,
 ];

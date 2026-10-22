@@ -14,6 +14,11 @@ export interface ExpandableSectionProps {
   className?: string;
   contentClassName?: string;
   variant?: "default" | "card" | "muted";
+  /**
+   * Outline level for the summary title. Use under a report `h2`.
+   * Omit (or `"none"`) for nested chrome that should not compete in the outline.
+   */
+  headingLevel?: 3 | 4 | "none";
 }
 
 const VARIANT_CLASS: Record<
@@ -37,12 +42,24 @@ export function ExpandableSection({
   className,
   contentClassName,
   variant = "default",
+  headingLevel = "none",
 }: ExpandableSectionProps) {
   const [open, setOpen] = useState(defaultOpen);
 
   function handleToggle(event: SyntheticEvent<HTMLDetailsElement>) {
     setOpen(event.currentTarget.open);
   }
+
+  const titleClassName =
+    "block font-display text-base tracking-tight text-foreground sm:text-lg";
+  const titleNode =
+    headingLevel === 3 ? (
+      <h3 className={titleClassName}>{title}</h3>
+    ) : headingLevel === 4 ? (
+      <h4 className={titleClassName}>{title}</h4>
+    ) : (
+      <span className={titleClassName}>{title}</span>
+    );
 
   return (
     <details
@@ -59,13 +76,11 @@ export function ExpandableSection({
         className={cn(
           "flex min-h-[44px] cursor-pointer list-none items-start justify-between gap-3 px-4 py-3.5 sm:px-5 sm:py-4",
           "rounded-card marker:content-none [&::-webkit-details-marker]:hidden",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         )}
       >
         <span className="min-w-0 flex-1 text-left">
-          <span className="block font-display text-base tracking-tight text-foreground sm:text-lg">
-            {title}
-          </span>
+          {titleNode}
           {description ? (
             <span className="mt-1 block text-xs leading-relaxed text-muted-foreground sm:text-sm">
               {description}

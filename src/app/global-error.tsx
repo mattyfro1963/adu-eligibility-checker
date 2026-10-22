@@ -31,7 +31,7 @@ export default function GlobalError({
           <button
             type="button"
             onClick={reset}
-            className="rounded-md bg-black px-5 py-2 text-sm font-medium text-white"
+            className="min-h-[44px] rounded-md bg-[#2c2825] px-5 py-2 text-sm font-medium text-white outline-none focus-visible:ring-2 focus-visible:ring-[#2c2825] focus-visible:ring-offset-2"
           >
             Try again
           </button>

@@ -7,25 +7,29 @@ export function RuleDetail({
   result,
   title,
   category,
+  headingLevel = 3,
 }: {
   result: EligibilityResult;
   title: string;
   category: string;
+  /** Under report `h2` use 3; under an expandable `h3` use 4. */
+  headingLevel?: 3 | 4;
 }) {
   const rationaleSources = result.reasons.flatMap((reason) => reason.sources);
+  const TitleTag = headingLevel === 4 ? "h4" : "h3";
 
   return (
-    <article className="group border border-border bg-card p-5 transition-colors hover:border-primary/40 sm:p-6">
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
-        <span className="border border-border bg-muted px-2.5 py-1 font-mono text-[10px] font-normal tracking-widest text-muted-foreground uppercase">
+    <article className="border-b border-border-luxury py-6 first:pt-0 last:border-b-0 last:pb-0 sm:py-7">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <span className="font-label text-[10px] tracking-[0.14em] text-luxury-taupe">
           {category}
         </span>
         <EligibilityBadge status={result.status} />
       </div>
 
-      <h4 className="mb-2 text-lg font-medium tracking-[-0.02em] text-foreground">
+      <TitleTag className="mb-2 font-sans text-lg font-medium tracking-[-0.02em] text-text-luxury">
         {title}
-      </h4>
+      </TitleTag>
 
       {result.reasons.length > 0 ? (
         <ul className="mb-5 list-none space-y-3">
@@ -50,11 +54,12 @@ export function RuleDetail({
         defaultOpen={false}
         variant="muted"
         contentClassName="p-0 sm:p-0"
-        className="border-border/80"
+        className="border-border-luxury"
+        headingLevel="none"
       >
-        <div className="flex items-start gap-3 border-0 bg-muted p-3.5 sm:p-4">
+        <div className="flex items-start gap-3 border-0 bg-surface-luxury/50 p-3.5 sm:p-4">
           <div
-            className="mt-0.5 w-1 shrink-0 self-stretch rounded-full bg-border"
+            className="mt-0.5 w-1 shrink-0 self-stretch rounded-full bg-border-luxury"
             aria-hidden="true"
           />
           <div className="min-w-0 space-y-1.5">

@@ -1,15 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
+import { createPortal } from "react-dom";
 import { Check, Loader2 } from "lucide-react";
 import { AddressMapPreview } from "@/components/features/AddressMapPreview/AddressMapPreview";
 import { cn } from "@/lib/utils";
+
+function subscribeNoop() {
+  return () => {};
+}
 
 const STEPS = [
   "Locating address",
   "Resolving county requirements",
   "Local zoning when available",
-  "Evaluating THOW lot candidacy",
+  "Evaluating THOW lot fit",
 ] as const;
 
 const STEP_MS = 450;
@@ -26,14 +37,33 @@ export function AnalysisInterstitial({
   address,
 }: AnalysisInterstitialProps) {
   const [completedCount, setCompletedCount] = useState(1);
+  const mounted = useSyncExternalStore(
+    subscribeNoop,
+    () => true,
+    () => false,
+  );
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  const progressId = useId();
 
   useEffect(() => {
-    const previous = document.body.style.overflow;
+    if (!mounted) return;
+
+    const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+
+    const main = document.getElementById("main-content");
+    main?.setAttribute("inert", "");
+
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    dialogRef.current?.focus();
+
     return () => {
-      document.body.style.overflow = previous;
+      document.body.style.overflow = previousOverflow;
+      main?.removeAttribute("inert");
+      previouslyFocused?.focus?.();
     };
-  }, []);
+  }, [mounted]);
 
   useEffect(() => {
     if (completedCount >= STEPS.length) return;
@@ -47,16 +77,20 @@ export function AnalysisInterstitial({
 
   const activeIndex = Math.min(completedCount, STEPS.length - 1);
   const allComplete = completedCount >= STEPS.length;
+  const liveStatus = allComplete
+    ? "Analysis complete"
+    : (STEPS[activeIndex] ?? "Analyzing parcel");
 
-  return (
+  if (!mounted) {
+    return null;
+  }
+
+  return createPortal(
     <div
-      role="status"
-      aria-live="polite"
-      aria-busy="true"
-      aria-label="Analyzing parcel"
       className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70"
+      role="presentation"
     >
-      <div className="pointer-events-none absolute inset-0">
+      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
         <AddressMapPreview
           lat={lat}
           lng={lng}
@@ -65,14 +99,28 @@ export function AnalysisInterstitial({
         />
       </div>
       <div
-        className="relative z-10 w-[min(100%-2rem,400px)] rounded-[10px] border border-border bg-card p-8 shadow-elevated"
-        aria-label="Analysis progress"
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={progressId}
+        tabIndex={-1}
+        className="relative z-10 w-[min(100%-2rem,400px)] rounded-[10px] border border-border bg-card p-8 shadow-elevated outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        <p className="font-label text-muted-foreground">Parcel analysis</p>
+        <p id={titleId} className="font-label text-muted-foreground">
+          Parcel analysis
+        </p>
         <p className="font-heading mt-3 text-subheading break-words text-foreground">
           {address}
         </p>
-        <ol className="mt-5 space-y-3">
+        <p className="sr-only" aria-live="polite" aria-atomic="true">
+          {liveStatus}
+        </p>
+        <ol
+          id={progressId}
+          className="mt-5 space-y-3"
+          aria-label="Analysis progress"
+        >
           {STEPS.map((label, index) => {
             const done =
               index < activeIndex ||
@@ -90,7 +138,7 @@ export function AnalysisInterstitial({
                   aria-hidden="true"
                 >
                   {done ? (
-                    <Check size={14} className="text-emerald-600" />
+                    <Check size={14} className="text-emerald-700" />
                   ) : active ? (
                     <Loader2 size={14} className="animate-spin text-primary" />
                   ) : (
@@ -106,6 +154,10 @@ export function AnalysisInterstitial({
                   )}
                 >
                   {label}
+                  {active ? (
+                    <span className="sr-only"> (in progress)</span>
+                  ) : null}
+                  {done ? <span className="sr-only"> (complete)</span> : null}
                 </span>
               </li>
             );
@@ -116,6 +168,7 @@ export function AnalysisInterstitial({
           certification, transport, and lot readiness.
         </p>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

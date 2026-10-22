@@ -1,6 +1,12 @@
 import type { CitedClaim } from "@/lib/regulations/types";
+import type {
+  FeaturedPlanEligibility,
+  FeaturedPlanRecommendation,
+} from "@/lib/thow/plans";
 
 export type EligibilityStatus = "eligible" | "warning" | "restricted";
+
+export type { FeaturedPlanEligibility, FeaturedPlanRecommendation };
 
 export interface EligibilityResult {
   status: EligibilityStatus;
@@ -103,4 +109,8 @@ export interface ZoningReport {
   coverage?: "lot" | "jurisdiction";
   /** USPS region when known (CA / OR / WA published). */
   region?: string | null;
+  /** Side-by-side CAMBRIA 1 / CAMBRIA 2 lot ratings. */
+  featuredPlans?: FeaturedPlanEligibility[];
+  /** Business recommendation across featured plans. */
+  planRecommendation?: FeaturedPlanRecommendation;
 }

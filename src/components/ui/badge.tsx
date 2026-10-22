@@ -5,14 +5,14 @@ import { Slot } from "radix-ui";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "group/badge inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-pill border border-transparent px-2 py-0.5 text-xs font-medium tracking-[-0.02em] whitespace-nowrap transition-colors outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 aria-invalid:border-destructive aria-invalid:ring-destructive/20 [&>svg]:pointer-events-none [&>svg]:size-3!",
+  "group/badge inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-pill border border-transparent px-2 py-0.5 text-xs font-medium tracking-[-0.02em] whitespace-nowrap transition-colors outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 aria-invalid:border-destructive aria-invalid:ring-destructive/20 [&>svg]:pointer-events-none [&>svg]:size-3!",
   {
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground [a]:hover:bg-primary/90",
         secondary: "bg-secondary text-secondary-foreground [a]:hover:bg-card",
         destructive:
-          "bg-destructive/15 text-restricted [a]:hover:bg-destructive/25",
+          "bg-status-restricted-muted text-status-restricted-fg [a]:hover:bg-status-restricted-muted",
         outline:
           "border-border text-foreground [a]:hover:bg-muted [a]:hover:text-foreground",
         ghost: "hover:bg-muted hover:text-foreground",

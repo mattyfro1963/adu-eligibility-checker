@@ -81,6 +81,14 @@ const CENSUS_MATCHES: Record<
     lat: 37.82389818115,
     lng: -122.255582728622,
   },
+  "portland-alberta": {
+    formattedAddress: "2326 NE Alberta St, Portland, OR 97211",
+    place: "Portland",
+    county: "Multnomah",
+    postcode: "97211",
+    lat: 45.559005496793,
+    lng: -122.641613614019,
+  },
   irvine: {
     formattedAddress: "1 Civic Center Plz, Irvine, CA 92606",
     place: "Irvine",
@@ -125,6 +133,7 @@ const LOCAL_SUMMARY_HOST: Record<string, RegExp> = {
   "san-jose": /sanjoseca\.gov/i,
   sacramento: /cityofsacramento\.gov/i,
   "oakland-piedmont": /oaklandca\.gov/i,
+  "portland-alberta": /portland\.gov/i,
   irvine: /cityofirvine\.gov/i,
 };
 
@@ -141,10 +150,12 @@ async function reportFor(id: string) {
   const geo = CENSUS_MATCHES[id];
   if (!sample || !geo) throw new Error(`Missing sample ${id}`);
 
+  const region = /, OR(?:\s+\d{5})?$/.test(sample.query) ? "OR" : "CA";
+
   const geocode: GeocodeResult = {
     addressId: `${geo.lat},${geo.lng}`,
     streetLine: geo.formattedAddress.split(",")[0] ?? sample.query,
-    region: "CA",
+    region,
     ...geo,
   };
 
@@ -164,9 +175,7 @@ describe("SAMPLE_REPORTS parcel summaries", () => {
     );
   });
 
-  it(
-    "produces cited, city-accurate summaries whose chip tone matches the engine",
-    async () => {
+  it("produces cited, city-accurate summaries whose chip tone matches the engine", async () => {
     for (const sample of SAMPLE_REPORTS) {
       const { geocode, lookup, report, briefing } = await reportFor(sample.id);
       const summarySources = briefing.summary.flatMap((c) => c.sources);
@@ -204,7 +213,10 @@ describe("SAMPLE_REPORTS parcel summaries", () => {
       expect(briefing.summary[0]?.text).toMatch(
         /Strong THOW candidate|Possible THOW candidate|Weak THOW candidate/,
       );
-      expect(lotClaim, `${sample.id} lot/jurisdiction summary claim`).toBeDefined();
+      expect(
+        lotClaim,
+        `${sample.id} lot/jurisdiction summary claim`,
+      ).toBeDefined();
       expect(lotClaim?.text).toMatch(new RegExp(geocode.place, "i"));
       expect(lotClaim?.text).not.toMatch(/United States/i);
       expect(lotClaim?.text).not.toMatch(
@@ -247,7 +259,5 @@ describe("SAMPLE_REPORTS parcel summaries", () => {
         expect(localReqs.flatMap((r) => r.sources).length).toBeGreaterThan(0);
       }
     }
-  },
-    30_000,
-  );
+  }, 30_000);
 });

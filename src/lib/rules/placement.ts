@@ -5,10 +5,12 @@
 
 import { SRC } from "@/lib/regulations/sources";
 import type { CitedClaim } from "@/lib/regulations/types";
-import type { EligibilityResult, EligibilityStatus, Parcel } from "@/lib/types/zoning";
-import {
-  isResidentialZoning,
-} from "@/lib/rules/zoning-class";
+import type {
+  EligibilityResult,
+  EligibilityStatus,
+  Parcel,
+} from "@/lib/types/zoning";
+import { isResidentialZoning } from "@/lib/rules/zoning-class";
 
 const PLACE_SOURCES = [
   SRC.hcdTinyHomesIb,
@@ -27,9 +29,80 @@ export type PlacementContext = {
   jurisdictionFallback?: boolean;
 };
 
+/** Affirmative stance verbs for express wheeled-path inference. */
+const EXPRESS_AFFIRMATIVE =
+  /\b(expressly|allows|allowed|permitted|welcomed|workable|favorable)\b/gi;
+
+/**
+ * Wheeled placement keywords — plurals and “tiny house(s) on wheels”.
+ * Omit bare “movable/moveable tiny” (often ADU-conversion copy, not wheels-on
+ * occupancy) so “allows ADUs … movable tiny houses as ADUs” does not green.
+ */
+const EXPRESS_WHEELED =
+  /\b(thows?|tiny homes? on wheels|tiny houses? on wheels|park[- ]models?|pmrv|rv parks?|recreational vehicles?)\b/gi;
+
+/** Max chars between affirmative and wheeled keyword (same-sentence proximity). */
+const EXPRESS_PROXIMITY_CHARS = 80;
+
+/**
+ * True when wheeled language is framed as not allowed / not permanent /
+ * foundation-required (not an express wheels-on occupancy path).
+ */
+function hasWheeledPathNegation(text: string): boolean {
+  return (
+    /\b(thows?|park[- ]models?|recreational vehicles?|tiny homes? on wheels|tiny houses? on wheels).{0,48}(not allowed|not permitted|prohibited|not (?:a )?permanent)\b/.test(
+      text,
+    ) ||
+    /\b(not allowed|not permitted|prohibited|not (?:a )?permanent).{0,48}(thows?|park[- ]models?|recreational vehicles?|tiny homes? on wheels|tiny houses? on wheels)\b/.test(
+      text,
+    ) ||
+    /\b(park[- ]models?|thows?|wheeled units?).{0,72}permanent foundation\b/.test(
+      text,
+    ) ||
+    /\bpermanent foundation.{0,72}(park[- ]models?|thows?|wheeled units?)\b/.test(
+      text,
+    )
+  );
+}
+
+/**
+ * True when any affirmative match and wheeled match overlap within ±window.
+ */
+function hasProximateKeywordPair(
+  text: string,
+  left: RegExp,
+  right: RegExp,
+  windowChars: number,
+): boolean {
+  const leftHits: Array<{ start: number; end: number }> = [];
+  const rightHits: Array<{ start: number; end: number }> = [];
+  left.lastIndex = 0;
+  right.lastIndex = 0;
+  let m: RegExpExecArray | null;
+  while ((m = left.exec(text)) !== null) {
+    leftHits.push({ start: m.index, end: m.index + m[0].length });
+  }
+  while ((m = right.exec(text)) !== null) {
+    rightHits.push({ start: m.index, end: m.index + m[0].length });
+  }
+  for (const a of leftHits) {
+    for (const b of rightHits) {
+      const gap =
+        a.end <= b.start
+          ? b.start - a.end
+          : b.end <= a.start
+            ? a.start - b.end
+            : 0;
+      if (gap <= windowChars) return true;
+    }
+  }
+  return false;
+}
+
 /**
  * Infer whether jurisdiction note text describes an express wheeled path.
- * Conservative: only clear affirmative language counts as express.
+ * Conservative: affirmative + wheeled keywords must sit within ~80 chars
+ * so “allows ADUs” + distant “THOW” (e.g. Long Beach) does not false-positive.
  */
 export function inferExpressThowPathFromText(text: string): boolean {
   const t = text.toLowerCase();
@@ -40,13 +113,14 @@ export function inferExpressThowPathFromText(text: string): boolean {
   ) {
     return false;
   }
-  return (
-    /\b(expressly|allows|allowed|permitted|welcomed|workable|favorable)\b/.test(
-      t,
-    ) &&
-    /\b(thow|tiny home on wheels|park model|park-model|movable tiny|moveable tiny|pmrv|rv park|recreational vehicle)\b/.test(
-      t,
-    )
+  if (hasWheeledPathNegation(t)) {
+    return false;
+  }
+  return hasProximateKeywordPair(
+    t,
+    EXPRESS_AFFIRMATIVE,
+    EXPRESS_WHEELED,
+    EXPRESS_PROXIMITY_CHARS,
   );
 }
 

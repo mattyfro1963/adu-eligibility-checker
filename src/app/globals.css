@@ -12,6 +12,15 @@
   --color-surface-luxury: var(--surface-luxury);
   --color-border-default: var(--border-default);
   --color-border-strong: var(--border-strong);
+  --color-border-luxury: var(--border-luxury);
+
+  /* Editorial sample chips (not live eligibility status) */
+  --color-chip-editorial-fill: var(--chip-editorial-fill);
+  --color-chip-editorial-border: var(--chip-editorial-border);
+  --color-chip-editorial-rose: var(--chip-editorial-rose);
+  --color-chip-editorial-rose-fg: var(--chip-editorial-rose-fg);
+  --color-chip-editorial-gold: var(--chip-editorial-gold);
+  --color-chip-editorial-gold-fg: var(--chip-editorial-gold-fg);
 
   /* Typography color roles */
   --color-text-primary: var(--text-primary);
@@ -19,6 +28,7 @@
   --color-text-tertiary: var(--text-tertiary);
   --color-text-inverse: var(--text-inverse);
   --color-text-brand: var(--text-brand);
+  --color-text-brand-hover: var(--text-brand-hover);
   --color-text-luxury: var(--text-luxury);
 
   /* Actions — primary is charcoal/ink; brand (vermilion) is sparse accent */
@@ -77,11 +87,11 @@
   --color-brand-charcoal: var(--brand-charcoal);
   --color-brand-wood: var(--brand-wood);
 
-  --font-sans: var(--font-sohn), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-ibm-plex-mono), ui-monospace, "SFMono-Regular", Menlo,
-    monospace;
-  --font-heading: var(--font-sohn), ui-sans-serif, system-ui, sans-serif;
-  --font-quote: var(--font-sohn), ui-sans-serif, system-ui, sans-serif;
+  /* One primary family: Lato for display, body, labels, and specs */
+  --font-sans: var(--font-lato), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-lato), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-lato), ui-sans-serif, system-ui, sans-serif;
+  --font-quote: var(--font-lato), ui-sans-serif, system-ui, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -126,10 +136,11 @@
   --shadow-subtle: var(--shadow-subtle);
   --shadow-xl: var(--shadow-xl);
   --shadow-elevated: var(--shadow-elevated);
+  --shadow-brochure-input: var(--shadow-brochure-input);
   --shadow-luxury-elevated: var(--luxury-elevated-shadow);
 }
 
-/* Ballpark-derived tokens — vermilion accent, slate neutrals, Söhn stack */
+/* Ballpark-derived tokens — vermilion accent, slate neutrals, Lato stack */
 :root {
   /* Brand palette (vermilion = sparse accent, not page energy) */
   --vermilion-flame: #fc4a2b;
@@ -166,20 +177,25 @@
   --surface-luxury: var(--brand-cream);
   --border-default: var(--ash-border);
   --border-strong: color-mix(in srgb, var(--slate-700) 28%, var(--ash-border));
+  /* Taupe-leaning hairline for checker chrome (not cool ash) */
+  --border-luxury: color-mix(in srgb, var(--brand-taupe) 32%, var(--brand-cream));
 
   /* —— Typography color roles —— */
   --text-primary: var(--ink-black);
   --text-secondary: var(--slate-600);
-  --text-tertiary: var(--slate-500);
+  --text-tertiary: var(--slate-600);
   --text-inverse: var(--paper-white);
-  --text-brand: var(--vermilion-flame);
+  /* Darker than flame — ≥4.5:1 on cream/white (flame is decorative only) */
+  --text-brand: #c42810;
+  --text-brand-hover: #a31f0c;
   --text-luxury: var(--brand-charcoal);
 
   /* —— Actions (default CTA = charcoal; vermilion reserved for sparse accents) —— */
   --action-primary: var(--brand-charcoal);
   --action-primary-fg: var(--paper-white);
-  --action-brand: var(--vermilion-flame);
-  --action-brand-hover: var(--ember-pulse);
+  /* Filled brand CTAs use AA text pair; flame stays for non-text accents */
+  --action-brand: #c42810;
+  --action-brand-hover: #a31f0c;
   --action-brand-fg: var(--paper-white);
   --action-secondary: var(--mist-gray);
   --action-secondary-fg: var(--slate-900);
@@ -188,7 +204,8 @@
 
   /* —— Result status (unified warning on #f59e0b family) —— */
   --status-eligible: #059669;
-  --status-eligible-fg: #059669;
+  /* FG darkened for ≥4.5:1 on muted / white badge fills (WCAG AA normal text) */
+  --status-eligible-fg: #047857;
   --status-eligible-muted: color-mix(
     in srgb,
     var(--status-eligible) 12%,
@@ -200,7 +217,7 @@
     transparent
   );
   --status-warning: #f59e0b;
-  --status-warning-fg: #d97706;
+  --status-warning-fg: #b45309;
   --status-warning-muted: color-mix(
     in srgb,
     var(--status-warning) 14%,
@@ -212,7 +229,7 @@
     transparent
   );
   --status-restricted: #e11d48;
-  --status-restricted-fg: #e11d48;
+  --status-restricted-fg: #be123c;
   --status-restricted-muted: color-mix(
     in srgb,
     var(--status-restricted) 12%,
@@ -239,7 +256,8 @@
 
   /* —— Luxury brand roles —— */
   --luxury-cream: var(--brand-cream);
-  --luxury-taupe: var(--brand-taupe);
+  /* Wood (not light taupe) — AA text on cream; borders still use brand-taupe */
+  --luxury-taupe: var(--brand-wood);
   --luxury-charcoal: var(--brand-charcoal);
   --luxury-wood: var(--brand-wood);
   --luxury-elevated-shadow: var(--shadow-elevated);
@@ -256,13 +274,16 @@
   --secondary: var(--action-secondary);
   --secondary-foreground: var(--action-secondary-fg);
   --muted: var(--fog-whisper);
-  --muted-foreground: var(--slate-500);
+  /* slate-600 — AA on cream luxury surfaces (slate-500 was ~4.37:1) */
+  --muted-foreground: var(--slate-600);
   --accent: var(--peach-mist);
   --accent-foreground: var(--ink-black);
   --destructive: var(--action-destructive);
   --border: var(--border-default);
   --input: var(--ash-border);
-  --ring: color-mix(in srgb, var(--vermilion-flame) 45%, transparent);
+  /* Solid charcoal — ≥3:1 non-text UI against cream (#f7f3ed) and white cards.
+     Avoid opacity modifiers on focus rings (e.g. ring-ring fails AA). */
+  --ring: var(--brand-charcoal);
 
   --chart-1: var(--ink-black);
   --chart-2: var(--slate-500);
@@ -288,6 +309,21 @@
   --shadow-xl: rgba(50, 50, 92, 0.05) 0px 50px 100px -20px,
     rgba(0, 0, 0, 0.15) 0px 30px 60px -30px;
   --shadow-elevated: 0 12px 40px rgb(44 40 37 / 0.08);
+  /* Soft brochure search shell — shallow, warm, lighter than elevated */
+  --shadow-brochure-input: 0 1px 2px rgb(44 40 37 / 0.04),
+    0 6px 18px rgb(107 83 68 / 0.07);
+
+  /* Editorial sample chips — muted brochure tones; live status stays emerald/amber/rose */
+  --chip-editorial-fill: var(--brand-cream);
+  --chip-editorial-border: color-mix(
+    in srgb,
+    var(--brand-taupe) 42%,
+    var(--paper-white)
+  );
+  --chip-editorial-rose: color-mix(in srgb, #b87a7a 18%, var(--brand-cream));
+  --chip-editorial-rose-fg: #7a4545;
+  --chip-editorial-gold: color-mix(in srgb, #c4a574 20%, var(--brand-cream));
+  --chip-editorial-gold-fg: #6b5a38;
 
   --sidebar: var(--paper-white);
   --sidebar-foreground: var(--ink-black);
@@ -296,18 +332,20 @@
   --sidebar-accent: var(--fog-whisper);
   --sidebar-accent-foreground: var(--slate-900);
   --sidebar-border: var(--ash-border);
-  --sidebar-ring: color-mix(in srgb, var(--vermilion-flame) 45%, transparent);
+  --sidebar-ring: var(--brand-charcoal);
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring;
   }
   body {
     @apply bg-background font-sans text-text-secondary;
-    font-size: 1rem;
+    /* Body scale: 15–16px, line-height ~1.6 */
+    font-size: 0.9375rem; /* 15px */
+    font-weight: 400;
     line-height: 1.6;
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
   }
   html {
     @apply font-sans;
@@ -318,43 +356,54 @@
   h4,
   h5,
   h6 {
-    font-family: var(--font-heading);
+    font-family: var(--font-sans);
     font-weight: 700;
     color: var(--text-primary);
-    letter-spacing: -0.035em;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
   }
 }
 
 @layer utilities {
   .font-display {
-    font-family: var(--font-heading);
-    font-weight: 800;
-    letter-spacing: -0.035em;
-    line-height: 1;
+    /* Lato bold — hierarchy via scale + weight; hero H1 at call site (3rem→4rem) */
+    font-family: var(--font-sans);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.05;
     color: var(--text-primary);
   }
   .font-heading {
-    font-family: var(--font-heading);
+    font-family: var(--font-sans);
     font-weight: 700;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
     color: var(--text-primary);
   }
   .font-label {
-    font-family: var(--font-mono);
+    /* Lato all-caps light — architectural blueprint eyebrow */
+    font-family: var(--font-sans);
     font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.15em;
+    font-weight: 300;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--text-tertiary);
   }
+  .font-mono {
+    font-family: var(--font-sans);
+    font-weight: 400;
+  }
   .font-quote {
     font-family: var(--font-quote);
-    font-weight: 400;
-    letter-spacing: -0.01em;
+    font-weight: 300;
+    letter-spacing: 0;
   }
   /* Sparse vermilion accent — links / small marks, not dominant CTA energy */
   .text-brand {
     color: var(--text-brand);
+  }
+  .text-brand-hover {
+    color: var(--text-brand-hover);
   }
   .bg-brand-gradient {
     background: linear-gradient(
@@ -385,6 +434,9 @@
   .shadow-elevated {
     box-shadow: var(--shadow-elevated);
   }
+  .shadow-brochure-input {
+    box-shadow: var(--shadow-brochure-input);
+  }
   .shadow-subtle-ring {
     box-shadow: var(--shadow-subtle);
   }
@@ -409,9 +461,9 @@
     letter-spacing: -0.02em;
   }
   .text-body {
-    font-size: 1rem;
+    font-size: 0.9375rem; /* 15px — brochure / hero support body */
     line-height: 1.6;
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
   }
   .text-subheading {
     font-size: 1.25rem;
@@ -421,9 +473,9 @@
   }
   .text-heading {
     font-size: 1.625rem;
-    font-weight: 700;
+    font-weight: 400;
     line-height: 1;
-    letter-spacing: -0.035em;
+    letter-spacing: -0.02em;
   }
   @media (min-width: 640px) {
     .text-heading {
@@ -432,9 +484,9 @@
   }
   .text-display {
     font-size: 3.75rem;
-    font-weight: 800;
+    font-weight: 400;
     line-height: 1;
-    letter-spacing: -0.035em;
+    letter-spacing: -0.02em;
   }
   @media (min-width: 640px) {
     .text-display {
@@ -472,8 +524,33 @@
   }
 }
 
+@keyframes hero-media-enter {
+  from {
+    opacity: 0.72;
+    transform: scale(1.04);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .search-enter {
     animation: search-fade-up 0.5s ease-out both;
+  }
+  .hero-media-enter {
+    animation: hero-media-enter 1.6s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .search-enter,
+  .hero-media-enter {
+    animation: none;
+  }
+
+  .animate-spin {
+    animation: none;
   }
 }

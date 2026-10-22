@@ -82,8 +82,7 @@ function applySiteLayers(
   tokens: MapPaintTokens,
 ) {
   const zoningSource = map.getSource("site-zoning") as
-    | GeoJSONSource
-    | undefined;
+    GeoJSONSource | undefined;
   const lotSource = map.getSource("site-lot") as GeoJSONSource | undefined;
 
   if (zoningSource) {
@@ -96,11 +95,7 @@ function applySiteLayers(
       tokens.zoneFillOpacity,
     );
     map.setPaintProperty("site-zoning-line", "line-color", color);
-    map.setPaintProperty(
-      "site-lot-line",
-      "line-dasharray",
-      [2, 1.5],
-    );
+    map.setPaintProperty("site-lot-line", "line-dasharray", [2, 1.5]);
     return;
   }
 
@@ -307,14 +302,18 @@ export function InteractiveSiteMap({
       <div
         ref={containerRef}
         className="h-full w-full [&_.mapboxgl-ctrl-attrib]:text-[10px]"
-        aria-label="Interactive site map"
+        aria-label={
+          label && label.trim().length > 0
+            ? `Interactive map of ${label.trim()}`
+            : "Interactive site map"
+        }
       />
       {interactive ? (
         <div className="absolute top-3 right-3 z-20 flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-elevated">
           <button
             type="button"
             onClick={() => zoomBy(1)}
-            className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center text-foreground transition-colors hover:bg-muted"
+            className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center text-foreground transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
             aria-label="Zoom in"
           >
             <Plus size={18} strokeWidth={1.75} aria-hidden="true" />
@@ -323,7 +322,7 @@ export function InteractiveSiteMap({
           <button
             type="button"
             onClick={() => zoomBy(-1)}
-            className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center text-foreground transition-colors hover:bg-muted"
+            className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center text-foreground transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
             aria-label="Zoom out"
           >
             <Minus size={18} strokeWidth={1.75} aria-hidden="true" />

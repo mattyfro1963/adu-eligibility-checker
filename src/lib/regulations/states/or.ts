@@ -11,8 +11,15 @@ import type {
   StateProfile,
 } from "@/lib/regulations/types";
 
-const classSources = [SRC.hcdTinyHomesIb, SRC.noahDwelling, SRC.rvia] as const;
-const transportSources = [SRC.orDotOversize] as const;
+const classSources = [SRC.noahDwelling, SRC.rvia] as const;
+const transportSources = [
+  SRC.orDotLegalDims,
+  SRC.orDotOverDimOps,
+  SRC.orDotOversize,
+  SRC.orDotPermittableTables,
+  SRC.orOarPilotVehicles,
+  SRC.orDotPilotGuide,
+] as const;
 
 export const OR_USE_DOCTRINE: CitedClaim[] = [
   {
@@ -24,7 +31,7 @@ export const OR_USE_DOCTRINE: CitedClaim[] = [
     sources: [...classSources],
   },
   {
-    text: "Companion-unit or ADU-style paths apply only where the local ordinance expressly allows them. Do not assume California Chapter 13 ADU rules apply in Oregon.",
+    text: "Companion-unit or ADU-style paths apply only where the local ordinance expressly allows them. Oregon has no statewide wheeled-unit ADU floor — local zoning and occupancy rules control placement.",
     sources: [...classSources],
   },
 ];
@@ -51,7 +58,7 @@ export const OR_OUTLINE: OutlineSection[] = [
       },
       {
         text: "NOAH, ANSI A119.5, and RVIA documentation (data plate / VIN / seal) support certification fit but do not replace local zoning approval.",
-        sources: [SRC.noahDwelling, SRC.rvia, SRC.hcdTinyHomesIb],
+        sources: [SRC.noahDwelling, SRC.rvia],
       },
     ],
   },
@@ -60,7 +67,11 @@ export const OR_OUTLINE: OutlineSection[] = [
     title: "Transport & delivery",
     claims: [
       {
-        text: "Designed to reduce escort requirements; pilot-car need confirmed by state permit route. Oregon over-dimension permits and route restrictions apply — never assume a blanket “no pilot car” clearance.",
+        text: "CAMBRIA plans are designed to reduce pilot-car requirements. Final pilot-car requirements depend on state permit rules and the delivery route. Oregon legal width is 8 ft 6 in / height 14 ft 0 in; anything over needs an over-dimension permit (ORS Ch. 818 / ODOT legal dimensions).",
+        sources: [...transportSources],
+      },
+      {
+        text: "Pilot-vehicle needs are route- and attachment-specific (Attachments 70A/75A/82A + OAR 734-078-0035) — never assume a blanket no-pilot clearance for ≤11 ft CAMBRIA loads. Complete a hauler route review before delivery.",
         sources: [...transportSources],
       },
     ],

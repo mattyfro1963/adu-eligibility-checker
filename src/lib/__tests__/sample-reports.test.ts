@@ -24,10 +24,10 @@ describe("SAMPLE_REPORTS catalog", () => {
 
     for (const sample of SAMPLE_REPORTS) {
       expect(sample).not.toHaveProperty("geocodeResult");
-      expect(sample.query).toMatch(/, CA(?:\s+\d{5})?$/);
-      expect(sample.label).toMatch(/, CA$/);
+      expect(sample.query).toMatch(/, (?:CA|OR)(?:\s+\d{5})?$/);
+      expect(sample.label).toMatch(/, (?:CA|OR)$/);
       expect(sample.label).toMatch(
-        /San Francisco|Oakland|Los Angeles|Long Beach|San Diego|Irvine|San Jose|Sacramento|Orange County|East Bay/,
+        /San Francisco|Oakland|Los Angeles|Long Beach|San Diego|Irvine|San Jose|Sacramento|Orange County|East Bay|Portland/,
       );
       expect(sample.label).not.toMatch(SPOILER);
       expect(sample.query).not.toMatch(SPOILER);
@@ -35,19 +35,21 @@ describe("SAMPLE_REPORTS catalog", () => {
     }
   });
 
-  it("lists nine warning chips (lot-GIS honesty + jurisdiction) and three restricted", () => {
+  it("lists Eligible Cascadia chips, warning jurisdiction chips, and SF restricted", () => {
     const eligible = SAMPLE_REPORTS.filter((s) => s.tone === "eligible");
     const warning = SAMPLE_REPORTS.filter((s) => s.tone === "warning");
     const restricted = SAMPLE_REPORTS.filter((s) => s.tone === "restricted");
-    expect(eligible).toHaveLength(0);
-    expect(warning).toHaveLength(9);
+    expect(eligible.length).toBeGreaterThanOrEqual(1);
+    expect(eligible.map((s) => s.id).sort()).toEqual(
+      ["oakland-piedmont", "portland-alberta"].sort(),
+    );
+    expect(warning).toHaveLength(8);
     expect(restricted).toHaveLength(3);
     expect(warning.map((s) => s.id).sort()).toEqual(
       [
         "irvine",
         "long-beach",
         "los-angeles",
-        "oakland-piedmont",
         "parkside",
         "richmond",
         "sacramento",

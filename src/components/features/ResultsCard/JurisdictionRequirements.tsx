@@ -31,7 +31,7 @@ export function JurisdictionRequirements({
           className="border-b border-border pb-5 last:border-b-0 last:pb-0"
         >
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <h4 className="text-sm font-normal text-foreground">{req.title}</h4>
+            <p className="text-sm font-normal text-foreground">{req.title}</p>
             <span className="font-label text-caption text-muted-foreground">
               {req.jurisdictionLabel} · {APPLIES_LABEL[req.applies]}
             </span>

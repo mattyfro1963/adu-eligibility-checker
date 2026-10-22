@@ -84,7 +84,10 @@ export function BuilderSignupPanel({ onSubmit }: BuilderSignupPanelProps) {
       </div>
 
       {submitted ? (
-        <p className="rounded-input border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400">
+        <p
+          role="status"
+          className="rounded-input border border-emerald-600/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-800"
+        >
           Thanks{company ? `, ${company}` : ""} — we&apos;ll follow up at{" "}
           {email} about beta lead routing.
         </p>
@@ -100,7 +103,6 @@ export function BuilderSignupPanel({ onSubmit }: BuilderSignupPanelProps) {
                 onChange={(e) => setCompany(e.target.value)}
                 placeholder="Company name"
                 className="h-11"
-                aria-label="Builder company name"
                 disabled={isSubmitting}
               />
             </div>
@@ -113,7 +115,6 @@ export function BuilderSignupPanel({ onSubmit }: BuilderSignupPanelProps) {
                 onChange={(e) => setLicenseNumber(e.target.value)}
                 placeholder="License number"
                 className="h-11"
-                aria-label="CSLB license number"
                 disabled={isSubmitting}
               />
             </div>
@@ -129,7 +130,6 @@ export function BuilderSignupPanel({ onSubmit }: BuilderSignupPanelProps) {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@company.com"
                 className="h-11"
-                aria-label="Builder work email"
                 disabled={isSubmitting}
               />
             </div>
@@ -142,7 +142,6 @@ export function BuilderSignupPanel({ onSubmit }: BuilderSignupPanelProps) {
                 onChange={(e) => setServiceZips(e.target.value)}
                 placeholder="94110, 94114, 94607"
                 className="h-11"
-                aria-label="Service ZIP codes"
                 disabled={isSubmitting}
               />
             </div>
@@ -155,7 +154,6 @@ export function BuilderSignupPanel({ onSubmit }: BuilderSignupPanelProps) {
               onChange={(e) => setNotes(e.target.value)}
               placeholder="ADU / THOW focus, coverage radius…"
               className="h-11"
-              aria-label="Builder notes"
               disabled={isSubmitting}
             />
           </div>
