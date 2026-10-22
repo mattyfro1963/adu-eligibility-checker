@@ -1,13 +1,9 @@
 /**
  * Map paint tokens resolved from CSS custom properties.
- * Zero React; Mapbox needs computed color strings, not var() references.
+ * Zero React; MapLibre needs computed color strings, not var() references.
  */
 
-export type MapZoneKind =
-  | "eligible"
-  | "warning"
-  | "restricted"
-  | "unverified";
+export type MapZoneKind = "eligible" | "warning" | "restricted" | "unverified";
 
 export type MapPaintTokens = {
   lotFill: string;
@@ -33,7 +29,7 @@ export const MAP_PAINT_FALLBACKS: MapPaintTokens = {
   zoneWarning: "#f59e0b",
   zoneRestricted: "#e11d48",
   zoneUnverified: "#6b7280",
-  zoneFillOpacity: 0.16,
+  zoneFillOpacity: 0.28,
   hatch: "#6b7280",
   pinShadow: "rgb(44 40 37 / 0.16)",
 };
@@ -65,9 +61,7 @@ function readVar(
  * Resolve map paint tokens from the document (or a scoped element).
  * Call from client effects / event handlers — not during SSR.
  */
-export function readMapPaintTokens(
-  el?: Element | null,
-): MapPaintTokens {
+export function readMapPaintTokens(el?: Element | null): MapPaintTokens {
   if (typeof window === "undefined") {
     return { ...MAP_PAINT_FALLBACKS };
   }
@@ -83,7 +77,11 @@ export function readMapPaintTokens(
 
   return {
     lotFill: readVar(style, VAR_KEYS.lotFill, MAP_PAINT_FALLBACKS.lotFill),
-    lotStroke: readVar(style, VAR_KEYS.lotStroke, MAP_PAINT_FALLBACKS.lotStroke),
+    lotStroke: readVar(
+      style,
+      VAR_KEYS.lotStroke,
+      MAP_PAINT_FALLBACKS.lotStroke,
+    ),
     envelopeFill: readVar(
       style,
       VAR_KEYS.envelopeFill,
@@ -118,7 +116,11 @@ export function readMapPaintTokens(
       ? opacity
       : MAP_PAINT_FALLBACKS.zoneFillOpacity,
     hatch: readVar(style, VAR_KEYS.hatch, MAP_PAINT_FALLBACKS.hatch),
-    pinShadow: readVar(style, VAR_KEYS.pinShadow, MAP_PAINT_FALLBACKS.pinShadow),
+    pinShadow: readVar(
+      style,
+      VAR_KEYS.pinShadow,
+      MAP_PAINT_FALLBACKS.pinShadow,
+    ),
   };
 }
 

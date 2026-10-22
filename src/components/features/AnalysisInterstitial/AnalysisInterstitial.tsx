@@ -1,174 +1,93 @@
 "use client";
 
-import {
-  useEffect,
-  useId,
-  useRef,
-  useState,
-  useSyncExternalStore,
-} from "react";
-import { createPortal } from "react-dom";
-import { Check, Loader2 } from "lucide-react";
-import { AddressMapPreview } from "@/components/features/AddressMapPreview/AddressMapPreview";
+import { useEffect, useId, useState } from "react";
 import { cn } from "@/lib/utils";
 
-function subscribeNoop() {
-  return () => {};
-}
-
 const STEPS = [
-  "Locating address",
-  "Resolving county requirements",
-  "Local zoning when available",
-  "Evaluating THOW lot fit",
+  "Reading the lot",
+  "Checking the placement path",
+  "Checking certification, transport, and utilities",
 ] as const;
 
-const STEP_MS = 450;
+/** Goal-gradient ticks — stay inside Doherty's 0.4–1s competence window. */
+const STEP_MS = 280;
 
 interface AnalysisInterstitialProps {
-  lat: number;
-  lng: number;
   address: string;
 }
 
-export function AnalysisInterstitial({
-  lat,
-  lng,
-  address,
-}: AnalysisInterstitialProps) {
-  const [completedCount, setCompletedCount] = useState(1);
-  const mounted = useSyncExternalStore(
-    subscribeNoop,
-    () => true,
-    () => false,
-  );
-  const dialogRef = useRef<HTMLDivElement>(null);
+/**
+ * Quiet inline “reading the lot” state — not a spinner void, not a modal.
+ * Map authority lives in ResultsCard beside this copy.
+ */
+export function AnalysisInterstitial({ address }: AnalysisInterstitialProps) {
+  const [activeIndex, setActiveIndex] = useState(0);
   const titleId = useId();
   const progressId = useId();
 
   useEffect(() => {
-    if (!mounted) return;
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    const main = document.getElementById("main-content");
-    main?.setAttribute("inert", "");
-
-    const previouslyFocused = document.activeElement as HTMLElement | null;
-    dialogRef.current?.focus();
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      main?.removeAttribute("inert");
-      previouslyFocused?.focus?.();
-    };
-  }, [mounted]);
-
-  useEffect(() => {
-    if (completedCount >= STEPS.length) return;
+    if (activeIndex >= STEPS.length - 1) return;
     const timeoutId = window.setTimeout(() => {
-      setCompletedCount((count) => Math.min(count + 1, STEPS.length));
+      setActiveIndex((index) => Math.min(index + 1, STEPS.length - 1));
     }, STEP_MS);
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [completedCount]);
+  }, [activeIndex]);
 
-  const activeIndex = Math.min(completedCount, STEPS.length - 1);
-  const allComplete = completedCount >= STEPS.length;
-  const liveStatus = allComplete
-    ? "Analysis complete"
-    : (STEPS[activeIndex] ?? "Analyzing parcel");
+  const liveStatus = STEPS[activeIndex] ?? STEPS[0];
 
-  if (!mounted) {
-    return null;
-  }
-
-  return createPortal(
+  return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70"
-      role="presentation"
+      role="status"
+      aria-labelledby={titleId}
+      aria-describedby={progressId}
+      className="space-y-5"
     >
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <AddressMapPreview
-          lat={lat}
-          lng={lng}
-          chrome={false}
-          className="min-h-full rounded-none border-0 bg-muted shadow-none sm:min-h-full lg:min-h-full"
-        />
-      </div>
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        aria-describedby={progressId}
-        tabIndex={-1}
-        className="relative z-10 w-[min(100%-2rem,400px)] rounded-[10px] border border-border bg-card p-8 shadow-elevated outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      >
-        <p id={titleId} className="font-label text-muted-foreground">
-          Parcel analysis
-        </p>
-        <p className="font-heading mt-3 text-subheading break-words text-foreground">
-          {address}
-        </p>
-        <p className="sr-only" aria-live="polite" aria-atomic="true">
-          {liveStatus}
-        </p>
-        <ol
-          id={progressId}
-          className="mt-5 space-y-3"
-          aria-label="Analysis progress"
-        >
-          {STEPS.map((label, index) => {
-            const done =
-              index < activeIndex ||
-              (allComplete && index === STEPS.length - 1);
-            const active = index === activeIndex && !allComplete;
-            return (
-              <li key={label} className="flex items-center gap-3">
-                <span
-                  className={cn(
-                    "flex size-6 shrink-0 items-center justify-center rounded-full border",
-                    done && "border-emerald-600/30 bg-emerald-500/15",
-                    active && "border-primary bg-primary/10",
-                    !done && !active && "border-border bg-muted",
-                  )}
-                  aria-hidden="true"
-                >
-                  {done ? (
-                    <Check size={14} className="text-emerald-700" />
-                  ) : active ? (
-                    <Loader2 size={14} className="animate-spin text-primary" />
-                  ) : (
-                    <span className="size-1.5 rounded-full bg-border" />
-                  )}
-                </span>
-                <span
-                  className={cn(
-                    "text-sm",
-                    done && "text-foreground",
-                    active && "font-medium text-primary",
-                    !done && !active && "text-muted-foreground",
-                  )}
-                >
-                  {label}
-                  {active ? (
-                    <span className="sr-only"> (in progress)</span>
-                  ) : null}
-                  {done ? <span className="sr-only"> (complete)</span> : null}
-                </span>
-              </li>
-            );
-          })}
-        </ol>
-        <p className="mt-5 text-xs text-muted-foreground">
-          County requirements, then lot GIS when available, then THOW placement,
-          certification, transport, and lot readiness.
-        </p>
-      </div>
-    </div>,
-    document.body,
+      <p id={titleId} className="font-label text-luxury-taupe">
+        Reading the lot
+      </p>
+      <p className="font-sans text-lg leading-snug font-bold break-words text-text-luxury">
+        {address}
+      </p>
+      <p className="sr-only" aria-live="polite" aria-atomic="true">
+        {liveStatus}
+      </p>
+      <ol id={progressId} className="space-y-2.5" aria-label="Lot reading">
+        {STEPS.map((label, index) => {
+          const done = index < activeIndex;
+          const active = index === activeIndex;
+          return (
+            <li key={label} className="flex items-start gap-3">
+              <span
+                className={cn(
+                  "mt-1.5 size-1.5 shrink-0 rounded-full",
+                  done || active ? "bg-luxury-charcoal" : "bg-luxury-taupe/35",
+                )}
+                aria-hidden="true"
+              />
+              <span
+                className={cn(
+                  "text-sm leading-relaxed",
+                  active && "text-text-luxury",
+                  done && "text-text-luxury/70",
+                  !done && !active && "text-luxury-taupe",
+                )}
+              >
+                {label}
+                {active ? (
+                  <span className="sr-only"> (in progress)</span>
+                ) : null}
+                {done ? <span className="sr-only"> (complete)</span> : null}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+      <p className="text-xs leading-relaxed text-luxury-taupe">
+        Placement, certification, transport, and lot readiness — informational,
+        not a permit.
+      </p>
+    </div>
   );
 }

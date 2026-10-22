@@ -7,6 +7,10 @@ import type {
   MultiPolygon,
   Polygon,
 } from "geojson";
+import {
+  lookupSfAssessorParcel,
+  type AssessorParcelHit,
+} from "@/lib/adapters/sf-assessor-parcels";
 import { emptyOverlays } from "@/lib/adapters/zoning-overlays";
 import { normalizeVendorZoningCode } from "@/lib/adapters/zoning-normalize";
 import type { Parcel } from "@/lib/types/zoning";
@@ -209,8 +213,11 @@ export function buildSfDatasfParcel(
   lng: number,
   zoning: string,
   formattedAddress = "",
-  meta?: Pick<ZoningDistrictHit, "districtName" | "sourceUrl">,
+  meta?: Pick<ZoningDistrictHit, "districtName" | "sourceUrl"> & {
+    assessor?: AssessorParcelHit | null;
+  },
 ): Parcel {
+  const assessor = meta?.assessor ?? null;
   return {
     addressId: `${lat},${lng}`,
     formattedAddress,
@@ -219,7 +226,10 @@ export function buildSfDatasfParcel(
     zoning: normalizeVendorZoningCode(zoning, "sf-datasf"),
     overlays: emptyOverlays(),
     overlaysVerified: false,
-    mapblklot: null,
+    mapblklot: assessor?.mapblklot ?? null,
+    lotSizeSqFt: assessor?.lotSizeSqFt ?? null,
+    parcelBoundary: assessor?.parcelBoundary ?? null,
+    boundarySource: assessor?.boundarySource ?? null,
     zoningDistrictName: meta?.districtName ?? null,
     zoningSourceUrl: meta?.sourceUrl ?? null,
   };
@@ -235,9 +245,11 @@ export async function getSfDatasfParcel(
   if (!hit) {
     return null;
   }
+  const assessor = await lookupSfAssessorParcel(lat, lng);
   return buildSfDatasfParcel(lat, lng, hit.zoning, formattedAddress, {
     districtName: hit.districtName,
     sourceUrl: hit.sourceUrl,
+    assessor,
   });
 }
 

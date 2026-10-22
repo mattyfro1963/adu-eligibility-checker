@@ -8,7 +8,6 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { Search } from "lucide-react";
 import { SampleReportButtons } from "@/components/features/AddressSearch/SampleReportButtons";
@@ -28,6 +27,36 @@ interface AddressSearchProps {
   /** Clears results and returns to idle search. */
   onNewSearch?: () => void;
   children?: ReactNode;
+}
+
+/** Hairline elevation — cream paper, no raster. Matches the 15s film. */
+function HeroHouseElevation() {
+  return (
+    <svg
+      className="pointer-events-none absolute inset-0 h-full w-full text-luxury-taupe"
+      viewBox="0 0 960 540"
+      fill="none"
+      aria-hidden="true"
+    >
+      <g
+        transform="translate(480 248)"
+        stroke="currentColor"
+        strokeWidth="1.15"
+        strokeLinejoin="round"
+        opacity="0.16"
+      >
+        <rect x="-340" y="-70" width="680" height="280" />
+        <rect x="-340" y="-118" width="420" height="48" />
+        {Array.from({ length: 5 }, (_, i) => (
+          <rect key={i} x={-300 + i * 78} y="-20" width="64" height="150" />
+        ))}
+        <path d="M-360 210 H360" />
+        {Array.from({ length: 9 }, (_, i) => (
+          <path key={i} d={`M${-320 + i * 80} 210 V250`} />
+        ))}
+      </g>
+    </svg>
+  );
 }
 
 function secondaryLine(suggestion: GeocodeResult): string {
@@ -153,11 +182,12 @@ export function AddressSearch({
     >
       <div
         className={cn(
-          "relative flex items-center rounded-xl transition-[border-color,box-shadow]",
+          "relative flex items-center rounded-xl border bg-white/97 caret-luxury-charcoal transition-[border-color,box-shadow,transform]",
           compact
-            ? "h-12 border border-border bg-card shadow-elevated focus-within:border-foreground/40 focus-within:ring-2 focus-within:ring-ring"
-            : "h-14 border border-border-luxury bg-white/95 shadow-brochure-input backdrop-blur-[2px] focus-within:border-luxury-taupe/55 focus-within:ring-2 focus-within:ring-ring sm:h-16",
-          hasError && "ring-2 ring-rose-600 ring-inset",
+            ? "h-[52px] border-border-luxury shadow-brochure-input focus-within:border-luxury-charcoal/28 focus-within:ring-2 focus-within:ring-ring"
+            : "h-16 border-border-luxury shadow-brochure-input focus-within:border-luxury-charcoal/28 focus-within:ring-2 focus-within:ring-ring",
+          isResolving && "search-field-settle",
+          hasError && "border-rose-400/70 ring-2 ring-rose-600/40 ring-inset",
         )}
       >
         <label htmlFor="address-search" className="sr-only">
@@ -173,8 +203,8 @@ export function AddressSearch({
           onKeyDown={onComboboxKeyDown}
           placeholder="Enter a CA, OR, or WA address..."
           className={cn(
-            "h-full w-full bg-transparent pr-14 pl-5 text-body text-foreground placeholder:text-muted-foreground focus:outline-none",
-            compact ? "text-sm" : "text-base",
+            "h-full w-full bg-transparent pr-14 pl-5 text-body text-text-luxury placeholder:text-luxury-taupe/85 focus:outline-none",
+            compact ? "text-[16px]" : "text-[18px]",
           )}
           aria-autocomplete="list"
           aria-expanded={showList}
@@ -259,7 +289,7 @@ export function AddressSearch({
     <p
       id={errorId}
       role="alert"
-      className="text-left text-caption text-rose-600"
+      className="text-left text-sm leading-relaxed text-rose-700"
     >
       {error}
     </p>
@@ -267,25 +297,30 @@ export function AddressSearch({
 
   if (compact) {
     return (
-      <section className="flex flex-col space-y-4" aria-label="Address search">
-        <h1 className="sr-only">
-          Tiny Home on Wheels Lot Eligibility Checker — CA, OR, WA
-        </h1>
+      <section className="flex flex-col space-y-5" aria-label="Address search">
+        <header className="flex flex-col gap-3 sm:flex-row sm:items-baseline sm:justify-between">
+          <div>
+            <h1 className="font-sans text-2xl font-bold tracking-tight text-text-luxury">
+              doihave.space
+            </h1>
+            <p className="mt-0.5 text-sm text-luxury-taupe">
+              Tiny home lot readiness — CA, OR, WA
+            </p>
+          </div>
+          {onNewSearch ? (
+            <Button
+              type="button"
+              variant="link"
+              size="sm"
+              onClick={onNewSearch}
+              className="min-h-[44px] shrink-0 justify-start px-0 text-sm text-text-secondary hover:text-text-luxury sm:justify-center"
+            >
+              Search another address
+            </Button>
+          ) : null}
+        </header>
 
         <div ref={containerRef} className="relative w-full space-y-2">
-          {onNewSearch ? (
-            <div className="flex justify-end">
-              <Button
-                type="button"
-                variant="link"
-                size="sm"
-                onClick={onNewSearch}
-                className="min-h-[44px] px-0 text-xs text-muted-foreground hover:text-foreground"
-              >
-                Search another address
-              </Button>
-            </div>
-          ) : null}
           {searchForm}
           {errorMessage}
           {suggestionsList}
@@ -296,37 +331,27 @@ export function AddressSearch({
 
   return (
     <section className="flex w-full flex-col" aria-label="Address search">
-      <div className="relative isolate min-h-[min(92svh,44rem)] w-full overflow-hidden">
-        <div className="hero-media-enter absolute inset-0">
-          <Image
-            src="/tiny-home-hero.png"
-            alt="Modern wood-clad backyard tiny home with large windows in a landscaped yard"
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover object-center"
-          />
-        </div>
-        {/* Cream-forward scrim — readable type, place still visible */}
+      <div className="relative isolate min-h-svh w-full overflow-hidden bg-surface-luxury">
+        <HeroHouseElevation />
         <div
-          className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--brand-cream)_82%,transparent)_0%,color-mix(in_srgb,var(--brand-cream)_58%,transparent)_42%,color-mix(in_srgb,var(--brand-cream)_88%,transparent)_78%,var(--surface-luxury)_100%)]"
-          aria-hidden="true"
-        />
-        <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_28%,color-mix(in_srgb,var(--brand-cream)_55%,transparent)_0%,transparent_62%)]"
+          className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--brand-cream)_72%,transparent)_0%,color-mix(in_srgb,var(--brand-cream)_48%,transparent)_42%,color-mix(in_srgb,var(--brand-cream)_88%,transparent)_78%,var(--surface-luxury)_100%)]"
           aria-hidden="true"
         />
 
-        <div className="relative z-10 mx-auto flex min-h-[min(92svh,44rem)] w-full max-w-3xl flex-col justify-center px-4 py-16 sm:px-6 sm:py-20">
-          <header className="space-y-5 text-center">
-            <p className="font-sans text-sm tracking-tight text-text-luxury">
+        <div className="relative z-10 mx-auto flex min-h-svh w-full max-w-3xl flex-col justify-center px-4 py-16 sm:px-6 sm:py-20">
+          <header className="text-center">
+            <span
+              className="hero-mark-enter mx-auto mb-5 block size-1.5 bg-brand"
+              aria-hidden="true"
+            />
+            <p className="hero-mark-enter font-sans text-[22px] font-bold tracking-tight text-text-luxury">
               doihave.space
             </p>
-            <p className="font-label text-luxury-taupe">
+            <p className="hero-mark-enter mt-3 font-label text-[13px] tracking-[0.18em] text-text-brand">
               {STATE_REGULATION_LINKS.map((state, index) => (
                 <span key={state.href}>
                   {index > 0 ? (
-                    <span className="text-luxury-taupe" aria-hidden="true">
+                    <span className="text-text-brand" aria-hidden="true">
                       {" "}
                       ·{" "}
                     </span>
@@ -334,24 +359,34 @@ export function AddressSearch({
                   <Link
                     href={state.href}
                     aria-label={`${state.label} tiny home regulations`}
-                    className="font-medium text-text-brand underline underline-offset-4 decoration-text-brand/45 transition-colors hover:text-text-brand-hover hover:decoration-text-brand-hover focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                    className="text-text-brand transition-colors hover:text-text-brand-hover focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                   >
-                    {state.label}
+                    {state.label.toUpperCase()}
                   </Link>
                 </span>
               ))}
             </p>
-            <h1 className="font-display text-[3rem] tracking-display text-balance text-text-luxury sm:text-[4rem]">
-              Tiny Home Lot Readiness Checker
+            <span
+              className="hero-mark-enter mx-auto mt-2 block h-px w-[210px] bg-text-brand/45"
+              aria-hidden="true"
+            />
+            <h1 className="hero-title-enter font-display mt-8 text-[3rem] tracking-display text-text-luxury sm:mt-10 sm:text-[4rem]">
+              <span className="block">Tiny Home Lot</span>
+              <span className="block">Readiness Checker</span>
             </h1>
-            <p className="mx-auto max-w-xl text-body text-text-luxury/90">
+            <p className="hero-sub-enter mx-auto mt-8 max-w-xl text-[18px] leading-relaxed text-text-luxury/82">
               Screen a lot for certified THOW, park-model RV, or similar wheeled
-              placement — path, certification, transport, and utilities. ADU is
-              an optional pathway, not automatic.
+              placement.
+            </p>
+            <p className="hero-sub-enter mx-auto mt-1 max-w-xl text-[18px] leading-relaxed text-text-luxury/82">
+              ADU is an optional pathway, not automatic.
             </p>
           </header>
 
-          <div ref={containerRef} className="relative mt-8 w-full sm:mt-10">
+          <div
+            ref={containerRef}
+            className="hero-field-enter relative mt-8 w-full sm:mt-10"
+          >
             {searchForm}
             {errorMessage ? <div className="mt-2">{errorMessage}</div> : null}
             {suggestionsList}

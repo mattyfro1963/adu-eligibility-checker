@@ -1,9 +1,12 @@
 /**
- * Schematic site geometry for the static map overlay.
- * Not a survey and not GIS — lot polygons are approximate from area + a
- * coordinate seed. Zoning eligibility uses separate district point-in-polygon
- * at the geocode (adapters), not this schematic. Zero React; no Turf.
+ * Site geometry for the static / interactive map overlay.
+ * Prefer a real assessor/vendor `parcelBoundary` when GIS returned one;
+ * otherwise approximate a lot from area + a coordinate seed (schematic).
+ * Zoning eligibility uses separate district point-in-polygon at the geocode
+ * (adapters), not this overlay. Zero React; no Turf.
  */
+
+import type { MultiPolygon, Polygon } from "geojson";
 
 export type MapPoint = { x: number; y: number };
 
@@ -22,11 +25,19 @@ export type ApproximateSiteInput = {
 
 export type LngLat = [number, number];
 
+export type ParcelBoundaryGeometry = Polygon | MultiPolygon;
+
 export type ApproximateSiteGeoJSON = {
   lot: {
     type: "Feature";
-    properties: { kind: "lot"; verified: boolean };
-    geometry: { type: "Polygon"; coordinates: LngLat[][] };
+    properties: {
+      kind: "lot";
+      /** True when GIS verified lot area (scalar). */
+      verified: boolean;
+      /** True when the lot ring came from assessor/vendor GIS. */
+      boundaryVerified: boolean;
+    };
+    geometry: ParcelBoundaryGeometry;
   };
   zoning: {
     type: "Feature";
@@ -35,6 +46,7 @@ export type ApproximateSiteGeoJSON = {
   };
   areaSqFt: number;
   verified: boolean;
+  boundaryVerified: boolean;
   zoningLabel: string;
 };
 
@@ -45,6 +57,7 @@ export type ApproximateSiteOverlay = {
     path: string;
     areaSqFt: number;
     verified: boolean;
+    boundaryVerified: boolean;
   };
   zoning: {
     points: MapPoint[];
@@ -56,6 +69,71 @@ export type ApproximateSiteOverlay = {
     pixels: number;
   };
 };
+
+function exteriorRing(boundary: ParcelBoundaryGeometry): LngLat[] | null {
+  if (boundary.type === "Polygon") {
+    const ring = boundary.coordinates[0];
+    return ring && ring.length >= 3 ? (ring as LngLat[]) : null;
+  }
+  const first = boundary.coordinates[0]?.[0];
+  return first && first.length >= 3 ? (first as LngLat[]) : null;
+}
+
+/** Longitude/latitude bounds for fitBounds (InteractiveSiteMap). */
+export function boundsFromParcelBoundary(
+  boundary: ParcelBoundaryGeometry,
+): [[number, number], [number, number]] | null {
+  const rings: LngLat[][] = [];
+  if (boundary.type === "Polygon") {
+    for (const ring of boundary.coordinates) {
+      rings.push(ring as LngLat[]);
+    }
+  } else {
+    for (const poly of boundary.coordinates) {
+      for (const ring of poly) {
+        rings.push(ring as LngLat[]);
+      }
+    }
+  }
+  let minLng = Infinity;
+  let minLat = Infinity;
+  let maxLng = -Infinity;
+  let maxLat = -Infinity;
+  for (const ring of rings) {
+    for (const coord of ring) {
+      const [lng, lat] = coord;
+      if (!Number.isFinite(lng) || !Number.isFinite(lat)) continue;
+      minLng = Math.min(minLng, lng);
+      maxLng = Math.max(maxLng, lng);
+      minLat = Math.min(minLat, lat);
+      maxLat = Math.max(maxLat, lat);
+    }
+  }
+  if (!Number.isFinite(minLng) || !Number.isFinite(minLat)) return null;
+  return [
+    [minLng, minLat],
+    [maxLng, maxLat],
+  ];
+}
+
+function projectLngLatToPixels(
+  lat: number,
+  lng: number,
+  point: LngLat,
+  width: number,
+  height: number,
+  zoom: number,
+): MapPoint {
+  const mpp = metersPerPixel(lat, zoom);
+  const [plng, plat] = point;
+  const eastMeters =
+    (plng - lng) * (111_320 * Math.max(0.01, Math.cos((lat * Math.PI) / 180)));
+  const northMeters = (plat - lat) * 111_320;
+  return {
+    x: width / 2 + eastMeters / mpp,
+    y: height / 2 - northMeters / mpp,
+  };
+}
 
 /** Typical urban CA lot when area is unknown — schematic only. */
 export const DEFAULT_SCHEMATIC_LOT_SQFT = 5000;
@@ -212,8 +290,19 @@ function metersToLngLatRing(
   );
 }
 
+function hasParcelBoundary(
+  boundary: ParcelBoundaryGeometry | null | undefined,
+): boundary is ParcelBoundaryGeometry {
+  return (
+    boundary != null &&
+    (boundary.type === "Polygon" || boundary.type === "MultiPolygon") &&
+    Array.isArray(boundary.coordinates)
+  );
+}
+
 /**
- * Schematic lot + zoning polygons in WGS84 for the interactive map.
+ * Lot + zoning polygons in WGS84 for the interactive map.
+ * Uses GIS `parcelBoundary` when present; otherwise a schematic lot.
  */
 export function buildApproximateSiteGeoJSON(input: {
   lat: number;
@@ -221,19 +310,29 @@ export function buildApproximateSiteGeoJSON(input: {
   lotSizeSqFt?: number | null;
   lotVerified?: boolean;
   zoning?: string | null;
+  parcelBoundary?: ParcelBoundaryGeometry | null;
 }): ApproximateSiteGeoJSON {
   const { areaSqFt, verified } = resolveSiteArea(input);
   const local = buildSiteLocalMeters(input.lat, input.lng, areaSqFt);
   const zoningLabel = zoningLabelOf(input.zoning);
 
+  let lotGeometry: ParcelBoundaryGeometry;
+  let boundaryVerified = false;
+  if (hasParcelBoundary(input.parcelBoundary)) {
+    lotGeometry = input.parcelBoundary;
+    boundaryVerified = true;
+  } else {
+    lotGeometry = {
+      type: "Polygon",
+      coordinates: [metersToLngLatRing(input.lat, input.lng, local.lot)],
+    };
+  }
+
   return {
     lot: {
       type: "Feature",
-      properties: { kind: "lot", verified },
-      geometry: {
-        type: "Polygon",
-        coordinates: [metersToLngLatRing(input.lat, input.lng, local.lot)],
-      },
+      properties: { kind: "lot", verified, boundaryVerified },
+      geometry: lotGeometry,
     },
     zoning: {
       type: "Feature",
@@ -245,30 +344,45 @@ export function buildApproximateSiteGeoJSON(input: {
     },
     areaSqFt,
     verified,
+    boundaryVerified,
     zoningLabel,
   };
 }
 
 /**
- * Build a schematic lot polygon and a larger zoning-district envelope
- * in the static-image viewBox, centered on the geocode.
+ * Build a lot polygon and a larger zoning-district envelope in the
+ * static-image viewBox. Projects a real GIS ring when `parcelBoundary` is set.
  */
 export function buildApproximateSiteOverlay(
-  input: ApproximateSiteInput,
+  input: ApproximateSiteInput & {
+    parcelBoundary?: ParcelBoundaryGeometry | null;
+  },
 ): ApproximateSiteOverlay {
   const { lat, width, height, zoom } = input;
   const { areaSqFt, verified } = resolveSiteArea(input);
   const mpp = metersPerPixel(lat, zoom);
   const local = buildSiteLocalMeters(lat, input.lng, areaSqFt);
   const origin = { x: width / 2, y: height / 2 };
-
   const toPixels = (points: MapPoint[]) =>
     translate(
       points.map((point) => ({ x: point.x / mpp, y: point.y / mpp })),
       origin,
     );
 
-  const lotPoints = toPixels(local.lot);
+  let lotPoints: MapPoint[];
+  let boundaryVerified = false;
+  if (hasParcelBoundary(input.parcelBoundary)) {
+    boundaryVerified = true;
+    const ring = exteriorRing(input.parcelBoundary);
+    lotPoints = ring
+      ? ring.map((coord) =>
+          projectLngLatToPixels(lat, input.lng, coord, width, height, zoom),
+        )
+      : toPixels(local.lot);
+  } else {
+    lotPoints = toPixels(local.lot);
+  }
+
   const zoningPoints = toPixels(local.zoning);
   const scaleFt = areaSqFt < 2000 ? 25 : 50;
   const scalePixels = Math.max(
@@ -283,6 +397,7 @@ export function buildApproximateSiteOverlay(
       path: polygonPath(lotPoints),
       areaSqFt,
       verified,
+      boundaryVerified,
     },
     zoning: {
       points: zoningPoints,

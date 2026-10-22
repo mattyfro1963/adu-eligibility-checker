@@ -27,8 +27,10 @@ export type SfSourceEntry = {
 
 /**
  * Exact official layers for SF lot facts. Zoning view ID is verified in-repo
- * (pilot-zoning.geojson / pilot-zoning.ts). Parcel mapblklot view ID is not
- * asserted until a local index ships — PIM is the visitor lookup path.
+ * (pilot-zoning.geojson). Assessor parcels view acdm-wktn is verified; the
+ * full city GeoJSON is fetched offline via scripts/fetch-sf-assessor-parcels.mjs
+ * (gitignored). A committed samples extract covers SAMPLE_REPORTS SF chips when
+ * the full snapshot is absent — PIM remains the visitor confirm path elsewhere.
  */
 export const SF_SOURCE_CATALOG: readonly SfSourceEntry[] = [
   {
@@ -41,10 +43,10 @@ export const SF_SOURCE_CATALOG: readonly SfSourceEntry[] = [
   {
     fact: "parcelApn",
     inApp:
-      "Optional local sf-parcel-index.json when present; else mapblklot null + PIM link",
-    source: SRC.sfPim,
+      "public/data/sf-assessor-parcels.geojson (fetch script) or committed sf-assessor-parcels.samples.geojson for sample chips; else mapblklot null + PIM link",
+    source: SRC.datasfParcels,
     notes:
-      "SF assessor key is block/lot (mapblklot). Do not guess unverified DataSF view IDs in code.",
+      "SF assessor key is block/lot (mapblklot). Verified DataSF view acdm-wktn. Full city extract is gitignored — run scripts/fetch-sf-assessor-parcels.mjs. Samples extract covers SAMPLE_REPORTS SF coordinates.",
   },
   {
     fact: "historic",
@@ -92,6 +94,7 @@ export const SF_SOURCE_CATALOG: readonly SfSourceEntry[] = [
 export function sfPilotReceiptSources(): SourceRef[] {
   return [
     SRC.datasfZoning,
+    SRC.datasfParcels,
     SRC.sfPim,
     SRC.sfPlanningAdu,
     SRC.sfDbi,

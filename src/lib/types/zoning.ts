@@ -21,6 +21,9 @@ export interface Overlays {
   coastalZone: boolean;
 }
 
+/** GIS / mock origin of a parcel outline polygon. */
+export type ParcelBoundarySource = "sf-assessor" | "regrid" | "mock";
+
 /** Parcel facts only — never store Eligible / Warning / Restricted here. */
 export interface Parcel {
   addressId: string;
@@ -43,6 +46,13 @@ export interface Parcel {
   zoningDistrictName?: string | null;
   /** Official district / ordinance URL from the GIS feature, when present. */
   zoningSourceUrl?: string | null;
+  /**
+   * Assessor / vendor parcel outline when GIS returned one.
+   * Never invent — omit or null when only schematic map geometry is available.
+   */
+  parcelBoundary?: GeoJSON.Polygon | GeoJSON.MultiPolygon | null;
+  /** Who supplied `parcelBoundary` (and usually GIS area). */
+  boundarySource?: ParcelBoundarySource | null;
 }
 
 export interface UnitCapacity {
@@ -101,6 +111,13 @@ export interface ZoningReport {
   unitCapacity?: UnitCapacity | null;
   /** Lot area when known at evaluation time. */
   lotSizeSqFt?: number | null;
+  /**
+   * Assessor / vendor parcel outline when GIS returned one.
+   * Jurisdiction-context reports leave this null.
+   */
+  parcelBoundary?: GeoJSON.Polygon | GeoJSON.MultiPolygon | null;
+  /** Who supplied `parcelBoundary`. Null when no GIS outline. */
+  boundarySource?: ParcelBoundarySource | null;
   zoningDistrictName?: string | null;
   zoningSourceUrl?: string | null;
   /** Lot GIS provider when analysisScope is lot_zoning (sf-datasf, open-data, regrid). */

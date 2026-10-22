@@ -76,7 +76,7 @@ export function ParcelSiteOverlay({
         stroke="var(--map-lot-stroke)"
         strokeWidth="1.75"
         strokeLinejoin="round"
-        strokeDasharray="6 4"
+        strokeDasharray={site.lot.boundaryVerified ? undefined : "6 4"}
       />
       <path
         d={site.lot.path}
@@ -85,7 +85,7 @@ export function ParcelSiteOverlay({
         strokeWidth="0.6"
         strokeLinejoin="round"
         opacity="0.9"
-        strokeDasharray="6 4"
+        strokeDasharray={site.lot.boundaryVerified ? undefined : "6 4"}
       />
 
       <circle

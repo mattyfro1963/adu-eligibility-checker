@@ -1,12 +1,27 @@
 import { describe, expect, it } from "vitest";
+import type { Polygon } from "geojson";
 import {
   DEFAULT_SCHEMATIC_LOT_SQFT,
+  boundsFromParcelBoundary,
   buildApproximateSiteGeoJSON,
   buildApproximateSiteOverlay,
   metersPerPixel,
   siteSeed,
 } from "@/lib/map/approximate-site";
 import { isAllowedMapboxProxyPath } from "@/lib/adapters/mapbox-proxy";
+
+const REAL_BOUNDARY: Polygon = {
+  type: "Polygon",
+  coordinates: [
+    [
+      [-122.407, 37.753],
+      [-122.406, 37.753],
+      [-122.406, 37.754],
+      [-122.407, 37.754],
+      [-122.407, 37.753],
+    ],
+  ],
+};
 
 describe("approximate site overlay", () => {
   it("is deterministic for the same coordinate", () => {
@@ -35,12 +50,64 @@ describe("approximate site overlay", () => {
     });
 
     expect(site.lot.verified).toBe(false);
+    expect(site.lot.boundaryVerified).toBe(false);
     expect(site.lot.areaSqFt).toBe(DEFAULT_SCHEMATIC_LOT_SQFT);
     expect(site.lot.points).toHaveLength(4);
     expect(site.zoning.points).toHaveLength(8);
     expect(site.zoning.label).toBe("RH-1");
     expect(site.lot.path.startsWith("M ")).toBe(true);
     expect(site.zoning.path.endsWith("Z")).toBe(true);
+  });
+
+  it("prefers a real GIS parcelBoundary over the schematic lot", () => {
+    const site = buildApproximateSiteGeoJSON({
+      lat: 37.7535,
+      lng: -122.4065,
+      lotSizeSqFt: 3200,
+      lotVerified: true,
+      zoning: "RH-1",
+      parcelBoundary: REAL_BOUNDARY,
+    });
+
+    expect(site.boundaryVerified).toBe(true);
+    expect(site.lot.properties.boundaryVerified).toBe(true);
+    expect(site.lot.geometry).toEqual(REAL_BOUNDARY);
+    expect(site.areaSqFt).toBe(3200);
+    expect(site.verified).toBe(true);
+
+    const schematic = buildApproximateSiteGeoJSON({
+      lat: 37.7535,
+      lng: -122.4065,
+      lotSizeSqFt: 3200,
+      lotVerified: true,
+      zoning: "RH-1",
+      parcelBoundary: null,
+    });
+    expect(schematic.boundaryVerified).toBe(false);
+    expect(schematic.lot.geometry).not.toEqual(REAL_BOUNDARY);
+  });
+
+  it("projects a real boundary ring into the static overlay", () => {
+    const site = buildApproximateSiteOverlay({
+      lat: 37.7535,
+      lng: -122.4065,
+      width: 640,
+      height: 480,
+      zoom: 18,
+      lotSizeSqFt: 3200,
+      lotVerified: true,
+      zoning: "RH-1",
+      parcelBoundary: REAL_BOUNDARY,
+    });
+    expect(site.lot.boundaryVerified).toBe(true);
+    expect(site.lot.points.length).toBeGreaterThanOrEqual(4);
+    expect(site.lot.path.startsWith("M ")).toBe(true);
+
+    const bounds = boundsFromParcelBoundary(REAL_BOUNDARY);
+    expect(bounds).toEqual([
+      [-122.407, 37.753],
+      [-122.406, 37.754],
+    ]);
   });
 
   it("uses measured lot area when verified and keeps polygons on-canvas", () => {
@@ -56,6 +123,7 @@ describe("approximate site overlay", () => {
     });
 
     expect(site.lot.verified).toBe(true);
+    expect(site.lot.boundaryVerified).toBe(false);
     expect(site.lot.areaSqFt).toBe(2500);
 
     for (const point of [...site.lot.points, ...site.zoning.points]) {
@@ -80,7 +148,7 @@ describe("approximate site overlay", () => {
       lotVerified: true,
       zoning: "R-1",
     });
-    const ring = site.lot.geometry.coordinates[0];
+    const ring = site.lot.geometry.coordinates[0] as [number, number][];
     const lngs = ring.map((point) => point[0]);
     const lats = ring.map((point) => point[1]);
 

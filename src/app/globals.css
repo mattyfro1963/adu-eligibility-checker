@@ -250,7 +250,8 @@
   --map-zone-warning: var(--status-warning);
   --map-zone-restricted: var(--status-restricted);
   --map-zone-unverified: #6b7280;
-  --map-zone-fill-opacity: 0.16;
+  /* District fill on satellite — visible overlay, not a cream wash. */
+  --map-zone-fill-opacity: 0.28;
   --map-hatch: #6b7280;
   --map-pin-shadow: rgb(44 40 37 / 0.16);
 
@@ -524,14 +525,57 @@
   }
 }
 
-@keyframes hero-media-enter {
+@keyframes hero-fade-up {
   from {
-    opacity: 0.72;
-    transform: scale(1.04);
+    opacity: 0;
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes field-settle {
+  0% {
     transform: scale(1);
+  }
+  40% {
+    transform: scale(0.988);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes map-ease-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes badge-ease {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dim-stagger {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -539,14 +583,42 @@
   .search-enter {
     animation: search-fade-up 0.5s ease-out both;
   }
-  .hero-media-enter {
-    animation: hero-media-enter 1.6s ease-out both;
+  .hero-mark-enter {
+    animation: hero-fade-up 0.4s ease-out both;
+  }
+  .hero-title-enter {
+    animation: hero-fade-up 0.7s ease-out 0.12s both;
+  }
+  .hero-sub-enter {
+    animation: hero-fade-up 0.55s ease-out 0.28s both;
+  }
+  .hero-field-enter {
+    animation: hero-fade-up 0.5s ease-out 0.4s both;
+  }
+  .search-field-settle {
+    animation: field-settle 0.22s ease-out;
+  }
+  .map-ease-in {
+    animation: map-ease-in 0.7s ease-in both;
+  }
+  .badge-ease {
+    animation: badge-ease 0.55s ease-in-out both;
+  }
+  .dim-stagger {
+    animation: dim-stagger 0.48s ease-out both;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .search-enter,
-  .hero-media-enter {
+  .hero-mark-enter,
+  .hero-title-enter,
+  .hero-sub-enter,
+  .hero-field-enter,
+  .search-field-settle,
+  .map-ease-in,
+  .badge-ease,
+  .dim-stagger {
     animation: none;
   }
 

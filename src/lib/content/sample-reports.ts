@@ -2,6 +2,13 @@
  * Sample-chip catalog — query strings and place labels only.
  * Clicks run the same `/api/geocode` path as a typed search. No mock parcels.
  * `tone` is a chip color hint aligned to a live engine outcome for that query.
+ *
+ * Field fill (live `/api/zoning`):
+ * - SF chips → `lot_zoning` (DataSF district). With assessor snapshot or the
+ *   committed `public/data/sf-assessor-parcels.samples.geojson` extract they
+ *   also fill `mapblklot`, `lotSizeSqFt`, and `parcelBoundary`.
+ * - Non-SF chips → `jurisdiction_context` until Regrid (or another lot GIS
+ *   provider) is keyed; district / area / APN stay unverified by design.
  */
 
 export type SampleReportTone = "eligible" | "warning" | "restricted";
@@ -19,6 +26,9 @@ export type SampleReport = {
  * lot GIS where a provider covers the coordinate, otherwise county/city notes.
  * Chip tones are locked to engine output for Census-matched coordinates
  * (see sample-report-summaries.test.ts).
+ *
+ * SF residential / commercial / PDR addresses below were chosen so Census
+ * (and Mapbox) land on assessor parcels covered by the samples extract.
  */
 export const SAMPLE_REPORTS: readonly SampleReport[] = [
   {

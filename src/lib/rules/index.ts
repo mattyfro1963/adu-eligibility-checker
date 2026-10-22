@@ -113,6 +113,8 @@ export function evaluateEligibility(
     coverage: "lot",
     unitCapacity,
     lotSizeSqFt: parcel.lotSizeSqFt ?? null,
+    parcelBoundary: parcel.parcelBoundary ?? null,
+    boundarySource: parcel.boundarySource ?? null,
     zoningDistrictName: parcel.zoningDistrictName ?? null,
     zoningSourceUrl: parcel.zoningSourceUrl ?? null,
     region,

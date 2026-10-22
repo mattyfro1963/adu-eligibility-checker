@@ -274,6 +274,9 @@ function unsupportedStateReport(input: JurisdictionContextInput): ZoningReport {
     analysisScope: "jurisdiction_context",
     coverage: "jurisdiction",
     zoningProvider: null,
+    lotSizeSqFt: null,
+    parcelBoundary: null,
+    boundarySource: null,
     region,
   };
 }
@@ -354,6 +357,9 @@ export function evaluateJurisdictionContext(
     analysisScope: "jurisdiction_context",
     coverage: "jurisdiction",
     zoningProvider: null,
+    lotSizeSqFt: null,
+    parcelBoundary: null,
+    boundarySource: null,
     region,
   };
 }

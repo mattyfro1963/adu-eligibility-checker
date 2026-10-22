@@ -475,6 +475,38 @@ describe("ADU topic coverage and legal sources", () => {
     ).toBe(true);
   });
 
+  it("receipt always cites Esri World Imagery and Mapbox Geocoding", () => {
+    const sfReport = evaluateEligibility(mockProperties["addr-r1-clean"]!);
+    const sfBriefing = composeResultsBriefing({
+      geocode: sfGeocode,
+      report: sfReport,
+    });
+    const hrefs = sfBriefing.receipt.sourcesUsed.map((s) => s.href);
+    expect(
+      hrefs.some((href) => href.includes("arcgis.com/home/item.html")),
+    ).toBe(true);
+    expect(hrefs.some((href) => href.includes("mapbox.com/about/maps"))).toBe(
+      true,
+    );
+
+    const caBriefing = composeResultsBriefing({
+      geocode: {
+        ...sfGeocode,
+        place: "Sacramento",
+        county: "Sacramento",
+        formattedAddress: "1000 I St, Sacramento, CA",
+      },
+      report: null,
+    });
+    const caHrefs = caBriefing.receipt.sourcesUsed.map((s) => s.href);
+    expect(
+      caHrefs.some((href) => href.includes("arcgis.com/home/item.html")),
+    ).toBe(true);
+    expect(caHrefs.some((href) => href.includes("mapbox.com/about/maps"))).toBe(
+      true,
+    );
+  });
+
   it("has zero references to nolo or nolo.com across regulation files", () => {
     const root = path.join(process.cwd(), "src/lib/regulations");
     const files = [
@@ -505,6 +537,7 @@ describe("zero network in regulations / zoning disk adapters", () => {
       "regulations/sf-source-catalog.ts",
       "regulations/states/ca.ts",
       "adapters/sf-datasf-zoning.ts",
+      "adapters/sf-assessor-parcels.ts",
       "adapters/pilot-zoning.ts",
     ];
     for (const rel of files) {

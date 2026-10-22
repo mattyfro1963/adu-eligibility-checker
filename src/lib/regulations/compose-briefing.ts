@@ -24,7 +24,11 @@ import {
   caStatewideReceiptSources,
   sfPilotReceiptSources,
 } from "@/lib/regulations/sf-source-catalog";
-import { SRC, uniqueSourceRefs } from "@/lib/regulations/sources";
+import {
+  SRC,
+  searchInfrastructureSources,
+  uniqueSourceRefs,
+} from "@/lib/regulations/sources";
 import {
   buildSizeStructureBriefing,
   CA_CHAPTER13_SIZE_CLAIM,
@@ -285,6 +289,7 @@ export function composeResultsBriefing(
       : [];
 
   const sourcesUsed = uniqueSourceRefs([
+    ...searchInfrastructureSources(),
     ...(sfPlace && analysisScope === "lot_zoning"
       ? sfPilotReceiptSources()
       : isCalifornia

@@ -47,3 +47,16 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Superdesign temp HTML
+.superdesign/tmp/
+.superdesign/resume.json
+
+# SF assessor parcel snapshot (DataSF acdm-wktn) — full city is too large for git.
+# Fetch locally: node scripts/fetch-sf-assessor-parcels.mjs
+# Optional --bbox / --limit for a filtered extract.
+# Committed fallback for SAMPLE_REPORTS: public/data/sf-assessor-parcels.samples.geojson
+/public/data/sf-assessor-parcels.geojson
+
+# Local motion captures / client demo exports
+/tmp/

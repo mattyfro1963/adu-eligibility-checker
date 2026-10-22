@@ -59,21 +59,21 @@ export function EligibilityBadge({
       variant="outline"
       role="status"
       className={cn(
-        "gap-1.5 rounded-pill border shadow-none",
+        "gap-1.5 rounded-md border shadow-none",
         size === "lg"
-          ? "h-auto px-4 py-1.5 text-sm font-medium"
-          : "h-auto px-2.5 py-1 text-[11px] font-medium tracking-[-0.02em] uppercase",
+          ? "h-auto px-3 py-1.5 text-xs font-medium tracking-[0.04em] uppercase"
+          : "h-auto px-2.5 py-1 text-[11px] font-medium tracking-[0.04em] uppercase",
         config.className,
         className,
       )}
-      aria-label={`THOW candidacy: ${config.label} (${config.vocabulary})`}
+      aria-label={`THOW candidacy: ${config.vocabulary} (${config.label})`}
     >
       <Icon
-        className={size === "lg" ? "size-[18px]!" : "size-3.5!"}
+        className={size === "lg" ? "size-3.5!" : "size-3!"}
         strokeWidth={2}
         aria-hidden="true"
       />
-      <span aria-hidden="true">{config.label}</span>
+      <span aria-hidden="true">{config.vocabulary}</span>
     </Badge>
   );
 }

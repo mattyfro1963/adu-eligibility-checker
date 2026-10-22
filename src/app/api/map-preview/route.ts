@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 import {
-  MapboxStaticConfigError,
-  MapboxStaticUpstreamError,
-  fetchMapboxStaticPng,
-} from "@/lib/adapters/mapbox-static";
-import { env } from "@/lib/env";
+  BasemapStaticUpstreamError,
+  fetchBasemapRaster,
+} from "@/lib/adapters/basemap-static";
 import { logger } from "@/lib/logger";
 import { mapPreviewQuerySchema } from "@/lib/validations/api-schemas";
 
@@ -14,8 +12,8 @@ export const dynamic = "force-dynamic";
 const log = logger.child({ route: "map-preview" });
 
 /**
- * Proxy Mapbox Static Images so the access token stays server-side.
- * Missing token → 204 (UI shows calm empty / awaiting state).
+ * Esri World Imagery tile (same mosaic as the MapLibre satellite style).
+ * Interactive UI uses the GL raster style; this route is the static twin.
  */
 export async function GET(request: NextRequest) {
   const params = Object.fromEntries(request.nextUrl.searchParams.entries());
@@ -42,40 +40,31 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  if (!env.MAPBOX_ACCESS_TOKEN?.trim()) {
-    log.warn({ status: 204 }, "Mapbox unset — no map preview");
-    return new NextResponse(null, { status: 204 });
-  }
-
   try {
-    const png = await fetchMapboxStaticPng(parsed.data);
+    const image = await fetchBasemapRaster(parsed.data);
     log.info(
       {
-        bytes: png.byteLength,
+        bytes: image.bytes.byteLength,
+        contentType: image.contentType,
         width: parsed.data.width,
         height: parsed.data.height,
       },
       "Map preview succeeded",
     );
-    return new NextResponse(Buffer.from(png), {
+    return new NextResponse(Buffer.from(image.bytes), {
       status: 200,
       headers: {
-        "Content-Type": "image/png",
+        "Content-Type": image.contentType,
         "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800",
       },
     });
   } catch (err) {
-    if (err instanceof MapboxStaticConfigError) {
-      log.warn({ status: 204 }, "Mapbox config missing at fetch");
-      return new NextResponse(null, { status: 204 });
-    }
-
     Sentry.captureException(err, { tags: { route: "map-preview" } });
 
-    if (err instanceof MapboxStaticUpstreamError) {
+    if (err instanceof BasemapStaticUpstreamError) {
       log.error(
         { err: err.message, status: err.status },
-        "Mapbox static upstream error",
+        "Satellite raster upstream error",
       );
       return NextResponse.json(
         { error: "Map preview unavailable" },

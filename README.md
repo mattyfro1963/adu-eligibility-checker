@@ -40,7 +40,7 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for the full folder theory, decision-en
 | Scope | Provider | Source | Cost |
 |-------|----------|--------|------|
 | **All CA counties** | Mapbox geocode + `evaluateJurisdictionContext` | `COUNTY_GUIDES` + Gov Code floor | Free (Mapbox token) |
-| San Francisco lot GIS | `sf-datasf` | Local `public/data/pilot-zoning.geojson` (DataSF, PDDL) | Free |
+| San Francisco lot GIS | `sf-datasf` | Local `public/data/pilot-zoning.geojson` (DataSF zoning) + optional `sf-assessor-parcels.geojson` (DataSF `acdm-wktn` boundaries / mapblklot / area) | Free |
 | Optional open-data packs | `open-data` | `public/data/zoning/{jurisdiction}.geojson` | Free where licensed |
 | Statewide lot GIS (optional) | `regrid` | Regrid API | **Paid** — opt-in only |
 | Overlays | stub | CalFire / coastal / historic (future) | — |
@@ -52,16 +52,30 @@ Provider order in `zoning-lookup.ts`: SF DataSF → open-data packs → Regrid (
 
 Search any California address via Mapbox geocode (or mock geocode for demos). Most addresses use the **free jurisdiction path** — county requirements, ADU posture from local guides, SB 9 warning until lot zoning is verified.
 
+### SF assessor parcel boundaries (optional local snapshot)
+
+Zoning districts ship in-repo (`pilot-zoning.geojson`). Assessor **parcel polygons**, **mapblklot**, and **GIS lot area** come from DataSF [Parcels – Active and Retired (`acdm-wktn`)](https://data.sfgov.org/d/acdm-wktn):
+
+- **Committed sample:** `public/data/sf-assessor-parcels.samples.geojson` — small extract for local/CI DX (not city-wide).
+- **Full / filtered snapshot:** gitignored `public/data/sf-assessor-parcels.geojson` (preferred when present):
+
+```bash
+# Full city (large — gitignored). Or pass --bbox / --limit for a filtered extract.
+node scripts/fetch-sf-assessor-parcels.mjs
+```
+
+Without either file, SF lot hits still return zoning district codes; boundary / mapblklot / area stay null and the map uses a schematic lot.
+
 ### Regrid (optional paid lot GIS)
 
-Regrid is **disabled by default**. Enable only if you have a paid plan:
+Regrid is **disabled by default**. Enable only if you have a paid plan — it supplies statewide parcel **geometry**, **sqft**, and zoning outside the SF open-data path:
 
 ```bash
 REGRID_ENABLED=true
 REGRID_API_KEY=your_token
 ```
 
-When enabled, `zoning-lookup` calls Regrid after SF DataSF and open-data packs. Successful hits return `coverage: "lot"`. Without it, the free Mapbox + county-guide path runs for all non-SF addresses.
+When enabled, `zoning-lookup` calls Regrid after SF DataSF and open-data packs. Successful hits return `coverage: "lot"` with `parcelBoundary` / `lotSizeSqFt` when the API returns them. Without it, the free Mapbox + county-guide path runs for all non-SF addresses.
 
 ## Product UI
 

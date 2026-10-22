@@ -25,13 +25,30 @@ export const mockProperties: Record<string, Parcel> = {
     },
     overlaysVerified: true,
   },
+  /** Express THOW path + verified overlays + mock GIS outline (tests). */
   "addr-r1-tiny": {
     addressId: "addr-r1-tiny",
     formattedAddress: "456 Oak Ave, San Francisco, CA 94110",
     lat: 37.775,
     lng: -122.42,
-    zoning: "R-1",
+    zoning: "RH-1",
     lotSizeSqFt: 6850,
+    mapblklot: "3558001",
+    boundarySource: "mock",
+    // Closed ring around the demo pin — typical SF row-house proportions,
+    // not a recorded survey. Map draws this as the assessor outline.
+    parcelBoundary: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [-122.42009, 37.77472],
+          [-122.41991, 37.77472],
+          [-122.41991, 37.77528],
+          [-122.42009, 37.77528],
+          [-122.42009, 37.77472],
+        ],
+      ],
+    },
     overlays: {
       tinyHomeFriendly: true,
       fireHazard: false,

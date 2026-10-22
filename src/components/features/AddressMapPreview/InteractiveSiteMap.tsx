@@ -3,19 +3,26 @@
 import { useEffect, useMemo, useRef } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { Minus, Plus } from "lucide-react";
-import mapboxgl, { type GeoJSONSource } from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
+import * as maplibregl from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
 import { FeaturePin } from "@/components/features/AddressMapPreview/FeaturePin";
-import { PARCEL_MAP_ZOOM } from "@/lib/adapters/mapbox-static";
+import { BASEMAP_STYLE, PARCEL_MAP_ZOOM } from "@/lib/map/basemap";
 import {
+  boundsFromParcelBoundary,
   buildApproximateSiteGeoJSON,
   type ApproximateSiteGeoJSON,
+  type ParcelBoundaryGeometry,
 } from "@/lib/map/approximate-site";
+import { ensureMapLibreWorker } from "@/lib/map/maplibre-worker";
 import {
   mapZoneColor,
   readMapPaintTokens,
   type MapPaintTokens,
 } from "@/lib/map/map-tokens";
+import {
+  siteLayerPaint,
+  type SiteLayerPaint,
+} from "@/lib/map/site-layer-paint";
 import type {
   EligibilityStatus,
   ZoningAnalysisScope,
@@ -23,46 +30,6 @@ import type {
 
 const MIN_ZOOM = 13;
 const MAX_ZOOM = 20;
-
-if (typeof window !== "undefined") {
-  // GL JS requires a pk.* client token, but session auth XHR bypasses
-  // transformRequest. Point the API host at our proxy so the real
-  // MAPBOX_ACCESS_TOKEN stays server-side. EVENTS_URL is a getter derived
-  // from API_URL — do not assign it (throws in mapbox-gl 3.29).
-  mapboxgl.accessToken = "pk.proxy";
-  mapboxgl.baseApiUrl = `${window.location.origin}/api/mapbox`;
-}
-
-function proxyMapboxRequest(
-  url: string,
-  resourceType?: string,
-): { url: string } {
-  try {
-    const parsed = new URL(url, window.location.origin);
-    const isTelemetry =
-      resourceType === "Event" || parsed.hostname.includes("events.mapbox");
-    if (isTelemetry) {
-      return { url: "data:application/json,[]" };
-    }
-    const isMapboxHost = parsed.hostname === "api.mapbox.com";
-    const isLocalProxy = parsed.pathname.startsWith("/api/mapbox/");
-    if (!isMapboxHost && !isLocalProxy) {
-      return { url };
-    }
-    const path = isMapboxHost
-      ? parsed.pathname.replace(/^\//, "")
-      : parsed.pathname.replace(/^\/api\/mapbox\//, "");
-    const proxied = new URL(`/api/mapbox/${path}`, window.location.origin);
-    parsed.searchParams.forEach((value, key) => {
-      if (key !== "access_token") {
-        proxied.searchParams.set(key, value);
-      }
-    });
-    return { url: proxied.toString() };
-  } catch {
-    return { url };
-  }
-}
 
 function zonePaintColor(
   tokens: MapPaintTokens,
@@ -75,27 +42,58 @@ function zonePaintColor(
   return mapZoneColor(tokens, "unverified");
 }
 
+function paintExistingSiteLayers(
+  map: maplibregl.Map,
+  paint: SiteLayerPaint,
+  color: string,
+) {
+  map.setPaintProperty("site-zoning-fill", "fill-color", color);
+  map.setPaintProperty(
+    "site-zoning-fill",
+    "fill-opacity",
+    paint.zoneFillOpacity,
+  );
+  if (map.getLayer("site-zoning-halo")) {
+    map.setPaintProperty("site-zoning-halo", "line-color", paint.zoneHaloColor);
+    map.setPaintProperty("site-zoning-halo", "line-width", paint.zoneHaloWidth);
+    map.setPaintProperty("site-zoning-halo", "line-dasharray", paint.zoneDash);
+  }
+  map.setPaintProperty("site-zoning-line", "line-color", paint.zoneLineColor);
+  map.setPaintProperty("site-zoning-line", "line-width", paint.zoneLineWidth);
+  map.setPaintProperty("site-zoning-line", "line-dasharray", paint.zoneDash);
+  map.setPaintProperty("site-lot-fill", "fill-color", paint.lotFillColor);
+  map.setPaintProperty("site-lot-fill", "fill-opacity", paint.lotFillOpacity);
+  if (map.getLayer("site-lot-halo")) {
+    map.setPaintProperty("site-lot-halo", "line-color", paint.lotHaloColor);
+    map.setPaintProperty("site-lot-halo", "line-width", paint.lotHaloWidth);
+    map.setPaintProperty("site-lot-halo", "line-dasharray", paint.lotDash);
+  }
+  map.setPaintProperty("site-lot-line", "line-color", paint.lotLineColor);
+  map.setPaintProperty("site-lot-line", "line-width", paint.lotLineWidth);
+  map.setPaintProperty("site-lot-line", "line-dasharray", paint.lotDash);
+}
+
 function applySiteLayers(
-  map: mapboxgl.Map,
+  map: maplibregl.Map,
   site: ApproximateSiteGeoJSON,
   color: string,
   tokens: MapPaintTokens,
+  /**
+   * Solid ink lot stroke when a GIS parcel outline is present; dashed when
+   * the lot ring is schematic (even if area was verified).
+   */
+  boundaryVerified: boolean,
 ) {
+  const paint = siteLayerPaint(tokens, boundaryVerified);
   const zoningSource = map.getSource("site-zoning") as
-    GeoJSONSource | undefined;
-  const lotSource = map.getSource("site-lot") as GeoJSONSource | undefined;
+    { setData: (data: ApproximateSiteGeoJSON["zoning"]) => void } | undefined;
+  const lotSource = map.getSource("site-lot") as
+    { setData: (data: ApproximateSiteGeoJSON["lot"]) => void } | undefined;
 
   if (zoningSource) {
     zoningSource.setData(site.zoning);
     lotSource?.setData(site.lot);
-    map.setPaintProperty("site-zoning-fill", "fill-color", color);
-    map.setPaintProperty(
-      "site-zoning-fill",
-      "fill-opacity",
-      tokens.zoneFillOpacity,
-    );
-    map.setPaintProperty("site-zoning-line", "line-color", color);
-    map.setPaintProperty("site-lot-line", "line-dasharray", [2, 1.5]);
+    paintExistingSiteLayers(map, paint, color);
     return;
   }
 
@@ -114,7 +112,18 @@ function applySiteLayers(
     source: "site-zoning",
     paint: {
       "fill-color": color,
-      "fill-opacity": tokens.zoneFillOpacity,
+      "fill-opacity": paint.zoneFillOpacity,
+    },
+  });
+  map.addLayer({
+    id: "site-zoning-halo",
+    type: "line",
+    source: "site-zoning",
+    paint: {
+      "line-color": paint.zoneHaloColor,
+      "line-width": paint.zoneHaloWidth,
+      "line-opacity": 0.85,
+      "line-dasharray": paint.zoneDash,
     },
   });
   map.addLayer({
@@ -122,9 +131,9 @@ function applySiteLayers(
     type: "line",
     source: "site-zoning",
     paint: {
-      "line-color": color,
-      "line-width": 1.5,
-      "line-dasharray": [2, 1.5],
+      "line-color": paint.zoneLineColor,
+      "line-width": paint.zoneLineWidth,
+      "line-dasharray": paint.zoneDash,
     },
   });
   map.addLayer({
@@ -132,8 +141,19 @@ function applySiteLayers(
     type: "fill",
     source: "site-lot",
     paint: {
-      "fill-color": tokens.lotFill,
-      "fill-opacity": 0.18,
+      "fill-color": paint.lotFillColor,
+      "fill-opacity": paint.lotFillOpacity,
+    },
+  });
+  map.addLayer({
+    id: "site-lot-halo",
+    type: "line",
+    source: "site-lot",
+    paint: {
+      "line-color": paint.lotHaloColor,
+      "line-width": paint.lotHaloWidth,
+      "line-opacity": 0.9,
+      "line-dasharray": paint.lotDash,
     },
   });
   map.addLayer({
@@ -141,9 +161,9 @@ function applySiteLayers(
     type: "line",
     source: "site-lot",
     paint: {
-      "line-color": tokens.lotStroke,
-      "line-width": 2,
-      "line-dasharray": [2, 1.5],
+      "line-color": paint.lotLineColor,
+      "line-width": paint.lotLineWidth,
+      "line-dasharray": paint.lotDash,
     },
   });
 }
@@ -169,9 +189,12 @@ type InteractiveSiteMapProps = {
   status?: EligibilityStatus | null;
   label?: string | null;
   lotSizeSqFt?: number | null;
+  parcelBoundary?: ParcelBoundaryGeometry | null;
   zoning?: string | null;
   analysisScope?: ZoningAnalysisScope | null;
   interactive?: boolean;
+  /** Draw lot + zoning GeoJSON. Off for interstitial backdrops. */
+  showSiteLayers?: boolean;
 };
 
 export function InteractiveSiteMap({
@@ -180,17 +203,20 @@ export function InteractiveSiteMap({
   status = null,
   label = null,
   lotSizeSqFt = null,
+  parcelBoundary = null,
   zoning = null,
   analysisScope = null,
   interactive = true,
+  showSiteLayers = true,
 }: InteractiveSiteMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<mapboxgl.Map | null>(null);
-  const markerRef = useRef<mapboxgl.Marker | null>(null);
+  const mapRef = useRef<maplibregl.Map | null>(null);
+  const markerRef = useRef<maplibregl.Marker | null>(null);
   const markerRootRef = useRef<Root | null>(null);
 
   const lotVerified =
     analysisScope === "lot_zoning" && lotSizeSqFt != null && lotSizeSqFt > 0;
+  const boundaryVerified = parcelBoundary != null;
   const analysisVerified = analysisScope === "lot_zoning";
   const site = useMemo(
     () =>
@@ -200,8 +226,9 @@ export function InteractiveSiteMap({
         lotSizeSqFt,
         lotVerified,
         zoning,
+        parcelBoundary,
       }),
-    [lat, lng, lotSizeSqFt, lotVerified, zoning],
+    [lat, lng, lotSizeSqFt, lotVerified, zoning, parcelBoundary],
   );
 
   useEffect(() => {
@@ -212,18 +239,21 @@ export function InteractiveSiteMap({
 
     const tokens = readMapPaintTokens(container);
     const color = zonePaintColor(tokens, status, analysisVerified);
+    ensureMapLibreWorker();
 
-    const map = new mapboxgl.Map({
+    const map = new maplibregl.Map({
       container,
-      style: "mapbox://styles/mapbox/streets-v12",
+      style: BASEMAP_STYLE,
       center: [lng, lat],
       zoom: PARCEL_MAP_ZOOM,
       minZoom: MIN_ZOOM,
       maxZoom: MAX_ZOOM,
-      attributionControl: true,
       interactive,
-      transformRequest: (url, resourceType) =>
-        proxyMapboxRequest(url, resourceType),
+      attributionControl: {
+        compact: false,
+        customAttribution:
+          '<a href="https://www.mapbox.com/about/maps/">© Mapbox</a>',
+      },
     });
     mapRef.current = map;
 
@@ -231,7 +261,7 @@ export function InteractiveSiteMap({
     const root = createRoot(markerNode);
     markerRootRef.current = root;
     renderFeaturePin(root, status, label, interactive);
-    const marker = new mapboxgl.Marker({
+    const marker = new maplibregl.Marker({
       element: markerNode,
       anchor: "bottom",
     })
@@ -241,7 +271,15 @@ export function InteractiveSiteMap({
 
     const onLoad = () => {
       map.resize();
-      applySiteLayers(map, site, color, tokens);
+      if (showSiteLayers) {
+        applySiteLayers(map, site, color, tokens, boundaryVerified);
+      }
+      if (parcelBoundary) {
+        const bounds = boundsFromParcelBoundary(parcelBoundary);
+        if (bounds) {
+          map.fitBounds(bounds, { padding: 48, maxZoom: 19, duration: 0 });
+        }
+      }
     };
     map.on("load", onLoad);
 
@@ -267,7 +305,7 @@ export function InteractiveSiteMap({
     // Pin copy and site layers update in sibling effects so status/lot
     // changes do not tear down the GL map.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lat, lng, interactive]);
+  }, [lat, lng, interactive, showSiteLayers]);
 
   useEffect(() => {
     const root = markerRootRef.current;
@@ -282,10 +320,26 @@ export function InteractiveSiteMap({
     if (!map?.isStyleLoaded()) {
       return;
     }
+    if (!showSiteLayers) {
+      return;
+    }
     const tokens = readMapPaintTokens(containerRef.current);
     const color = zonePaintColor(tokens, status, analysisVerified);
-    applySiteLayers(map, site, color, tokens);
-  }, [site, status, analysisVerified]);
+    applySiteLayers(map, site, color, tokens, boundaryVerified);
+    if (parcelBoundary) {
+      const bounds = boundsFromParcelBoundary(parcelBoundary);
+      if (bounds) {
+        map.fitBounds(bounds, { padding: 48, maxZoom: 19, duration: 280 });
+      }
+    }
+  }, [
+    site,
+    status,
+    analysisVerified,
+    boundaryVerified,
+    parcelBoundary,
+    showSiteLayers,
+  ]);
 
   function zoomBy(delta: number) {
     const map = mapRef.current;
@@ -301,7 +355,7 @@ export function InteractiveSiteMap({
     <div className="absolute inset-0">
       <div
         ref={containerRef}
-        className="h-full w-full [&_.mapboxgl-ctrl-attrib]:text-[10px]"
+        className="h-full w-full transform-none [filter:none] [&_.maplibregl-canvas]:[filter:none] [&_.maplibregl-ctrl-attrib]:max-w-[min(100%,22rem)] [&_.maplibregl-ctrl-attrib]:bg-card/90 [&_.maplibregl-ctrl-attrib]:px-2 [&_.maplibregl-ctrl-attrib]:text-[10px] [&_.maplibregl-ctrl-attrib]:leading-snug"
         aria-label={
           label && label.trim().length > 0
             ? `Interactive map of ${label.trim()}`

@@ -163,8 +163,9 @@ export function HomePageClient() {
     void handleResolved(queryPrefill);
   }, [queryKey, queryPrefill, handleResolved]);
 
-  const showInterstitial = Boolean(geocodeResult) && isZoningLoading;
-  const showDashboard = Boolean(geocodeResult) && !isZoningLoading;
+  const showDesk = Boolean(geocodeResult);
+  const showInterstitial = showDesk && isZoningLoading;
+  const showDashboard = showDesk && !isZoningLoading;
   const connectOverallStatus = report?.overall ?? queryStatus;
   const compact = Boolean(geocodeResult);
   const showConnect =
@@ -179,8 +180,24 @@ export function HomePageClient() {
       return;
     }
     const target = document.getElementById(CONNECT_SECTION_ID);
-    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    target?.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+      block: "start",
+    });
   }, [showConnect, geocodeResult?.addressId]);
+
+  useEffect(() => {
+    if (!geocodeResult || typeof window === "undefined") {
+      return;
+    }
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
+  }, [geocodeResult?.addressId]);
 
   return (
     <main
@@ -188,22 +205,18 @@ export function HomePageClient() {
       tabIndex={-1}
       className={
         compact
-          ? "mx-auto w-full max-w-layout flex-1 scroll-mt-4 space-y-8 bg-surface-luxury px-4 py-6 text-text-luxury sm:space-y-12 sm:px-6 sm:py-12"
+          ? "mx-auto w-full max-w-layout flex-1 scroll-mt-4 space-y-6 bg-surface-luxury px-4 py-5 text-text-luxury sm:space-y-8 sm:px-6 sm:py-6"
           : "w-full flex-1 scroll-mt-4 bg-surface-luxury text-text-luxury"
       }
     >
-      <div
-        className={
-          compact ? "search-enter space-y-6 sm:space-y-8" : "search-enter"
-        }
-      >
+      <div className={compact ? "space-y-6 sm:space-y-8" : "search-enter"}>
         {showConnectPrompt ? (
           <p
             role="status"
             className={
               compact
-                ? "rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-950"
-                : "mx-auto mt-4 max-w-layout rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-950 sm:mt-6 sm:px-6"
+                ? "border-b border-border-luxury pb-3 text-sm leading-relaxed text-luxury-taupe"
+                : "mx-auto mt-4 max-w-layout px-4 text-sm leading-relaxed text-luxury-taupe sm:mt-6 sm:px-6"
             }
           >
             Search a CA, OR, or WA address first — builder intro and specialist
@@ -220,23 +233,22 @@ export function HomePageClient() {
           onNewSearch={geocodeResult ? handleNewSearch : undefined}
         />
 
-        {showInterstitial && geocodeResult ? (
-          <AnalysisInterstitial
-            lat={geocodeResult.lat}
-            lng={geocodeResult.lng}
-            address={geocodeResult.formattedAddress}
-          />
-        ) : null}
-
-        {showDashboard && geocodeResult ? (
+        {showDesk && geocodeResult ? (
           <>
             <ResultsCard
               report={report}
               geocodeResult={geocodeResult}
-              isLoading={false}
+              isLoading={isZoningLoading}
               zoningError={error}
               connectHref={`#${CONNECT_SECTION_ID}`}
               onRetry={() => void handleResolved(geocodeResult)}
+              reading={
+                showInterstitial ? (
+                  <AnalysisInterstitial
+                    address={geocodeResult.formattedAddress}
+                  />
+                ) : null
+              }
             />
             {showConnect ? (
               <ConnectSection
@@ -255,7 +267,10 @@ export function HomePageClient() {
             : "mx-auto max-w-layout border-t border-border-luxury px-4 pt-6 pb-8 text-center text-[11px] leading-relaxed text-muted-foreground sm:px-6 sm:pb-12"
         }
       >
-        <p>
+        <p className="font-label text-[11px] tracking-[0.22em] text-luxury-taupe">
+          CA · OR · WA
+        </p>
+        <p className="mt-3">
           Informational only — not legal advice. Confirm with local planning and
           building departments.
         </p>

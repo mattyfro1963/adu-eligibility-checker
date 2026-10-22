@@ -9,14 +9,14 @@ import { cn } from "@/lib/utils";
 
 type SampleFilter = "all" | SampleReportTone;
 
-/** Live eligibility colors — status-* tokens, not editorial taupe/cream. */
+/** Editorial chips — live Green/Yellow/Red is reserved for the results badge. */
 const TONE_CLASS: Record<SampleReportTone, string> = {
   eligible:
-    "border-status-eligible-border bg-status-eligible-muted text-status-eligible-fg hover:border-status-eligible/50",
+    "border-chip-editorial-border bg-chip-editorial-fill text-text-luxury hover:border-brand-taupe/55",
   warning:
-    "border-status-warning-border bg-status-warning-muted text-status-warning-fg hover:border-status-warning/50",
+    "border-chip-editorial-gold bg-chip-editorial-gold text-chip-editorial-gold-fg hover:border-chip-editorial-gold-fg/35",
   restricted:
-    "border-status-restricted-border bg-status-restricted-muted text-status-restricted-fg hover:border-status-restricted/50",
+    "border-chip-editorial-rose bg-chip-editorial-rose text-chip-editorial-rose-fg hover:border-chip-editorial-rose-fg/35",
 };
 
 const TONE_VOCABULARY: Record<SampleReportTone, string> = {
@@ -58,19 +58,16 @@ const FILTER_OPTIONS: ReadonlyArray<{
 ];
 
 const FILTER_TOGGLE_BASE =
-  "rounded-full border px-3.5 py-1.5 font-label text-[10px] uppercase tracking-[0.14em] backdrop-blur-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40";
+  "rounded-md border px-3.5 py-1.5 font-label text-[10px] uppercase tracking-[0.14em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40";
 
 const FILTER_TOGGLE_IDLE =
   "border-border-luxury/70 bg-surface-luxury/45 text-muted-foreground hover:border-brand-taupe/55 hover:bg-surface-luxury/65 hover:text-text-luxury";
 
 const FILTER_TOGGLE_SELECTED: Record<SampleFilter, string> = {
-  all: "border-brand-taupe/60 bg-luxury-charcoal/90 text-luxury-cream shadow-sm",
-  eligible:
-    "border-status-eligible-border bg-status-eligible-muted text-status-eligible-fg shadow-sm",
-  warning:
-    "border-status-warning-border bg-status-warning-muted text-status-warning-fg shadow-sm",
-  restricted:
-    "border-status-restricted-border bg-status-restricted-muted text-status-restricted-fg shadow-sm",
+  all: "border-brand-taupe/60 bg-luxury-charcoal/90 text-luxury-cream",
+  eligible: "border-brand-taupe/60 bg-luxury-charcoal/90 text-luxury-cream",
+  warning: "border-brand-taupe/60 bg-luxury-charcoal/90 text-luxury-cream",
+  restricted: "border-brand-taupe/60 bg-luxury-charcoal/90 text-luxury-cream",
 };
 
 interface SampleReportButtonsProps {

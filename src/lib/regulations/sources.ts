@@ -3,6 +3,7 @@
  * download endpoints. App and CI must not fetch these hosts.
  */
 
+import { BASEMAP_SOURCE_HREF, BASEMAP_SOURCE_LABEL } from "@/lib/map/basemap";
 import type { SourceRef } from "@/lib/regulations/types";
 
 export const SRC = {
@@ -146,6 +147,10 @@ export const SRC = {
     label: "DataSF — Zoning Districts (3i4a-hu95)",
     href: "https://data.sfgov.org/d/3i4a-hu95",
   },
+  datasfParcels: {
+    label: "DataSF — Parcels Active and Retired (acdm-wktn)",
+    href: "https://data.sfgov.org/d/acdm-wktn",
+  },
   sfPim: {
     label: "SF Property Information Map",
     href: "https://sfplanninggis.org/pim/",
@@ -162,7 +167,20 @@ export const SRC = {
     label: "SF Planning Department",
     href: "https://sfplanning.org/",
   },
+  esriWorldImagery: {
+    label: BASEMAP_SOURCE_LABEL,
+    href: BASEMAP_SOURCE_HREF,
+  },
+  mapboxGeocoding: {
+    label: "Mapbox Geocoding",
+    href: "https://www.mapbox.com/about/maps/",
+  },
 } as const satisfies Record<string, SourceRef>;
+
+/** Locator + imagery used on every search — not statute, still required credits. */
+export function searchInfrastructureSources(): SourceRef[] {
+  return [SRC.esriWorldImagery, SRC.mapboxGeocoding];
+}
 
 /** One entry per href — claim arrays may repeat the same official source. */
 export function uniqueSourceRefs(sources: SourceRef[]): SourceRef[] {

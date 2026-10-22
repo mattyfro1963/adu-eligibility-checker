@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { SAMPLE_REPORTS } from "@/lib/content/sample-reports";
+import { buildKeyFindings } from "@/lib/results/key-findings";
+import { mockProperties } from "@/lib/mock/properties";
+import { resetSfAssessorParcelsCacheForTests } from "@/lib/adapters/sf-assessor-parcels";
 import { lookupParcel } from "@/lib/adapters/zoning-lookup";
 import { formatParcelAddress } from "@/lib/address/format-parcel-address";
 import { composeResultsBriefing } from "@/lib/regulations/compose-briefing";
@@ -8,7 +11,6 @@ import type { GeocodeResult } from "@/lib/types/gis";
 
 /**
  * Census Bureau one-line matches (Public_AR_Current) for SAMPLE_REPORTS queries.
- * Pins live DataSF / jurisdiction outcomes — not mock parcels.
  */
 const CENSUS_MATCHES: Record<
   string,
@@ -254,10 +256,90 @@ describe("SAMPLE_REPORTS parcel summaries", () => {
         expect(
           lotHrefs.some((href) => /codelibrary\.amlegal\.com/.test(href)),
         ).toBe(true);
+        // Assessor snapshot or committed samples extract fills lot findings.
+        expect(report.mapblklot, `${sample.id} mapblklot`).toBeTruthy();
+        expect(report.lotSizeSqFt, `${sample.id} lotSizeSqFt`).toBeGreaterThan(
+          100,
+        );
+        expect(
+          report.parcelBoundary,
+          `${sample.id} parcelBoundary`,
+        ).toBeTruthy();
+        expect(report.boundarySource).toBe("sf-assessor");
       } else {
         expect(report.analysisScope).toBe("jurisdiction_context");
+        expect(report.mapblklot ?? null).toBeNull();
+        expect(report.lotSizeSqFt ?? null).toBeNull();
+        expect(report.parcelBoundary ?? null).toBeNull();
         expect(localReqs.flatMap((r) => r.sources).length).toBeGreaterThan(0);
       }
     }
   }, 30_000);
+});
+
+describe("SAMPLE_REPORTS SF assessor fill", () => {
+  it("resolves mapblklot / lotSizeSqFt / parcelBoundary for every SF chip", async () => {
+    resetSfAssessorParcelsCacheForTests();
+    const sfSamples = SAMPLE_REPORTS.filter((s) =>
+      /San Francisco/i.test(s.label),
+    );
+    expect(sfSamples.length).toBeGreaterThanOrEqual(5);
+
+    for (const sample of sfSamples) {
+      const { lookup, report } = await reportFor(sample.id);
+      expect(lookup.coverage).toBe("lot");
+      expect(report.mapblklot).toMatch(/^[0-9A-Z]+$/i);
+      expect(report.lotSizeSqFt).toBeGreaterThan(100);
+      expect(report.parcelBoundary).toBeTruthy();
+      expect(report.boundarySource).toBe("sf-assessor");
+    }
+  }, 30_000);
+
+  it("Parkside key findings include GIS area, outline, and engine dimensions", async () => {
+    const { report } = await reportFor("parkside");
+    const ids = buildKeyFindings(report).map((f) => f.id);
+    expect(ids).toEqual(
+      expect.arrayContaining([
+        "zoning",
+        "mapblklot",
+        "lot-area",
+        "parcel-boundary",
+        "overlays",
+        "unit-capacity",
+        "placement",
+        "certification",
+        "transport",
+        "lot-readiness",
+        "adu",
+        "sb9",
+      ]),
+    );
+  });
+});
+
+describe("mock parcel key findings", () => {
+  it("evaluateEligibility fills GIS facts and every key finding", () => {
+    const mock = mockProperties["addr-r1-tiny"];
+    expect(mock).toBeDefined();
+    const report = evaluateEligibility(mock!);
+    expect(report.lotSizeSqFt).toBe(6850);
+    expect(report.mapblklot).toBe("3558001");
+    expect(report.parcelBoundary).toEqual(mock!.parcelBoundary);
+    expect(report.boundarySource).toBe("mock");
+
+    expect(buildKeyFindings(report).map((f) => f.id)).toEqual([
+      "zoning",
+      "mapblklot",
+      "lot-area",
+      "parcel-boundary",
+      "overlays",
+      "unit-capacity",
+      "placement",
+      "certification",
+      "transport",
+      "lot-readiness",
+      "adu",
+      "sb9",
+    ]);
+  });
 });
